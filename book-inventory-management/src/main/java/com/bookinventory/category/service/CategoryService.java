@@ -13,34 +13,31 @@ public class CategoryService {
 
 	@Autowired
 	private CategoryRepository categoryRepository;
-	
+
 	public Category addCategory(Category category) {
 		return categoryRepository.save(category);
 	}
-	
-	public List<Category> getAllCategories(){
+
+	public List<Category> getAllCategories() {
 		return categoryRepository.findAll();
 	}
-	
+
 	public Category getCategoryById(int id) {
 		// Exception Handling Needed
 		return categoryRepository.findById(id).orElse(null);
 	}
-	
+
 	public Category updateCategory(int id, String newDescription) {
-		// Exception Handling Needed 
-		Category category = categoryRepository.findById(id).orElse(null);
-		
-		if(category != null) {
-			category.setCatDescription(newDescription);
-			return categoryRepository.save(category);
-		}
-		
-		return null;
+		// Exception Handling Needed
+		Category category = categoryRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Category not found"));
+
+		category.setCatDescription(newDescription);
+		return categoryRepository.save(category);
 	}
-	
+
 	public void deleteCategory(int id) {
-		// Exception Handling Needed 
+		// Exception Handling Needed
 		categoryRepository.deleteById(id);
 	}
 }
