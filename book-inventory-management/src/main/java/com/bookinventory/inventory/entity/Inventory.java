@@ -11,7 +11,7 @@ public class Inventory {
     @Column(name = "InventoryID")
     private Integer inventoryId;
 
-    @Column(name = "ISBN")
+    @Column(name = "ISBN", columnDefinition = "CHAR(13)")
     private String isbn;
 
     @Column(name = "Ranks")

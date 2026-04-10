@@ -12,7 +12,7 @@ public class ShoppingCart {
     private Integer userId;
 
     @Id
-    @Column(name = "ISBN")
+    @Column(name = "ISBN", columnDefinition = "CHAR(13)")
     private String isbn;
 
     public Integer getUserId() {
