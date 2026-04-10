@@ -25,7 +25,7 @@ public class User {
     @Column(name = "FirstName", length = 20, nullable = false)
     private String firstName;
 
-    @Column(name = "PhoneNumber", length = 14)
+    @Column(name = "PhoneNumber", length = 14,columnDefinition="CHAR(14)")
     private String phoneNumber;
 
     @Column(name = "UserName", length = 30, nullable = false)

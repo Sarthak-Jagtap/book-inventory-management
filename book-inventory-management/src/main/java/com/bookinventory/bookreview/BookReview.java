@@ -1,40 +1,55 @@
 package com.bookinventory.bookreview;
 
+import com.bookinventory.book.entity.Book;
 import com.bookinventory.reviewer.Reviewer;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.Table;
 
 
 @Entity
 @Table(name="bookreview")
 public class BookReview {
-	
-	//@ManyToOne
-	//@JoinColumn(name="ISBN",referencedColumnName="ISBN")
-	//private Book book;
-	
-	@Id
-	@ManyToOne
-	@JoinColumn(name="ReviewerID",referencedColumnName="ReviewerID")
-	private Reviewer reviewer;
-	
-	
-	@NotNull(message="Rating Required")
-	@Min(value=1,message="Minimum Rating is 1")
-	@Max(value=10,message="Maximum rating is 10")
-	private int Rating;
-	
-	@Size(max=225,message="Comment to long")
-	private String Comments;
 
-	//public Book getBook() {
-		//return book;
-	//}
+    @EmbeddedId
+    private BookReviewId id;
 
-	//public void setBook(Book book) {
-		//this.book = book;
-	//}
+    @ManyToOne
+    @MapsId("isbn")   // 🔥 link with id
+    @JoinColumn(name="ISBN",columnDefinition = "CHAR(13)")
+    private Book book;
+
+    @ManyToOne
+    @MapsId("reviewerId")  // 🔥 link with id
+    @JoinColumn(name="ReviewerID",columnDefinition = "int")
+    private Reviewer reviewer;
+
+    @Column(name="Rating")
+    private int rating;
+
+    @Column(name="Comments")
+    private String comments;
+
+	public BookReviewId getId() {
+		return id;
+	}
+
+	public void setId(BookReviewId id) {
+		this.id = id;
+	}
+
+	public Book getBook() {
+		return book;
+	}
+
+	public void setBook(Book book) {
+		this.book = book;
+	}
 
 	public Reviewer getReviewer() {
 		return reviewer;
@@ -45,21 +60,19 @@ public class BookReview {
 	}
 
 	public int getRating() {
-		return Rating;
+		return rating;
 	}
 
 	public void setRating(int rating) {
-		Rating = rating;
+		this.rating = rating;
 	}
 
 	public String getComments() {
-		return Comments;
+		return comments;
 	}
 
 	public void setComments(String comments) {
-		Comments = comments;
+		this.comments = comments;
 	}
-	
-	
-
+    
 }

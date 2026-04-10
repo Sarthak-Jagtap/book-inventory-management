@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReviewerRepository extends JpaRepository<Reviewer,Integer> {
 	
-	List<Reviewer> findByReviewerID(int ReviewerID);
+	List<Reviewer> findByReviewerID(int reviewerID);
 
 }
