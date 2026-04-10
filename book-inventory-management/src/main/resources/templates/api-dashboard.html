@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>API Dashboard</title>
+</head>
+
+<body style="margin:40px">
+
+<h1>API Endpoints</h1>
+
+<hr>
+
+<h3>Author APIs</h3>
+
+<ul>
+<li><a href="/api/authors" target="_blank">GET All Authors</a></li>
+<li><a href="/api/authors/1" target="_blank">GET Author By ID</a></li>
+<li><a href="/api/authors/search?name=dan" target="_blank">Search Author</a></li>
+<li><a href="/api/authors/4/books" target="_blank">Get Books By Author</a></li>
+<li><a href="/api/authors/4/stats" target="_blank">Author Stats</a></li>
+</ul>
+
+<hr>
+
+<h3>Book APIs</h3>
+
+<ul>
+<li><a href="/api/books" target="_blank">GET All Books</a></li>
+<li><a href="/api/books/9-455-61223-3" target="_blank">Get Book By ISBN</a></li>
+</ul>
+
+<hr>
+
+<h3>BookAuthor APIs</h3>
+
+<ul>
+<li><a href="/api/book-authors/book/9-455-61223-3" target="_blank">Authors of Book</a></li>
+<li><a href="/api/book-authors/author/4" target="_blank">Books of Author</a></li>
+</ul>
+
+</body>
+</html>

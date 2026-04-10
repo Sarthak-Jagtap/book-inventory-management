@@ -6,6 +6,8 @@ import com.bookinventory.author.dto.BookAuthorDTO;
 import com.bookinventory.author.entity.BookAuthor;
 import com.bookinventory.author.service.BookAuthorService;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -20,7 +22,7 @@ public class BookAuthorController {
 
     // ASSIGN AUTHOR TO BOOK
     @PostMapping
-    public BookAuthor assignAuthorToBook(@RequestBody BookAuthorDTO dto) {
+    public BookAuthor assignAuthorToBook(@Valid @RequestBody BookAuthorDTO dto) {
         return service.assignAuthorToBook(dto);
     }
 

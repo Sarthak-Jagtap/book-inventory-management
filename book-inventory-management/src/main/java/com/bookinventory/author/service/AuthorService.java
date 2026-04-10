@@ -3,21 +3,27 @@ package com.bookinventory.author.service;
 
 import org.springframework.stereotype.Service;
 
+
 import com.bookinventory.author.dto.AuthorDTO;
 import com.bookinventory.author.entity.Author;
 import com.bookinventory.author.mapper.AuthorMapper;
 import com.bookinventory.author.repository.AuthorRepository;
+import com.bookinventory.book.entity.Book;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class AuthorService {
 
     private final AuthorRepository authorRepository;
+    
 
     public AuthorService(AuthorRepository authorRepository) {
         this.authorRepository = authorRepository;
+	
     }
 
     // CREATE AUTHOR
@@ -71,5 +77,34 @@ public class AuthorService {
         }
 
         authorRepository.deleteById(id);
+    }
+    
+    //SEARCH AUTHOR
+    public List<AuthorDTO> searchAuthors(String name) {
+
+        List<Author> authors =
+                authorRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
+
+        return authors.stream()
+                .map(AuthorMapper::toDTO)
+                .toList();
+    }
+    
+    //AUTHOR'S BOOKS
+    public List<Book> getBooksByAuthor(Integer authorId) {
+
+        return authorRepository.findBooksByAuthorId(authorId);
+    }
+    
+    //NO.S OF BOOKS OF AUTHOR
+    public Map<String, Object> getAuthorStats(Integer authorId) {
+
+        Long count = authorRepository.countBooksByAuthor(authorId);
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("authorId", authorId);
+        stats.put("booksWritten", count);
+
+        return stats;
     }
 }
