@@ -1,20 +1,11 @@
 package com.bookinventory.inventory.dto;
 
-public class InventoryRequest {
+public class UpdateInventoryRequest {
 
-    private String isbn;
     private Integer rank;
     private Boolean purchased;
 
-    public InventoryRequest() {
-    }
-
-    public String getIsbn() {
-        return isbn;
-    }
-
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
+    public UpdateInventoryRequest() {
     }
 
     public Integer getRank() {

@@ -1,10 +1,11 @@
-package com.bookinventory.inventory.controller;
+package com.bookinventory.cart.controller;
 
-import com.bookinventory.inventory.dto.AddToCartRequest;
-import com.bookinventory.inventory.dto.CartOptionResponse;
-import com.bookinventory.inventory.dto.CheckoutResponse;
+import com.bookinventory.cart.dto.AddToCartRequest;
+import com.bookinventory.cart.dto.CartOptionResponse;
+import com.bookinventory.cart.dto.CheckoutResponse;
+import com.bookinventory.cart.service.CartService;
 import com.bookinventory.inventory.entity.ShoppingCart;
-import com.bookinventory.inventory.service.CartService;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

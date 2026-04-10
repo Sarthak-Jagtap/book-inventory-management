@@ -1,9 +1,9 @@
-package com.bookinventory.inventory.service;
+package com.bookinventory.cart.service;
 
-import com.bookinventory.inventory.dto.AddToCartRequest;
-import com.bookinventory.inventory.dto.CartOptionResponse;
-import com.bookinventory.inventory.dto.CheckoutResponse;
-import com.bookinventory.inventory.dto.SelectedCartItem;
+import com.bookinventory.cart.dto.AddToCartRequest;
+import com.bookinventory.cart.dto.CartOptionResponse;
+import com.bookinventory.cart.dto.CheckoutResponse;
+import com.bookinventory.cart.dto.SelectedCartItem;
 import com.bookinventory.inventory.entity.BookCondition;
 import com.bookinventory.inventory.entity.Inventory;
 import com.bookinventory.inventory.entity.ShoppingCart;

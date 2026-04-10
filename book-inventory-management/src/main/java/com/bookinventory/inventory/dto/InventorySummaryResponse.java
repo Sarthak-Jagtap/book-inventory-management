@@ -2,23 +2,33 @@ package com.bookinventory.inventory.dto;
 
 import java.math.BigDecimal;
 
-public class CartOptionResponse {
+public class InventorySummaryResponse {
 
     private String isbn;
     private Integer rank;
     private String condition;
+    private String fullDescription;
     private BigDecimal price;
     private Long availableCount;
+    private Long totalCount;
 
-    public CartOptionResponse() {
+    public InventorySummaryResponse() {
     }
 
-    public CartOptionResponse(String isbn, Integer rank, String condition, BigDecimal price, Long availableCount) {
+    public InventorySummaryResponse(String isbn,
+                                    Integer rank,
+                                    String condition,
+                                    String fullDescription,
+                                    BigDecimal price,
+                                    Long availableCount,
+                                    Long totalCount) {
         this.isbn = isbn;
         this.rank = rank;
         this.condition = condition;
+        this.fullDescription = fullDescription;
         this.price = price;
         this.availableCount = availableCount;
+        this.totalCount = totalCount;
     }
 
     public String getIsbn() {
@@ -45,6 +55,14 @@ public class CartOptionResponse {
         this.condition = condition;
     }
 
+    public String getFullDescription() {
+        return fullDescription;
+    }
+
+    public void setFullDescription(String fullDescription) {
+        this.fullDescription = fullDescription;
+    }
+
     public BigDecimal getPrice() {
         return price;
     }
@@ -59,5 +77,13 @@ public class CartOptionResponse {
 
     public void setAvailableCount(Long availableCount) {
         this.availableCount = availableCount;
+    }
+
+    public Long getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(Long totalCount) {
+        this.totalCount = totalCount;
     }
 }
