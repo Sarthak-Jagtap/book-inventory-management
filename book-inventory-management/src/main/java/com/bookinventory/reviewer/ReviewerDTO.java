@@ -3,24 +3,24 @@ package com.bookinventory.reviewer;
 
 public class ReviewerDTO {
 	
-	private String Name;
-	private String EmployedBy;
+	private String name;
+	private String employedBy;
 	public ReviewerDTO(String name, String employedBy) {
 		super();
-		Name = name;
-		EmployedBy = employedBy;
+		this.name = name;
+		this.employedBy = employedBy;
 	}
 	public String getName() {
-		return Name;
+		return name;
 	}
 	public void setName(String name) {
-		Name = name;
+		this.name = name;
 	}
 	public String getEmployedBy() {
-		return EmployedBy;
+		return employedBy;
 	}
 	public void setEmployedBy(String employedBy) {
-		EmployedBy = employedBy;
+		this.employedBy = employedBy;
 	}
 	
 	public ReviewerDTO() {

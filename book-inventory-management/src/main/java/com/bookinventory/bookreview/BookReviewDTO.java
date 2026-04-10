@@ -3,24 +3,24 @@ package com.bookinventory.bookreview;
 
 public class BookReviewDTO {
 	
-	private int Rating;
-	private String Comments;
+	private int rating;
+	private String comments;
 	public int getRating() {
-		return Rating;
+		return rating;
 	}
 	public void setRating(int rating) {
-		Rating = rating;
+		this.rating = rating;
 	}
 	public String getComments() {
-		return Comments;
+		return comments;
 	}
 	public void setComments(String comments) {
-		Comments = comments;
+		this.comments = comments;
 	}
 	public BookReviewDTO(int rating, String comments) {
 		super();
-		Rating = rating;
-		Comments = comments;
+		this.rating = rating;
+		this.comments = comments;
 	}
 	public BookReviewDTO() {
 		
