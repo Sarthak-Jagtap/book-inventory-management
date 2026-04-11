@@ -11,13 +11,13 @@ public class BookReviewService {
 	@Autowired
 	private BookReviewRepository repo;
 	
-	List<BookReview> getBookReviewByISBN(String ISBN){
-		return repo.findByBookISBN(ISBN);
+	List<BookReview> getBookReviewByISBN(String isbn){
+		return repo.findByBookIsbn(isbn);
 		
 	}
 	
-	List<BookReviewDTO> getBookReviewByISBNDTO(String ISBN){
-		List<BookReview> reviews=repo.findByBookISBN(ISBN);
+	List<BookReviewDTO> getBookReviewByISBNDTO(String isbn){
+		List<BookReview> reviews=repo.findByBookIsbn(isbn);
 		
 		return reviews.stream().map(review-> {
 			BookReviewDTO dto = new BookReviewDTO();

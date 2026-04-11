@@ -14,15 +14,9 @@ public class BookReviewController {
 	@Autowired
 	private BookReviewService service;
 	
-	@GetMapping("/reviews/{isbn}")
-	public String getReviews(@RequestParam String ISBN,Model model) {
-		List<BookReviewDTO> reviews=service.getBookReviewByISBNDTO(ISBN);
-		
-		model.addAttribute("reviews",reviews);
-		
-		
-		return "review-list";
-		
+	@GetMapping("/reviews")
+	public List<BookReviewDTO> getReviews(@RequestParam String isbn) {
+	    return service.getBookReviewByISBNDTO(isbn);
 	}
 
 }
