@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Cart Page</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>Cart</h1>
+        <p><strong>User:</strong> <span th:text="${userName}"></span></p>
+
+        <table>
+            <tr>
+                <th>Book Title</th>
+                <th>Selection Status</th>
+                <th>Selected Condition</th>
+                <th>Selected Price</th>
+                <th>Actions</th>
+            </tr>
+            <tr th:each="item : ${cartItems}">
+                <td th:text="${item.bookTitle}"></td>
+                <td>
+                    <span th:if="${item.selected}" class="status-ok">Selected</span>
+                    <span th:if="${!item.selected}" class="status-warn">Needs Selection</span>
+                </td>
+                <td th:text="${item.selectedCondition != null ? item.selectedCondition : 'Not selected'}"></td>
+                <td th:text="${item.selectedPrice != null ? item.selectedPrice : '-'}"></td>
+                <td>
+                    <a class="btn btn-secondary"
+                       th:href="@{/store/book/{userId}/{isbn}(userId=${item.userId}, isbn=${item.isbn})}">
+                        Select / Reselect
+                    </a>
+
+                    <form th:action="@{/store/cart/remove}" method="post" style="display:inline;">
+                        <input type="hidden" name="userId" th:value="${item.userId}" />
+                        <input type="hidden" name="isbn" th:value="${item.isbn}" />
+                        <button type="submit" class="btn-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        </table>
+
+        <br>
+        <a class="btn" th:href="@{/store/checkout/{userId}(userId=${userId})}">Go to Checkout</a>
+    </div>
+</div>
+</body>
+</html>

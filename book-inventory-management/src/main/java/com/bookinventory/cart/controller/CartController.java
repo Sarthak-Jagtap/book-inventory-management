@@ -1,11 +1,11 @@
 package com.bookinventory.cart.controller;
 
 import com.bookinventory.cart.dto.AddToCartRequest;
+import com.bookinventory.cart.dto.CartItemResponse;
 import com.bookinventory.cart.dto.CartOptionResponse;
+import com.bookinventory.cart.dto.CartViewResponse;
 import com.bookinventory.cart.dto.CheckoutResponse;
 import com.bookinventory.cart.service.CartService;
-import com.bookinventory.inventory.entity.ShoppingCart;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,13 +26,18 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public ShoppingCart add(@RequestBody AddToCartRequest request) {
+    public CartItemResponse add(@RequestBody AddToCartRequest request) {
         return service.addToCart(request);
     }
 
     @GetMapping("/{userId}")
-    public List<ShoppingCart> getCart(@PathVariable Integer userId) {
+    public List<CartItemResponse> getCart(@PathVariable Integer userId) {
         return service.getCartByUser(userId);
+    }
+
+    @GetMapping("/view/{userId}")
+    public List<CartViewResponse> getCartView(@PathVariable Integer userId) {
+        return service.getCartViewByUser(userId);
     }
 
     @DeleteMapping("/remove")
@@ -42,9 +47,8 @@ public class CartController {
         return "Removed from cart";
     }
 
-    @PostMapping("/checkout")
-    public CheckoutResponse checkout(@RequestParam Integer userId,
-                                     @RequestParam String isbn) {
-        return service.checkout(userId, isbn);
+    @PostMapping("/checkout/{userId}")
+    public CheckoutResponse checkoutAll(@PathVariable Integer userId) {
+        return service.checkoutAll(userId);
     }
 }

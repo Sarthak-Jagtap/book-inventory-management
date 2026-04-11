@@ -1,7 +1,11 @@
 package com.bookinventory.cart.service;
 
+import com.bookinventory.book.entity.Book;
+import com.bookinventory.book.repository.BookRepository;
 import com.bookinventory.cart.dto.AddToCartRequest;
+import com.bookinventory.cart.dto.CartItemResponse;
 import com.bookinventory.cart.dto.CartOptionResponse;
+import com.bookinventory.cart.dto.CartViewResponse;
 import com.bookinventory.cart.dto.CheckoutResponse;
 import com.bookinventory.cart.dto.SelectedCartItem;
 import com.bookinventory.inventory.entity.BookCondition;
@@ -11,6 +15,12 @@ import com.bookinventory.inventory.entity.ShoppingCartId;
 import com.bookinventory.inventory.repository.BookConditionRepository;
 import com.bookinventory.inventory.repository.InventoryRepository;
 import com.bookinventory.inventory.repository.ShoppingCartRepository;
+import com.bookinventory.user.entity.User;
+import com.bookinventory.user.repository.UserRepository;
+import com.bookinventory.cart.entity.PurchaseLog;
+import com.bookinventory.cart.repository.PurchaseLogRepository;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,22 +36,27 @@ public class CartServiceImpl implements CartService {
     private final ShoppingCartRepository cartRepository;
     private final InventoryRepository inventoryRepository;
     private final BookConditionRepository bookConditionRepository;
+    private final BookRepository bookRepository;
+    private final UserRepository userRepository;
+    @Autowired
+    private PurchaseLogRepository purchaseLogRepository;
 
-    // temporary in-memory selection store
-    // key format: userId + "_" + isbn
     private final Map<String, SelectedCartItem> selectedItems = new HashMap<>();
 
     public CartServiceImpl(ShoppingCartRepository cartRepository,
                            InventoryRepository inventoryRepository,
-                           BookConditionRepository bookConditionRepository) {
+                           BookConditionRepository bookConditionRepository,
+                           BookRepository bookRepository,
+                           UserRepository userRepository) {
         this.cartRepository = cartRepository;
         this.inventoryRepository = inventoryRepository;
         this.bookConditionRepository = bookConditionRepository;
+        this.bookRepository = bookRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public List<CartOptionResponse> getCartOptionsByIsbn(String isbn) {
-
         List<Inventory> inventoryList = inventoryRepository.getAvailableInventoryByIsbn(isbn);
 
         if (inventoryList == null || inventoryList.isEmpty()) {
@@ -81,16 +96,11 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public ShoppingCart addToCart(AddToCartRequest request) {
-
+    public CartItemResponse addToCart(AddToCartRequest request) {
         ShoppingCartId cartId = new ShoppingCartId(request.getUserId(), request.getIsbn());
 
-        if (cartRepository.existsById(cartId)) {
-            throw new RuntimeException("Book already exists in cart for this user");
-        }
-
         Optional<Inventory> selectedInventoryOptional =
-        		inventoryRepository.getFirstAvailableInventoryByIsbnAndRank(request.getIsbn(), request.getRank());
+                inventoryRepository.getFirstAvailableInventoryByIsbnAndRank(request.getIsbn(), request.getRank());
 
         if (selectedInventoryOptional.isEmpty()) {
             throw new RuntimeException("Selected quality/rank is not available");
@@ -98,10 +108,9 @@ public class CartServiceImpl implements CartService {
 
         Inventory selectedInventory = selectedInventoryOptional.get();
 
-        BookCondition condition = bookConditionRepository.findById(request.getRank())
+        BookCondition condition = bookConditionRepository.getConditionByRank(request.getRank())
                 .orElseThrow(() -> new RuntimeException("Condition not found for selected rank"));
 
-        // temporary selection saved in memory only
         String selectionKey = buildSelectionKey(request.getUserId(), request.getIsbn());
 
         SelectedCartItem selectedCartItem = new SelectedCartItem(
@@ -114,16 +123,79 @@ public class CartServiceImpl implements CartService {
 
         selectedItems.put(selectionKey, selectedCartItem);
 
-        ShoppingCart cart = new ShoppingCart();
-        cart.setUserId(request.getUserId());
-        cart.setIsbn(request.getIsbn());
+        ShoppingCart cart;
 
-        return cartRepository.save(cart);
+        if (cartRepository.existsById(cartId)) {
+            cart = cartRepository.findById(cartId)
+                    .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        } else {
+            cart = new ShoppingCart();
+            cart.setUserId(request.getUserId());
+            cart.setIsbn(request.getIsbn());
+            cart = cartRepository.save(cart);
+        }
+
+        return mapToCartItemResponse(cart);
     }
 
     @Override
-    public List<ShoppingCart> getCartByUser(Integer userId) {
-        return cartRepository.findByUserId(userId);
+    public List<CartItemResponse> getCartByUser(Integer userId) {
+        List<ShoppingCart> cartList = cartRepository.findByUserId(userId);
+        List<CartItemResponse> responseList = new ArrayList<>();
+
+        for (ShoppingCart cart : cartList) {
+            responseList.add(mapToCartItemResponse(cart));
+        }
+
+        return responseList;
+    }
+
+    @Override
+    public List<CartViewResponse> getCartViewByUser(Integer userId) {
+        List<ShoppingCart> cartList = cartRepository.findByUserId(userId);
+        List<CartViewResponse> responseList = new ArrayList<>();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        String userName = user.getFirstName() + " " + user.getLastName();
+
+        for (ShoppingCart cart : cartList) {
+            Book book = bookRepository.findById(cart.getIsbn())
+                    .orElseThrow(() -> new RuntimeException("Book not found with isbn: " + cart.getIsbn()));
+
+            String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
+            SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
+
+            if (selectedCartItem == null) {
+                responseList.add(new CartViewResponse(
+                        cart.getUserId(),
+                        userName,
+                        cart.getIsbn(),
+                        book.getTitle(),
+                        false,
+                        null,
+                        null,
+                        null
+                ));
+            } else {
+                BookCondition condition = bookConditionRepository.getConditionByRank(selectedCartItem.getRank())
+                        .orElseThrow(() -> new RuntimeException("Condition not found for rank: " + selectedCartItem.getRank()));
+
+                responseList.add(new CartViewResponse(
+                        cart.getUserId(),
+                        userName,
+                        cart.getIsbn(),
+                        book.getTitle(),
+                        true,
+                        selectedCartItem.getRank(),
+                        condition.getDescription(),
+                        selectedCartItem.getPrice()
+                ));
+            }
+        }
+
+        return responseList;
     }
 
     @Override
@@ -133,51 +205,73 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CheckoutResponse checkout(Integer userId, String isbn) {
+    public CheckoutResponse checkoutAll(Integer userId) {
+        List<ShoppingCart> cartList = cartRepository.findByUserId(userId);
 
-        ShoppingCartId cartId = new ShoppingCartId(userId, isbn);
-
-        if (!cartRepository.existsById(cartId)) {
-            return new CheckoutResponse(false, "Book is not present in cart");
+        if (cartList.isEmpty()) {
+            return new CheckoutResponse(false, "Cart is empty");
         }
 
-        String selectionKey = buildSelectionKey(userId, isbn);
-        SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
+        for (ShoppingCart cart : cartList) {
+            String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
+            SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
 
-        // case 2: session/in-memory object lost
-        if (selectedCartItem == null) {
-            return new CheckoutResponse(
-                    false,
-                    "Selected quality option not available in current session. Please reselect price/quality and checkout again."
-            );
+            if (selectedCartItem == null) {
+                return new CheckoutResponse(
+                        false,
+                        "One or more cart items need quality reselection before checkout."
+                );
+            }
         }
 
-        Optional<Inventory> inventoryOptional = inventoryRepository.findById(selectedCartItem.getInventoryId());
+        for (ShoppingCart cart : cartList) {
+            String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
+            SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
 
-        if (inventoryOptional.isEmpty()) {
-            return new CheckoutResponse(false, "Selected inventory item no longer exists");
+            Inventory inventory = inventoryRepository.findById(selectedCartItem.getInventoryId())
+                    .orElseThrow(() -> new RuntimeException("Selected inventory item no longer exists"));
+
+            if (Boolean.TRUE.equals(inventory.getPurchased())) {
+                return new CheckoutResponse(
+                        false,
+                        "One or more selected inventory items are already purchased. Please reselect."
+                );
+            }
         }
 
-        Inventory inventory = inventoryOptional.get();
+        for (ShoppingCart cart : cartList) {
 
-        // revalidation before final checkout
-        if (Boolean.TRUE.equals(inventory.getPurchased())) {
-            return new CheckoutResponse(false, "Selected inventory item is already purchased. Please reselect another option.");
+            String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
+            SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
+
+            Inventory inventory = inventoryRepository.findById(selectedCartItem.getInventoryId())
+                    .orElseThrow(() -> new RuntimeException("Selected inventory item no longer exists"));
+
+            // ✅ mark as purchased
+            inventory.setPurchased(true);
+            inventoryRepository.save(inventory);
+
+            // 🔥 ADD THIS BLOCK RIGHT HERE
+            PurchaseLog log = new PurchaseLog();
+            log.setUserId(userId);
+            log.setInventoryId(inventory.getInventoryId());
+            purchaseLogRepository.save(log);
+
+            // ✅ remove from cart
+            cartRepository.deleteById(new ShoppingCartId(cart.getUserId(), cart.getIsbn()));
+
+            // ✅ remove selection cache
+            selectedItems.remove(selectionKey);
         }
 
-        inventory.setPurchased(true);
-        inventoryRepository.save(inventory);
-
-        cartRepository.deleteById(cartId);
-        selectedItems.remove(selectionKey);
-
-        return new CheckoutResponse(
-                true,
-                "Checkout successful. Inventory updated and item removed from cart."
-        );
+        return new CheckoutResponse(true, "Checkout successful for all cart items.");
     }
 
     private String buildSelectionKey(Integer userId, String isbn) {
         return userId + "_" + isbn;
+    }
+
+    private CartItemResponse mapToCartItemResponse(ShoppingCart cart) {
+        return new CartItemResponse(cart.getUserId(), cart.getIsbn());
     }
 }

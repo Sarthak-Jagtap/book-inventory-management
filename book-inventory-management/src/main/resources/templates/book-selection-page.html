@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Select Book Condition</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1 th:text="${bookTitle}">Book Title</h1>
+        <p><strong>User:</strong> <span th:text="${userName}"></span></p>
+
+        <form th:action="@{/store/cart/add}" method="post">
+            <input type="hidden" name="userId" th:value="${userId}" />
+            <input type="hidden" name="isbn" th:value="${isbn}" />
+            <input type="hidden" name="next" th:value="${next}" />
+
+            <table>
+                <tr>
+                    <th>Select</th>
+                    <th>Condition</th>
+                    <th>Price</th>
+                </tr>
+                <tr th:each="option : ${options}">
+                    <td>
+                        <input type="radio" name="rank" th:value="${option.rank}" required />
+                    </td>
+                    <td th:text="${option.condition}"></td>
+                    <td th:text="${option.price}"></td>
+                </tr>
+            </table>
+
+            <br>
+            <button type="submit">Save Selection</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
