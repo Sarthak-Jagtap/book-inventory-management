@@ -33,7 +33,7 @@
                 <td>
                     <a th:if="${!item.selected}"
                        class="btn btn-secondary"
-                       th:href="@{/store/book/{userId}/{isbn}(userId=${item.userId}, isbn=${item.isbn}, next='checkout')}">
+                       th:href="@{/user-page/book/{userId}/{isbn}(userId=${item.userId}, isbn=${item.isbn}, next='checkout')}">
                         Reselect
                     </a>
                 </td>
@@ -42,12 +42,12 @@
 
         <br>
 
-		<form th:if="${canCheckout}" th:action="@{/store/cart/checkout}" method="post">
+		<form th:if="${canCheckout}" th:action="@{/user-page/cart/checkout}" method="post">
 		    <input type="hidden" name="userId" th:value="${userId}" />
 		    <button type="submit">Confirm Checkout</button>
 		</form>
 
-        <a class="btn btn-secondary" th:href="@{/store/cart/{userId}(userId=${userId})}">Back to Cart</a>
+        <a class="btn btn-secondary" th:href="@{/user-page/cart/{userId}(userId=${userId})}" >Back to Cart</a>
     </div>
 </div>
 </body>

@@ -1,8 +1,13 @@
 package com.bookinventory.inventory.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
 public class UpdateInventoryRequest {
 
-    private Integer rank;
+	@Min(value = 1, message = "Rank must be at least 1")
+	@Max(value = 6, message = "Rank must be at most 6")
+	private Integer rank;
     private Boolean purchased;
 
     public UpdateInventoryRequest() {

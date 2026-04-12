@@ -1,10 +1,24 @@
 package com.bookinventory.cart.dto;
 
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+
 public class AddToCartRequest {
 
-    private Integer userId;
-    private String isbn;
-    private Integer rank;
+	@NotNull(message = "User ID is required")
+	private Integer userId;
+
+	@NotBlank(message = "ISBN is required")
+	private String isbn;
+
+	@NotNull(message = "Rank is required")
+	@Min(value = 1, message = "Rank must be at least 1")
+	@Max(value = 6, message = "Rank must be at most 6")
+	private Integer rank;
 
     public AddToCartRequest() {
     }

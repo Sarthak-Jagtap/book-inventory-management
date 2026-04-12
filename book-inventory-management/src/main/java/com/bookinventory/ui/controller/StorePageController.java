@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Controller
-@RequestMapping("/store")
+@RequestMapping("/user-page")
 public class StorePageController {
 
     private final CartService cartService;
@@ -80,17 +80,17 @@ public class StorePageController {
         cartService.addToCart(request);
 
         if ("checkout".equals(next)) {
-            return "redirect:/store/checkout/" + request.getUserId();
+            return "redirect:/user-page/checkout/" + request.getUserId();
         }
 
-        return "redirect:/store/cart/" + request.getUserId();
+        return "redirect:/user-page/cart/" + request.getUserId();
     }
 
     @PostMapping("/cart/remove")
     public String removeFromCart(@RequestParam Integer userId,
                                  @RequestParam String isbn) {
         cartService.removeFromCart(userId, isbn);
-        return "redirect:/store/cart/" + userId;
+        return "redirect:/user-page/cart/" + userId;
     }
 
     @PostMapping("/cart/checkout")

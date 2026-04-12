@@ -7,7 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
-@RequestMapping("/admin-page")
+@RequestMapping("/store-owner-page")
 public class AdminPageController {
 
     private final InventoryAdminService inventoryAdminService;
@@ -38,6 +38,6 @@ public class AdminPageController {
     @PostMapping("/inventory/add")
     public String addInventory(@ModelAttribute InventoryRequest request) {
         inventoryAdminService.addInventory(request);
-        return "redirect:/admin-page/inventory";
+        return "redirect:/store-owner-page/inventory";
     }
 }

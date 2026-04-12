@@ -17,8 +17,9 @@ import com.bookinventory.inventory.repository.InventoryRepository;
 import com.bookinventory.inventory.repository.ShoppingCartRepository;
 import com.bookinventory.user.entity.User;
 import com.bookinventory.user.repository.UserRepository;
-import com.bookinventory.cart.entity.PurchaseLog;
-import com.bookinventory.cart.repository.PurchaseLogRepository;
+import com.bookinventory.user.entity.PurchaseLog;
+import com.bookinventory.user.entity.PurchaseLogId;
+import com.bookinventory.user.repository.PurchaseLogRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -252,9 +253,15 @@ public class CartServiceImpl implements CartService {
             inventoryRepository.save(inventory);
 
             // 🔥 ADD THIS BLOCK RIGHT HERE
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+            PurchaseLogId purchaseLogId = new PurchaseLogId(userId, inventory.getInventoryId());
+
             PurchaseLog log = new PurchaseLog();
-            log.setUserId(userId);
-            log.setInventoryId(inventory.getInventoryId());
+            log.setId(purchaseLogId);
+            log.setUser(user);
+
             purchaseLogRepository.save(log);
 
             // ✅ remove from cart

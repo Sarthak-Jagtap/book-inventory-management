@@ -6,11 +6,12 @@ import com.bookinventory.inventory.dto.InventorySummaryResponse;
 import com.bookinventory.inventory.dto.UpdateInventoryRequest;
 import com.bookinventory.inventory.service.InventoryAdminService;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/inventory")
+@RequestMapping("/store-owner/inventory")
 public class InventoryAdminController {
 
     private final InventoryAdminService inventoryAdminService;
@@ -20,7 +21,7 @@ public class InventoryAdminController {
     }
 
     @PostMapping
-    public InventoryResponse addInventory(@RequestBody InventoryRequest request) {
+    public InventoryResponse addInventory(@Valid @RequestBody InventoryRequest request) {
         return inventoryAdminService.addInventory(request);
     }
 
@@ -51,7 +52,7 @@ public class InventoryAdminController {
 
     @PutMapping("/{inventoryId}")
     public InventoryResponse updateInventory(@PathVariable Integer inventoryId,
-                                             @RequestBody UpdateInventoryRequest request) {
+            @Valid @RequestBody UpdateInventoryRequest request)  {
         return inventoryAdminService.updateInventory(inventoryId, request);
     }
 

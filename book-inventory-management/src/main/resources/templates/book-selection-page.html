@@ -10,7 +10,7 @@
         <h1 th:text="${bookTitle}">Book Title</h1>
         <p><strong>User:</strong> <span th:text="${userName}"></span></p>
 
-        <form th:action="@{/store/cart/add}" method="post">
+        <form th:action="@{/user-page/cart/add}" method="post">
             <input type="hidden" name="userId" th:value="${userId}" />
             <input type="hidden" name="isbn" th:value="${isbn}" />
             <input type="hidden" name="next" th:value="${next}" />

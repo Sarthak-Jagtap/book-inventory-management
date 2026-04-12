@@ -7,11 +7,12 @@ import com.bookinventory.cart.dto.CartViewResponse;
 import com.bookinventory.cart.dto.CheckoutResponse;
 import com.bookinventory.cart.service.CartService;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/cart")
+@RequestMapping("/user/cart")
 public class CartController {
 
     private final CartService service;
@@ -26,7 +27,7 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public CartItemResponse add(@RequestBody AddToCartRequest request) {
+    public CartItemResponse add(@Valid @RequestBody AddToCartRequest request) {
         return service.addToCart(request);
     }
 
@@ -47,8 +48,8 @@ public class CartController {
         return "Removed from cart";
     }
 
-    @PostMapping("/checkout/{userId}")
-    public CheckoutResponse checkoutAll(@PathVariable Integer userId) {
+    @PostMapping("/checkout")
+    public CheckoutResponse checkoutAll(@RequestParam Integer userId) {
         return service.checkoutAll(userId);
     }
 }
