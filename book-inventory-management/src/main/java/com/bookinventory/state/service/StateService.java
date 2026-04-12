@@ -7,37 +7,20 @@ import org.springframework.stereotype.Service;
 
 import com.bookinventory.state.entity.State;
 import com.bookinventory.state.repository.StateRepository;
+import com.bookinventory.user.common.exception.ResourceNotFoundException;
 
 @Service
 public class StateService {
 
-	@Autowired
-	private StateRepository repository;
+    @Autowired
+    private StateRepository stateRepository;
 
-	public State addState(State state) {
-		return repository.save(state);
-	}
+    public List<State> getAllStates() {
+        return stateRepository.findAll();
+    }
 
-	public List<State> getAllStates() {
-		return repository.findAll();
-	}
-
-	public State getStateById(String stateCode) {
-		// Exception Handling Required	
-		return repository.findById(stateCode).orElseThrow(() -> new RuntimeException());
-	}
-	
-	public State updateState(String stateCode, String stateName) {
-		// Exception Handling Required	
-		State state = repository.findById(stateCode).orElseThrow(() -> new RuntimeException());
-		
-		state.setStateName(stateName);
-		
-		return repository.save(state);
-	}
-	
-	public void deleteState(String stateCode) {
-		// Exception Handling Required	
-		repository.deleteById(stateCode);
-	}
+    public State getStateByCode(String code) {
+        return stateRepository.findById(code)
+                .orElseThrow(() -> new ResourceNotFoundException("State", "code", code));
+    }
 }
