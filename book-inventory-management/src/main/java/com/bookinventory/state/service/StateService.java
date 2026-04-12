@@ -29,7 +29,7 @@ public class StateService {
 	
 	public State updateState(String stateCode, String stateName) {
 		// Exception Handling Required	
-		State state = repository.findById(stateName).orElseThrow(() -> new RuntimeException());
+		State state = repository.findById(stateCode).orElseThrow(() -> new RuntimeException());
 		
 		state.setStateName(stateName);
 		

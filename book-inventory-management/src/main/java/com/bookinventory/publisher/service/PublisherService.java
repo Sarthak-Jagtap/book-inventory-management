@@ -1,14 +1,18 @@
 package com.bookinventory.publisher.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bookinventory.publisher.dto.PublisherRequestDTO;
+import com.bookinventory.publisher.dto.PublisherResponseDTO;
 import com.bookinventory.publisher.entity.Publisher;
 import com.bookinventory.publisher.repository.PublisherRepository;
 import com.bookinventory.state.entity.State;
 import com.bookinventory.state.repository.StateRepository;
+import com.bookinventory.user.common.exception.ResourceNotFoundException;
 
 @Service
 public class PublisherService {
@@ -19,39 +23,70 @@ public class PublisherService {
 	@Autowired
 	private StateRepository stateRepository;
 
-	public Publisher addPublisher(Publisher publisher, String stateCode) {
-		State state = stateRepository.findById(stateCode).orElseThrow(() -> new RuntimeException("State not Found"));
+	public PublisherResponseDTO createPublisher(PublisherRequestDTO dto) {
 
-		publisher.setState(state);
+		State state = stateRepository.findById(dto.getStateCode())
+				.orElseThrow(() -> new ResourceNotFoundException("State", "code", dto.getStateCode()));
 
-		return publisherRepository.save(publisher);
+		Publisher publisher = convertToEntity(dto, state);
+
+		Publisher savedPublisher = publisherRepository.save(publisher);
+
+		return convertToDTO(savedPublisher);
 	}
 
-	public List<Publisher> getAllPublishers() {
-		return publisherRepository.findAll();
+	public List<PublisherResponseDTO> getAllPublishers() {
+
+		return publisherRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
 	}
 
-	public Publisher getPublisherById(int id) {
-		return publisherRepository.findById(id).orElseThrow(() -> new RuntimeException("Publisher Not Found"));
+	public PublisherResponseDTO getPublisherById(int id) {
+
+		Publisher publisher = publisherRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Publisher", "id", id));
+
+		return convertToDTO(publisher);
 	}
 
-	public Publisher updatePublisherById(int id, Publisher updatedPublisher, String stateCode) {
+	public PublisherResponseDTO updatePublisher(int id, PublisherRequestDTO dto) {
 
 		Publisher existingPublisher = publisherRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("Publisher not found"));
+				.orElseThrow(() -> new ResourceNotFoundException("Publisher", "id", id));
 
-		State state = stateRepository.findById(stateCode).orElseThrow(() -> new RuntimeException("State not found"));
-		
-		existingPublisher.setName(updatedPublisher.getName());
-		existingPublisher.setCity(updatedPublisher.getCity());
-		
+		State state = stateRepository.findById(dto.getStateCode())
+				.orElseThrow(() -> new ResourceNotFoundException("State", "code", dto.getStateCode()));
+
+		existingPublisher.setName(dto.getName());
+		existingPublisher.setCity(dto.getCity());
 		existingPublisher.setState(state);
-		
-		return publisherRepository.save(existingPublisher);
+
+		Publisher updatedPublisher = publisherRepository.save(existingPublisher);
+
+		return convertToDTO(updatedPublisher);
 	}
-	
-	public void deletePublisherById(int id) {
-		// Exception Handling Required
-		publisherRepository.deleteById(id);
+
+	public void deletePublisher(int id) {
+
+		Publisher publisher = publisherRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Publisher", "id", id));
+
+		publisherRepository.delete(publisher);
+	}
+
+	private Publisher convertToEntity(PublisherRequestDTO dto, State state) {
+		Publisher publisher = new Publisher();
+		publisher.setName(dto.getName());
+		publisher.setCity(dto.getCity());
+		publisher.setState(state);
+		return publisher;
+	}
+
+	private PublisherResponseDTO convertToDTO(Publisher publisher) {
+		PublisherResponseDTO dto = new PublisherResponseDTO();
+		dto.setPublisherId(publisher.getPublisherId()); // adjust based on your entity naming
+		dto.setName(publisher.getName());
+		dto.setCity(publisher.getCity());
+		dto.setStateCode(publisher.getState().getStateCode());
+		return dto;
 	}
 }
