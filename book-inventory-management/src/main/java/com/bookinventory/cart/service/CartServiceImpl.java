@@ -15,13 +15,13 @@ import com.bookinventory.inventory.entity.ShoppingCartId;
 import com.bookinventory.inventory.repository.BookConditionRepository;
 import com.bookinventory.inventory.repository.InventoryRepository;
 import com.bookinventory.inventory.repository.ShoppingCartRepository;
-import com.bookinventory.user.entity.User;
-import com.bookinventory.user.repository.UserRepository;
+import com.bookinventory.user.common.exception.BadRequestException;
+import com.bookinventory.user.common.exception.ResourceNotFoundException;
 import com.bookinventory.user.entity.PurchaseLog;
 import com.bookinventory.user.entity.PurchaseLogId;
+import com.bookinventory.user.entity.User;
 import com.bookinventory.user.repository.PurchaseLogRepository;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.bookinventory.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -39,8 +39,7 @@ public class CartServiceImpl implements CartService {
     private final BookConditionRepository bookConditionRepository;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    @Autowired
-    private PurchaseLogRepository purchaseLogRepository;
+    private final PurchaseLogRepository purchaseLogRepository;
 
     private final Map<String, SelectedCartItem> selectedItems = new HashMap<>();
 
@@ -48,16 +47,21 @@ public class CartServiceImpl implements CartService {
                            InventoryRepository inventoryRepository,
                            BookConditionRepository bookConditionRepository,
                            BookRepository bookRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           PurchaseLogRepository purchaseLogRepository) {
         this.cartRepository = cartRepository;
         this.inventoryRepository = inventoryRepository;
         this.bookConditionRepository = bookConditionRepository;
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
+        this.purchaseLogRepository = purchaseLogRepository;
     }
 
     @Override
     public List<CartOptionResponse> getCartOptionsByIsbn(String isbn) {
+        bookRepository.findById(isbn)
+                .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", isbn));
+
         List<Inventory> inventoryList = inventoryRepository.getAvailableInventoryByIsbn(isbn);
 
         if (inventoryList == null || inventoryList.isEmpty()) {
@@ -80,7 +84,9 @@ public class CartServiceImpl implements CartService {
             Long count = entry.getValue();
 
             BookCondition condition = bookConditionRepository.getConditionByRank(rank)
-                    .orElseThrow(() -> new RuntimeException("Condition not found for rank: " + rank));
+                    .orElseThrow(() -> new BadRequestException(
+                            "Condition not found for rank: " + rank
+                    ));
 
             CartOptionResponse response = new CartOptionResponse();
             response.setIsbn(isbn);
@@ -98,19 +104,32 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartItemResponse addToCart(AddToCartRequest request) {
+        userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", request.getUserId()));
+
+        bookRepository.findById(request.getIsbn())
+                .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", request.getIsbn()));
+
         ShoppingCartId cartId = new ShoppingCartId(request.getUserId(), request.getIsbn());
 
         Optional<Inventory> selectedInventoryOptional =
-                inventoryRepository.getFirstAvailableInventoryByIsbnAndRank(request.getIsbn(), request.getRank());
+                inventoryRepository.getFirstAvailableInventoryByIsbnAndRank(
+                        request.getIsbn(),
+                        request.getRank()
+                );
 
         if (selectedInventoryOptional.isEmpty()) {
-            throw new RuntimeException("Selected quality/rank is not available");
+            throw new BadRequestException(
+                    "Selected quality/rank is not available for isbn: " + request.getIsbn()
+            );
         }
 
         Inventory selectedInventory = selectedInventoryOptional.get();
 
         BookCondition condition = bookConditionRepository.getConditionByRank(request.getRank())
-                .orElseThrow(() -> new RuntimeException("Condition not found for selected rank"));
+                .orElseThrow(() -> new BadRequestException(
+                        "Condition not found for selected rank: " + request.getRank()
+                ));
 
         String selectionKey = buildSelectionKey(request.getUserId(), request.getIsbn());
 
@@ -125,10 +144,13 @@ public class CartServiceImpl implements CartService {
         selectedItems.put(selectionKey, selectedCartItem);
 
         ShoppingCart cart;
-
         if (cartRepository.existsById(cartId)) {
             cart = cartRepository.findById(cartId)
-                    .orElseThrow(() -> new RuntimeException("Cart item not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "CartItem",
+                            "userId/isbn",
+                            request.getUserId() + "/" + request.getIsbn()
+                    ));
         } else {
             cart = new ShoppingCart();
             cart.setUserId(request.getUserId());
@@ -141,6 +163,9 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public List<CartItemResponse> getCartByUser(Integer userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
         List<ShoppingCart> cartList = cartRepository.findByUserId(userId);
         List<CartItemResponse> responseList = new ArrayList<>();
 
@@ -157,13 +182,13 @@ public class CartServiceImpl implements CartService {
         List<CartViewResponse> responseList = new ArrayList<>();
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
         String userName = user.getFirstName() + " " + user.getLastName();
 
         for (ShoppingCart cart : cartList) {
             Book book = bookRepository.findById(cart.getIsbn())
-                    .orElseThrow(() -> new RuntimeException("Book not found with isbn: " + cart.getIsbn()));
+                    .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", cart.getIsbn()));
 
             String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
             SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
@@ -181,7 +206,9 @@ public class CartServiceImpl implements CartService {
                 ));
             } else {
                 BookCondition condition = bookConditionRepository.getConditionByRank(selectedCartItem.getRank())
-                        .orElseThrow(() -> new RuntimeException("Condition not found for rank: " + selectedCartItem.getRank()));
+                        .orElseThrow(() -> new BadRequestException(
+                                "Condition not found for rank: " + selectedCartItem.getRank()
+                        ));
 
                 responseList.add(new CartViewResponse(
                         cart.getUserId(),
@@ -201,12 +228,24 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void removeFromCart(Integer userId, String isbn) {
-        cartRepository.deleteById(new ShoppingCartId(userId, isbn));
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+        ShoppingCartId cartId = new ShoppingCartId(userId, isbn);
+
+        if (!cartRepository.existsById(cartId)) {
+            throw new ResourceNotFoundException("CartItem", "userId/isbn", userId + "/" + isbn);
+        }
+
+        cartRepository.deleteById(cartId);
         selectedItems.remove(buildSelectionKey(userId, isbn));
     }
 
     @Override
     public CheckoutResponse checkoutAll(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
         List<ShoppingCart> cartList = cartRepository.findByUserId(userId);
 
         if (cartList.isEmpty()) {
@@ -218,9 +257,8 @@ public class CartServiceImpl implements CartService {
             SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
 
             if (selectedCartItem == null) {
-                return new CheckoutResponse(
-                        false,
-                        "One or more cart items need quality reselection before checkout."
+                throw new BadRequestException(
+                        "Selection missing for isbn: " + cart.getIsbn() + ". Please reselect quality before checkout."
                 );
             }
         }
@@ -230,31 +268,32 @@ public class CartServiceImpl implements CartService {
             SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
 
             Inventory inventory = inventoryRepository.findById(selectedCartItem.getInventoryId())
-                    .orElseThrow(() -> new RuntimeException("Selected inventory item no longer exists"));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Inventory",
+                            "inventoryId",
+                            selectedCartItem.getInventoryId()
+                    ));
 
             if (Boolean.TRUE.equals(inventory.getPurchased())) {
-                return new CheckoutResponse(
-                        false,
-                        "One or more selected inventory items are already purchased. Please reselect."
+                throw new BadRequestException(
+                        "Inventory item already purchased: " + inventory.getInventoryId()
                 );
             }
         }
 
         for (ShoppingCart cart : cartList) {
-
             String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
             SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
 
             Inventory inventory = inventoryRepository.findById(selectedCartItem.getInventoryId())
-                    .orElseThrow(() -> new RuntimeException("Selected inventory item no longer exists"));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Inventory",
+                            "inventoryId",
+                            selectedCartItem.getInventoryId()
+                    ));
 
-            // ✅ mark as purchased
             inventory.setPurchased(true);
             inventoryRepository.save(inventory);
-
-            // 🔥 ADD THIS BLOCK RIGHT HERE
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
             PurchaseLogId purchaseLogId = new PurchaseLogId(userId, inventory.getInventoryId());
 
@@ -264,10 +303,7 @@ public class CartServiceImpl implements CartService {
 
             purchaseLogRepository.save(log);
 
-            // ✅ remove from cart
             cartRepository.deleteById(new ShoppingCartId(cart.getUserId(), cart.getIsbn()));
-
-            // ✅ remove selection cache
             selectedItems.remove(selectionKey);
         }
 

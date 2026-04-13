@@ -8,6 +8,7 @@ import com.bookinventory.inventory.dto.UpdateInventoryRequest;
 import java.util.List;
 
 public interface InventoryAdminService {
+	List<InventoryResponse> getInventoryByRank(Integer rank);
 
     InventoryResponse addInventory(InventoryRequest request);
 

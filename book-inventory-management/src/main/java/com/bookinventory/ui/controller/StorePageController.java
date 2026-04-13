@@ -11,6 +11,7 @@ import com.bookinventory.user.repository.UserRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import com.bookinventory.user.common.exception.ResourceNotFoundException;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class StorePageController {
                                         @RequestParam(defaultValue = "cart") String next,
                                         Model model) {
         Book book = bookRepository.findById(isbn)
-                .orElseThrow(() -> new RuntimeException("Book not found with isbn: " + isbn));
+        		.orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", isbn));
 
         String userName = getUserName(userId);
 
@@ -126,7 +127,7 @@ public class StorePageController {
 
     private String getUserName(Integer userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        		.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
         return user.getFirstName() + " " + user.getLastName();
     }

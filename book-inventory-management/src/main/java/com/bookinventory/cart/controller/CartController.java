@@ -12,7 +12,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/user/cart")
+@RequestMapping("/api/v1/user/cart")
 public class CartController {
 
     private final CartService service;

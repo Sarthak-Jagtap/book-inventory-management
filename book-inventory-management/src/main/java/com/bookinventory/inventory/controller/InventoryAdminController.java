@@ -7,11 +7,13 @@ import com.bookinventory.inventory.dto.UpdateInventoryRequest;
 import com.bookinventory.inventory.service.InventoryAdminService;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/store-owner/inventory")
+@RequestMapping("/api/v1/store-owner/inventory")
 public class InventoryAdminController {
 
     private final InventoryAdminService inventoryAdminService;
@@ -65,5 +67,10 @@ public class InventoryAdminController {
     public String deleteInventory(@PathVariable Integer inventoryId) {
         inventoryAdminService.deleteInventory(inventoryId);
         return "Inventory item deleted successfully";
+    }
+    
+    @GetMapping("/rank/{rank}")
+    public List<InventoryResponse> getInventoryByRank(@PathVariable Integer rank) {
+        return inventoryAdminService.getInventoryByRank(rank);
     }
 }

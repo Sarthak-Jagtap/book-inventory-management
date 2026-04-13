@@ -1,5 +1,6 @@
 package com.bookinventory.inventory.service;
 
+import com.bookinventory.book.repository.BookRepository;
 import com.bookinventory.inventory.dto.InventoryRequest;
 import com.bookinventory.inventory.dto.InventoryResponse;
 import com.bookinventory.inventory.dto.InventorySummaryResponse;
@@ -8,6 +9,8 @@ import com.bookinventory.inventory.entity.BookCondition;
 import com.bookinventory.inventory.entity.Inventory;
 import com.bookinventory.inventory.repository.BookConditionRepository;
 import com.bookinventory.inventory.repository.InventoryRepository;
+import com.bookinventory.user.common.exception.BadRequestException;
+import com.bookinventory.user.common.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,19 +24,27 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
 
     private final InventoryRepository inventoryRepository;
     private final BookConditionRepository bookConditionRepository;
+    private final BookRepository bookRepository;
 
     public InventoryAdminServiceImpl(InventoryRepository inventoryRepository,
-                                     BookConditionRepository bookConditionRepository) {
+                                     BookConditionRepository bookConditionRepository,
+                                     BookRepository bookRepository) {
         this.inventoryRepository = inventoryRepository;
         this.bookConditionRepository = bookConditionRepository;
+        this.bookRepository = bookRepository;
     }
 
     @Override
     public InventoryResponse addInventory(InventoryRequest request) {
         validateInventoryRequest(request);
 
+        bookRepository.findById(request.getIsbn())
+                .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", request.getIsbn()));
+
         BookCondition condition = bookConditionRepository.getConditionByRank(request.getRank())
-                .orElseThrow(() -> new RuntimeException("Invalid rank. Book condition not found for rank: " + request.getRank()));
+                .orElseThrow(() -> new BadRequestException(
+                        "Invalid rank. Book condition not found for rank: " + request.getRank()
+                ));
 
         Inventory inventory = new Inventory();
         inventory.setIsbn(request.getIsbn());
@@ -61,13 +72,16 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
     @Override
     public InventoryResponse getInventoryById(Integer inventoryId) {
         Inventory inventory = inventoryRepository.findById(inventoryId)
-                .orElseThrow(() -> new RuntimeException("Inventory item not found with id: " + inventoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory", "inventoryId", inventoryId));
 
         return mapToResponse(inventory);
     }
 
     @Override
     public List<InventoryResponse> getInventoryByIsbn(String isbn) {
+        bookRepository.findById(isbn)
+                .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", isbn));
+
         List<Inventory> inventoryList = inventoryRepository.getInventoryByIsbn(isbn);
         List<InventoryResponse> responseList = new ArrayList<>();
 
@@ -81,6 +95,9 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
 
     @Override
     public List<InventoryResponse> getAvailableInventoryByIsbn(String isbn) {
+        bookRepository.findById(isbn)
+                .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", isbn));
+
         List<Inventory> inventoryList = inventoryRepository.getAvailableInventoryByIsbn(isbn);
         List<InventoryResponse> responseList = new ArrayList<>();
 
@@ -94,6 +111,9 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
 
     @Override
     public List<InventorySummaryResponse> getInventorySummaryByIsbn(String isbn) {
+        bookRepository.findById(isbn)
+                .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", isbn));
+
         List<Inventory> inventoryList = inventoryRepository.getInventoryByIsbn(isbn);
 
         Map<Integer, Long> totalCountByRank = new HashMap<>();
@@ -117,7 +137,9 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
             Long availableCount = availableCountByRank.getOrDefault(rank, 0L);
 
             BookCondition condition = bookConditionRepository.getConditionByRank(rank)
-                    .orElseThrow(() -> new RuntimeException("Book condition not found for rank: " + rank));
+                    .orElseThrow(() -> new BadRequestException(
+                            "Book condition not found for rank: " + rank
+                    ));
 
             responseList.add(new InventorySummaryResponse(
                     isbn,
@@ -137,11 +159,13 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
     @Override
     public InventoryResponse updateInventory(Integer inventoryId, UpdateInventoryRequest request) {
         Inventory inventory = inventoryRepository.findById(inventoryId)
-                .orElseThrow(() -> new RuntimeException("Inventory item not found with id: " + inventoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory", "inventoryId", inventoryId));
 
         if (request.getRank() != null) {
-            BookCondition condition = bookConditionRepository.getConditionByRank(request.getRank())
-                    .orElseThrow(() -> new RuntimeException("Invalid rank. Book condition not found for rank: " + request.getRank()));
+            bookConditionRepository.getConditionByRank(request.getRank())
+                    .orElseThrow(() -> new BadRequestException(
+                            "Invalid rank. Book condition not found for rank: " + request.getRank()
+                    ));
             inventory.setRanks(request.getRank());
         }
 
@@ -156,10 +180,10 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
     @Override
     public InventoryResponse markAsPurchased(Integer inventoryId) {
         Inventory inventory = inventoryRepository.findById(inventoryId)
-                .orElseThrow(() -> new RuntimeException("Inventory item not found with id: " + inventoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory", "inventoryId", inventoryId));
 
         if (Boolean.TRUE.equals(inventory.getPurchased())) {
-            throw new RuntimeException("Inventory item is already marked as purchased");
+            throw new BadRequestException("Inventory item already purchased: " + inventoryId);
         }
 
         inventory.setPurchased(true);
@@ -171,24 +195,26 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
     @Override
     public void deleteInventory(Integer inventoryId) {
         Inventory inventory = inventoryRepository.findById(inventoryId)
-                .orElseThrow(() -> new RuntimeException("Inventory item not found with id: " + inventoryId));
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory", "inventoryId", inventoryId));
 
         inventoryRepository.delete(inventory);
     }
 
     private void validateInventoryRequest(InventoryRequest request) {
         if (request.getIsbn() == null || request.getIsbn().isBlank()) {
-            throw new RuntimeException("ISBN is required");
+            throw new BadRequestException("ISBN is required");
         }
 
         if (request.getRank() == null) {
-            throw new RuntimeException("Rank is required");
+            throw new BadRequestException("Rank is required");
         }
     }
 
     private InventoryResponse mapToResponse(Inventory inventory) {
         BookCondition condition = bookConditionRepository.getConditionByRank(inventory.getRanks())
-                .orElseThrow(() -> new RuntimeException("Book condition not found for rank: " + inventory.getRanks()));
+                .orElseThrow(() -> new BadRequestException(
+                        "Book condition not found for rank: " + inventory.getRanks()
+                ));
 
         return mapToResponse(inventory, condition);
     }
@@ -203,5 +229,22 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
                 condition.getFullDescription(),
                 condition.getPrice()
         );
+    }
+
+    @Override
+    public List<InventoryResponse> getInventoryByRank(Integer rank) {
+        bookConditionRepository.getConditionByRank(rank)
+                .orElseThrow(() -> new BadRequestException(
+                        "Book condition not found for rank: " + rank
+                ));
+
+        List<Inventory> inventoryList = inventoryRepository.findByRanks(rank);
+        List<InventoryResponse> responseList = new ArrayList<>();
+
+        for (Inventory inventory : inventoryList) {
+            responseList.add(mapToResponse(inventory));
+        }
+
+        return responseList;
     }
 }
