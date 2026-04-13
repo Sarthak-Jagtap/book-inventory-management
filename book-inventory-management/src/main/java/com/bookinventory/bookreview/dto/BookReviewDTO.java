@@ -1,4 +1,4 @@
-package com.bookinventory.bookreview;
+package com.bookinventory.bookreview.dto;
 
 
 public class BookReviewDTO {
