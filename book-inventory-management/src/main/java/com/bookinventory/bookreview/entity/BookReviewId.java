@@ -1,4 +1,4 @@
-package com.bookinventory.bookreview;
+package com.bookinventory.bookreview.entity;
 
 import java.io.Serializable;
 import jakarta.persistence.Embeddable;
@@ -17,7 +17,7 @@ public class BookReviewId implements Serializable {
         this.reviewerId = reviewerId;
     }
 
-    // equals & hashCode
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
