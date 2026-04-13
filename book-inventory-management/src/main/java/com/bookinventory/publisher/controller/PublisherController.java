@@ -23,7 +23,6 @@ public class PublisherController {
         this.publisherService = publisherService;
     }
 
-    // PUBLIC
     @GetMapping("/publishers")
     public ResponseEntity<ApiResponse<List<PublisherResponseDTO>>> getAllPublishers() {
         return ResponseEntity.ok(
@@ -38,7 +37,6 @@ public class PublisherController {
         );
     }
 
-    // STORE OWNER
     @PostMapping("/store-owner/publishers")
     public ResponseEntity<ApiResponse<PublisherResponseDTO>> createPublisher(
             @Valid @RequestBody PublisherRequestDTO dto) {
@@ -63,6 +61,16 @@ public class PublisherController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(200, "Publisher deleted successfully")
+        );
+    }
+    
+    @GetMapping("/publishers/state/{stateCode}")
+    public ResponseEntity<ApiResponse<List<PublisherResponseDTO>>> getPublishersByState(
+            @PathVariable String stateCode) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "Publishers fetched successfully",
+                        publisherService.getPublishersByState(stateCode))
         );
     }
 }

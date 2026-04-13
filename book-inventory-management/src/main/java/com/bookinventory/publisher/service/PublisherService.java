@@ -72,6 +72,16 @@ public class PublisherService {
 
 		publisherRepository.delete(publisher);
 	}
+	
+	public List<PublisherResponseDTO> getPublishersByState(String stateCode) {
+
+	    List<Publisher> publishers = publisherRepository.findByState_StateCode(stateCode);
+
+	    return publishers.stream()
+	            .map(this::convertToDTO)
+	            .toList();
+	}
+	
 
 	private Publisher convertToEntity(PublisherRequestDTO dto, State state) {
 		Publisher publisher = new Publisher();
