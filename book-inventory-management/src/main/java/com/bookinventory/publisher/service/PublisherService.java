@@ -91,7 +91,7 @@ public class PublisherService {
 		return publisher;
 	}
 
-	private PublisherResponseDTO convertToDTO(Publisher publisher) {
+	public PublisherResponseDTO convertToDTO(Publisher publisher) {
 		PublisherResponseDTO dto = new PublisherResponseDTO();
 		dto.setPublisherId(publisher.getPublisherId()); // adjust based on your entity naming
 		dto.setName(publisher.getName());

@@ -6,8 +6,13 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bookinventory.publisher.dto.PublisherResponseDTO;
+import com.bookinventory.publisher.entity.Publisher;
+import com.bookinventory.publisher.repository.PublisherRepository;
+import com.bookinventory.publisher.service.PublisherService;
 import com.bookinventory.state.dto.StateRequestDTO;
 import com.bookinventory.state.dto.StateResponseDTO;
+import com.bookinventory.state.dto.StateWithPublishersDTO;
 import com.bookinventory.state.entity.State;
 import com.bookinventory.state.repository.StateRepository;
 import com.bookinventory.user.common.exception.ResourceNotFoundException;
@@ -15,6 +20,12 @@ import com.bookinventory.user.common.exception.ResourceNotFoundException;
 @Service
 public class StateService {
 
+	@Autowired
+	private PublisherService publisherService;
+	
+	@Autowired
+	private PublisherRepository publisherRepository;
+	
 	@Autowired
 	private StateRepository stateRepository;
 
@@ -60,6 +71,25 @@ public class StateService {
 		stateRepository.delete(state);
 	}
 
+	public StateWithPublishersDTO getStateWithPublishers(String stateCode) {
+
+	    State state = stateRepository.findById(stateCode)
+	            .orElseThrow(() -> new ResourceNotFoundException("State", "code", stateCode));
+
+	    List<Publisher> publishers = publisherRepository.findByState_StateCode(stateCode);
+
+	    List<PublisherResponseDTO> publisherDTOs = publishers.stream()
+	            .map(publisherService::convertToDTO)
+	            .toList();
+
+	    StateWithPublishersDTO dto = new StateWithPublishersDTO();
+	    dto.setStateCode(state.getStateCode());
+	    dto.setStateName(state.getStateName());
+	    dto.setPublishers(publisherDTOs);
+
+	    return dto;
+	}
+	
 	private State convertToEntity(StateRequestDTO dto) {
 
 		State state = new State();

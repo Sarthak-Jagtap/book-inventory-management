@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookinventory.category.dto.CategoryRequestDTO;
 import com.bookinventory.category.dto.CategoryResponseDTO;
+import com.bookinventory.category.dto.CategorySummaryDTO;
 import com.bookinventory.category.service.CategoryService;
 import com.bookinventory.user.common.response.ApiResponse;
 
@@ -35,6 +36,15 @@ public class CategoryController {
     public ResponseEntity<ApiResponse<List<CategoryResponseDTO>>> getAllCategories() {
         return ResponseEntity.ok(
                 ApiResponse.success(200, "Categories fetched successfully", categoryService.getAllCategories())
+        );
+    }
+    
+    @GetMapping("/categories/summary")
+    public ResponseEntity<ApiResponse<List<CategorySummaryDTO>>> getCategorySummary() {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "Category summary fetched successfully",
+                        categoryService.getCategorySummary())
         );
     }
 

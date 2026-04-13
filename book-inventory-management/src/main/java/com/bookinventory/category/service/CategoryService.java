@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.bookinventory.category.dto.CategoryRequestDTO;
 import com.bookinventory.category.dto.CategoryResponseDTO;
+import com.bookinventory.category.dto.CategorySummaryDTO;
 import com.bookinventory.category.entity.Category;
 import com.bookinventory.category.repository.CategoryRepository;
 import com.bookinventory.user.common.exception.ResourceNotFoundException;
@@ -59,6 +60,10 @@ public class CategoryService {
 
         categoryRepository.delete(category);
     }
+	
+	public List<CategorySummaryDTO> getCategorySummary() {
+	    return categoryRepository.getCategorySummary();
+	}
 	
 	private Category convertToEntity(CategoryRequestDTO dto) {
 		Category category = new Category();
