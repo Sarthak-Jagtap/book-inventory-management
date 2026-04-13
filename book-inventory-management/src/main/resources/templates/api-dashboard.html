@@ -1,42 +1,213 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
+
 <title>API Dashboard</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:40px;
+}
+
+.api{
+margin:10px 0;
+padding:10px;
+border:1px solid #ccc;
+border-radius:5px;
+}
+
+button{
+padding:5px 12px;
+margin-left:5px;
+}
+
+input{
+padding:5px;
+width:120px;
+}
+
+.get{background:#e7f7ff;}
+.post{background:#e7ffe7;}
+.put{background:#fff6e5;}
+.delete{background:#ffe7e7;}
+
+code{
+background:#f4f4f4;
+padding:5px;
+display:block;
+margin-top:5px;
+}
+
+</style>
+
 </head>
 
-<body style="margin:40px">
 
-<h1>API Endpoints</h1>
+<body>
 
-<hr>
-
-<h3>Author APIs</h3>
-
-<ul>
-<li><a href="/api/authors" target="_blank">GET All Authors</a></li>
-<li><a href="/api/authors/1" target="_blank">GET Author By ID</a></li>
-<li><a href="/api/authors/search?name=dan" target="_blank">Search Author</a></li>
-<li><a href="/api/authors/4/books" target="_blank">Get Books By Author</a></li>
-<li><a href="/api/authors/4/stats" target="_blank">Author Stats</a></li>
-</ul>
+<h1>Book Inventory API Dashboard</h1>
 
 <hr>
 
-<h3>Book APIs</h3>
+<h2>AUTHOR APIs</h2>
 
-<ul>
-<li><a href="/api/books" target="_blank">GET All Books</a></li>
-<li><a href="/api/books/9-455-61223-3" target="_blank">Get Book By ISBN</a></li>
-</ul>
+<div class="api get">
+
+GET /authors  
+<button onclick="openAPI('/authors')">Run</button>
+
+</div>
+
+
+<div class="api get">
+
+GET /authors/{id}
+
+<input id="authorId1" placeholder="Author ID">
+
+<button onclick="openAPI('/authors/' + document.getElementById('authorId1').value)">
+Run
+</button>
+
+</div>
+
+
+<div class="api get">
+
+GET /authors/search?name=
+
+<input id="searchName" placeholder="Name">
+
+<button onclick="openAPI('/authors/search?name=' + document.getElementById('searchName').value)">
+Run
+</button>
+
+</div>
+
+
+<div class="api get">
+
+GET /authors/{id}/books
+
+<input id="authorId2" placeholder="Author ID">
+
+<button onclick="openAPI('/authors/' + document.getElementById('authorId2').value + '/books')">
+Run
+</button>
+
+</div>
+
+
+<div class="api get">
+
+GET /authors/{id}/stats
+
+<input id="authorId3" placeholder="Author ID">
+
+<button onclick="openAPI('/authors/' + document.getElementById('authorId3').value + '/stats')">
+Run
+</button>
+
+</div>
+
 
 <hr>
 
-<h3>BookAuthor APIs</h3>
 
-<ul>
-<li><a href="/api/book-authors/book/9-455-61223-3" target="_blank">Authors of Book</a></li>
-<li><a href="/api/book-authors/author/4" target="_blank">Books of Author</a></li>
-</ul>
+<h2>BOOK-AUTHOR APIs</h2>
+
+
+<div class="api get">
+
+GET /books/{isbn}/authors
+
+<input id="isbn1" placeholder="ISBN">
+
+<button onclick="openAPI('/books/' + document.getElementById('isbn1').value + '/authors')">
+Run
+</button>
+
+</div>
+
+
+<div class="api get">
+
+GET /books/author/{authorId}
+
+<input id="authorId4" placeholder="Author ID">
+
+<button onclick="openAPI('/books/author/' + document.getElementById('authorId4').value)">
+Run
+</button>
+
+</div>
+
+
+<hr>
+
+<h2>POST / PUT Examples (Use Postman)</h2>
+
+<div class="api post">
+
+POST /store-owner/authors
+
+<code>
+{
+ "authorID": 50,
+ "firstName": "James",
+ "lastName": "Gosling",
+ "photo": ""
+}
+</code>
+
+</div>
+
+
+<div class="api post">
+
+POST /store-owner/book-authors
+
+<code>
+{
+ "isbn": "9-455-61223-3",
+ "authorID": 5,
+ "primaryAuthor": "Y"
+}
+</code>
+
+</div>
+
+
+<div class="api put">
+
+PUT /store-owner/book-authors/{isbn}/{authorId}
+
+<code>
+{
+ "isbn": "9-455-61223-3",
+ "authorID": 5,
+ "primaryAuthor": "N"
+}
+</code>
+
+</div>
+
+
+
+<script>
+
+function openAPI(url){
+
+window.open(url, '_blank');
+
+}
+
+</script>
+
 
 </body>
+
 </html>
