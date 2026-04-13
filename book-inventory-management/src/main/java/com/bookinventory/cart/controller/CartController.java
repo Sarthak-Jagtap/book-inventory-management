@@ -6,8 +6,11 @@ import com.bookinventory.cart.dto.CartOptionResponse;
 import com.bookinventory.cart.dto.CartViewResponse;
 import com.bookinventory.cart.dto.CheckoutResponse;
 import com.bookinventory.cart.service.CartService;
-import org.springframework.web.bind.annotation.*;
+import com.bookinventory.user.common.response.ApiResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,34 +25,63 @@ public class CartController {
     }
 
     @GetMapping("/options/{isbn}")
-    public List<CartOptionResponse> getOptions(@PathVariable String isbn) {
-        return service.getCartOptionsByIsbn(isbn);
+    public ResponseEntity<ApiResponse<List<CartOptionResponse>>> getOptions(@PathVariable String isbn) {
+        List<CartOptionResponse> options = service.getCartOptionsByIsbn(isbn);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Cart options fetched successfully", options),
+                HttpStatus.OK
+        );
     }
 
     @PostMapping("/add")
-    public CartItemResponse add(@Valid @RequestBody AddToCartRequest request) {
-        return service.addToCart(request);
+    public ResponseEntity<ApiResponse<CartItemResponse>> add(@Valid @RequestBody AddToCartRequest request) {
+        CartItemResponse response = service.addToCart(request);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Item added to cart successfully", response),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping("/{userId}")
-    public List<CartItemResponse> getCart(@PathVariable Integer userId) {
-        return service.getCartByUser(userId);
+    public ResponseEntity<ApiResponse<List<CartItemResponse>>> getCart(@PathVariable Integer userId) {
+        List<CartItemResponse> cartItems = service.getCartByUser(userId);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Cart fetched successfully", cartItems),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping("/view/{userId}")
-    public List<CartViewResponse> getCartView(@PathVariable Integer userId) {
-        return service.getCartViewByUser(userId);
+    public ResponseEntity<ApiResponse<List<CartViewResponse>>> getCartView(@PathVariable Integer userId) {
+        List<CartViewResponse> cartView = service.getCartViewByUser(userId);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Cart view fetched successfully", cartView),
+                HttpStatus.OK
+        );
     }
 
     @DeleteMapping("/remove")
-    public String remove(@RequestParam Integer userId,
-                         @RequestParam String isbn) {
+    public ResponseEntity<ApiResponse<Object>> remove(@RequestParam Integer userId,
+                                                      @RequestParam String isbn) {
         service.removeFromCart(userId, isbn);
-        return "Removed from cart";
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Removed from cart"),
+                HttpStatus.OK
+        );
     }
 
     @PostMapping("/checkout")
-    public CheckoutResponse checkoutAll(@RequestParam Integer userId) {
-        return service.checkoutAll(userId);
+    public ResponseEntity<ApiResponse<CheckoutResponse>> checkoutAll(@RequestParam Integer userId) {
+        CheckoutResponse response = service.checkoutAll(userId);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Checkout processed successfully", response),
+                HttpStatus.OK
+        );
     }
 }

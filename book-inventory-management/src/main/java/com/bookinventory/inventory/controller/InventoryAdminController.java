@@ -5,10 +5,11 @@ import com.bookinventory.inventory.dto.InventoryResponse;
 import com.bookinventory.inventory.dto.InventorySummaryResponse;
 import com.bookinventory.inventory.dto.UpdateInventoryRequest;
 import com.bookinventory.inventory.service.InventoryAdminService;
-import org.springframework.web.bind.annotation.*;
+import com.bookinventory.user.common.response.ApiResponse;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,54 +24,103 @@ public class InventoryAdminController {
     }
 
     @PostMapping
-    public InventoryResponse addInventory(@Valid @RequestBody InventoryRequest request) {
-        return inventoryAdminService.addInventory(request);
+    public ResponseEntity<ApiResponse<InventoryResponse>> addInventory(@Valid @RequestBody InventoryRequest request) {
+        InventoryResponse response = inventoryAdminService.addInventory(request);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.CREATED.value(), "Inventory item added successfully", response),
+                HttpStatus.CREATED
+        );
     }
 
     @GetMapping
-    public List<InventoryResponse> getAllInventory() {
-        return inventoryAdminService.getAllInventory();
+    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getAllInventory() {
+        List<InventoryResponse> inventoryList = inventoryAdminService.getAllInventory();
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Inventory fetched successfully", inventoryList),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping("/{inventoryId}")
-    public InventoryResponse getInventoryById(@PathVariable Integer inventoryId) {
-        return inventoryAdminService.getInventoryById(inventoryId);
+    public ResponseEntity<ApiResponse<InventoryResponse>> getInventoryById(@PathVariable Integer inventoryId) {
+        InventoryResponse response = inventoryAdminService.getInventoryById(inventoryId);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Inventory item fetched successfully", response),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping("/book/{isbn}")
-    public List<InventoryResponse> getInventoryByIsbn(@PathVariable String isbn) {
-        return inventoryAdminService.getInventoryByIsbn(isbn);
+    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getInventoryByIsbn(@PathVariable String isbn) {
+        List<InventoryResponse> response = inventoryAdminService.getInventoryByIsbn(isbn);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Inventory by ISBN fetched successfully", response),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping("/available/{isbn}")
-    public List<InventoryResponse> getAvailableInventoryByIsbn(@PathVariable String isbn) {
-        return inventoryAdminService.getAvailableInventoryByIsbn(isbn);
+    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getAvailableInventoryByIsbn(@PathVariable String isbn) {
+        List<InventoryResponse> response = inventoryAdminService.getAvailableInventoryByIsbn(isbn);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Available inventory fetched successfully", response),
+                HttpStatus.OK
+        );
     }
 
     @GetMapping("/summary/{isbn}")
-    public List<InventorySummaryResponse> getInventorySummaryByIsbn(@PathVariable String isbn) {
-        return inventoryAdminService.getInventorySummaryByIsbn(isbn);
+    public ResponseEntity<ApiResponse<List<InventorySummaryResponse>>> getInventorySummaryByIsbn(@PathVariable String isbn) {
+        List<InventorySummaryResponse> response = inventoryAdminService.getInventorySummaryByIsbn(isbn);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Inventory summary fetched successfully", response),
+                HttpStatus.OK
+        );
     }
 
     @PutMapping("/{inventoryId}")
-    public InventoryResponse updateInventory(@PathVariable Integer inventoryId,
-            @Valid @RequestBody UpdateInventoryRequest request)  {
-        return inventoryAdminService.updateInventory(inventoryId, request);
+    public ResponseEntity<ApiResponse<InventoryResponse>> updateInventory(@PathVariable Integer inventoryId,
+                                                                          @Valid @RequestBody UpdateInventoryRequest request) {
+        InventoryResponse response = inventoryAdminService.updateInventory(inventoryId, request);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Inventory item updated successfully", response),
+                HttpStatus.OK
+        );
     }
 
     @PutMapping("/purchase/{inventoryId}")
-    public InventoryResponse markAsPurchased(@PathVariable Integer inventoryId) {
-        return inventoryAdminService.markAsPurchased(inventoryId);
+    public ResponseEntity<ApiResponse<InventoryResponse>> markAsPurchased(@PathVariable Integer inventoryId) {
+        InventoryResponse response = inventoryAdminService.markAsPurchased(inventoryId);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Inventory item marked as purchased successfully", response),
+                HttpStatus.OK
+        );
     }
 
     @DeleteMapping("/{inventoryId}")
-    public String deleteInventory(@PathVariable Integer inventoryId) {
+    public ResponseEntity<ApiResponse<Object>> deleteInventory(@PathVariable Integer inventoryId) {
         inventoryAdminService.deleteInventory(inventoryId);
-        return "Inventory item deleted successfully";
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Inventory item deleted successfully"),
+                HttpStatus.OK
+        );
     }
-    
+
     @GetMapping("/rank/{rank}")
-    public List<InventoryResponse> getInventoryByRank(@PathVariable Integer rank) {
-        return inventoryAdminService.getInventoryByRank(rank);
+    public ResponseEntity<ApiResponse<List<InventoryResponse>>> getInventoryByRank(@PathVariable Integer rank) {
+        List<InventoryResponse> response = inventoryAdminService.getInventoryByRank(rank);
+
+        return new ResponseEntity<>(
+        		ApiResponse.success(HttpStatus.OK.value(), "Inventory by rank fetched successfully", response),
+                HttpStatus.OK
+        );
     }
 }

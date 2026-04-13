@@ -3,6 +3,7 @@ package com.bookinventory.ui.controller;
 import com.bookinventory.book.entity.Book;
 import com.bookinventory.book.repository.BookRepository;
 import com.bookinventory.cart.dto.AddToCartRequest;
+import com.bookinventory.cart.dto.CartOptionResponse;
 import com.bookinventory.cart.dto.CartViewResponse;
 import com.bookinventory.cart.dto.CheckoutResponse;
 import com.bookinventory.cart.service.CartService;
@@ -66,12 +67,16 @@ public class StorePageController {
 
         String userName = getUserName(userId);
 
+        List<CartOptionResponse> options = cartService.getCartOptionsByIsbn(isbn);
+
         model.addAttribute("userId", userId);
         model.addAttribute("userName", userName);
         model.addAttribute("isbn", isbn);
         model.addAttribute("bookTitle", book.getTitle());
-        model.addAttribute("options", cartService.getCartOptionsByIsbn(isbn));
+        model.addAttribute("options", options);
         model.addAttribute("next", next);
+        model.addAttribute("hasAvailableCopies", !options.isEmpty());
+
         return "book-selection-page";
     }
 
