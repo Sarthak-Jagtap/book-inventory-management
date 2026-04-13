@@ -1,54 +1,68 @@
 package com.bookinventory.publisher.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bookinventory.publisher.dto.PublisherRequestDTO;
 import com.bookinventory.publisher.dto.PublisherResponseDTO;
 import com.bookinventory.publisher.service.PublisherService;
+import com.bookinventory.user.common.response.ApiResponse;
 
 import jakarta.validation.Valid;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
-@Validated
+@RequestMapping("/api/v1")
 public class PublisherController {
 
-	@Autowired
-	private PublisherService publisherService;
-	
-	@PostMapping("/admin/publishers")
-    public PublisherResponseDTO createPublisher(@Valid @RequestBody PublisherRequestDTO dto) {
-        return publisherService.createPublisher(dto);
+    private final PublisherService publisherService;
+
+    public PublisherController(PublisherService publisherService) {
+        this.publisherService = publisherService;
     }
-	
-	@GetMapping("/publishers")
-    public List<PublisherResponseDTO> getAllPublishers() {
-        return publisherService.getAllPublishers();
+
+    // PUBLIC
+    @GetMapping("/publishers")
+    public ResponseEntity<ApiResponse<List<PublisherResponseDTO>>> getAllPublishers() {
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "Publishers fetched successfully", publisherService.getAllPublishers())
+        );
     }
-	
-	@GetMapping("/publishers/{id}")
-    public PublisherResponseDTO getPublisherById(@PathVariable int id) {
-        return publisherService.getPublisherById(id);
+
+    @GetMapping("/publishers/{publisherId}")
+    public ResponseEntity<ApiResponse<PublisherResponseDTO>> getPublisherById(@PathVariable Integer publisherId) {
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "Publisher fetched successfully", publisherService.getPublisherById(publisherId))
+        );
     }
-	
-	@PutMapping("/admin/publishers/{id}")
-    public PublisherResponseDTO updatePublisher(@PathVariable int id,
-                                                @Valid @RequestBody PublisherRequestDTO dto) {
-        return publisherService.updatePublisher(id, dto);
+
+    // STORE OWNER
+    @PostMapping("/store-owner/publishers")
+    public ResponseEntity<ApiResponse<PublisherResponseDTO>> createPublisher(
+            @Valid @RequestBody PublisherRequestDTO dto) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(201, "Publisher created successfully", publisherService.createPublisher(dto)));
     }
-	
-	@DeleteMapping("/admin/publishers/{id}")
-    public String deletePublisher(@PathVariable int id) {
-        publisherService.deletePublisher(id);
-        return "Publisher deleted successfully";
+
+    @PutMapping("/store-owner/publishers/{publisherId}")
+    public ResponseEntity<ApiResponse<PublisherResponseDTO>> updatePublisher(
+            @PathVariable Integer publisherId,
+            @Valid @RequestBody PublisherRequestDTO dto) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "Publisher updated successfully", publisherService.updatePublisher(publisherId, dto))
+        );
+    }
+
+    @DeleteMapping("/store-owner/publishers/{publisherId}")
+    public ResponseEntity<ApiResponse<Void>> deletePublisher(@PathVariable Integer publisherId) {
+        publisherService.deletePublisher(publisherId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(200, "Publisher deleted successfully")
+        );
     }
 }

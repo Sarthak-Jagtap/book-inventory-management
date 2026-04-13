@@ -1,63 +1,77 @@
 package com.bookinventory.user.common.response;
 
+import java.time.LocalDateTime;
+
 public class ApiResponse<T> {
 
-    private boolean success;
-    private String  message;
-    private T       data;
+	private boolean success;
+	private int statusCode;
+	private String message;
+	private T data;
+	private LocalDateTime timestamp;
 
-    // Constructors
-    public ApiResponse() {}
+	public ApiResponse() {
+		this.timestamp = LocalDateTime.now();
+	}
 
-    public ApiResponse(boolean success, String message, T data) {
-        this.success = success;
-        this.message = message;
-        this.data    = data;
-    }
+	public ApiResponse(boolean success, int statusCode, String message, T data) {
+		this.success = success;
+		this.statusCode = statusCode;
+		this.message = message;
+		this.data = data;
+		this.timestamp = LocalDateTime.now();
+	}
 
+	public static <T> ApiResponse<T> success(int code, String message, T data) {
+		return new ApiResponse<>(true, code, message, data);
+	}
 
-    public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(true, message, data);
-    }
+	public static <T> ApiResponse<T> success(int code, String message) {
+		return new ApiResponse<>(true, code, message, null);
+	}
 
-    public static <T> ApiResponse<T> success(String message) {
-        return new ApiResponse<>(true, message, null);
-    }
+	public static <T> ApiResponse<T> failure(int code, String message) {
+		return new ApiResponse<>(false, code, message, null);
+	}
 
-    public static <T> ApiResponse<T> failure(String message) {
-        return new ApiResponse<>(false, message, null);
-    }
+	// Getters & Setters
+	public boolean isSuccess() {
+		return success;
+	}
 
-    public boolean isSuccess() {
-        return success;
-    }
+	public void setSuccess(boolean s) {
+		this.success = s;
+	}
 
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
+	public int getStatusCode() {
+		return statusCode;
+	}
 
-    public String getMessage() {
-        return message;
-    }
+	public void setStatusCode(int c) {
+		this.statusCode = c;
+	}
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
+	public String getMessage() {
+		return message;
+	}
 
-    public T getData() {
-        return data;
-    }
+	public void setMessage(String m) {
+		this.message = m;
+	}
 
-    public void setData(T data) {
-        this.data = data;
-    }
+	public T getData() {
+		return data;
+	}
 
-    @Override
-    public String toString() {
-        return "ApiResponse{" +
-                "success=" + success +
-                ", message='" + message + '\'' +
-                ", data=" + data +
-                '}';
-    }
+	public void setData(T d) {
+		this.data = d;
+	}
+
+	public LocalDateTime getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(LocalDateTime t) {
+		this.timestamp = t;
+	}
 }
