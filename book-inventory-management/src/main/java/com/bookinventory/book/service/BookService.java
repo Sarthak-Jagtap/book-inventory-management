@@ -17,8 +17,8 @@ import com.bookinventory.book.dto.BookRequestDTO;
 import com.bookinventory.book.dto.BookResponseDTO;
 import com.bookinventory.book.entity.Book;
 import com.bookinventory.book.repository.BookRepository;
-import com.bookinventory.bookreview.BookReview;
-import com.bookinventory.bookreview.BookReviewRepository;
+import com.bookinventory.bookreview.entity.BookReview;
+import com.bookinventory.bookreview.repository.BookReviewRepository;
 import com.bookinventory.category.entity.Category;
 import com.bookinventory.category.repository.CategoryRepository;
 import com.bookinventory.publisher.entity.Publisher;
@@ -30,7 +30,7 @@ public class BookService {
 
 	@Autowired
 	private AuthorRepository authorRepository;
-	
+
 	@Autowired
 	private BookAuthorRepository bookAuthorRepository;
 
@@ -159,15 +159,15 @@ public class BookService {
 
 	public BookDetailsResponseDTO getBookDetails(String isbn) {
 
-		Book book = bookRepository.findById(isbn).orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", isbn));
+		Book book = bookRepository.findById(isbn)
+				.orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", isbn));
 
 		List<BookAuthor> bookAuthors = bookAuthorRepository.findByIdISBN(isbn);
 
 		List<String> authors = bookAuthors.stream()
-		        .map(ba -> authorRepository.findById(ba.getId().getAuthorID()).orElse(null))
-		        .filter(author -> author != null)
-		        .map(author -> author.getFirstName() + " " + author.getLastName())
-		        .toList();
+				.map(ba -> authorRepository.findById(ba.getId().getAuthorID()).orElse(null))
+				.filter(author -> author != null).map(author -> author.getFirstName() + " " + author.getLastName())
+				.toList();
 
 		List<BookReview> reviews = bookReviewRepository.findByBookIsbn(isbn);
 
@@ -177,7 +177,7 @@ public class BookService {
 		if (!reviews.isEmpty()) {
 			avgRating = reviews.stream().mapToInt(BookReview::getRating).average().orElse(0.0);
 		}
-		
+
 		BookDetailsResponseDTO dto = new BookDetailsResponseDTO();
 
 		dto.setIsbn(book.getIsbn());
