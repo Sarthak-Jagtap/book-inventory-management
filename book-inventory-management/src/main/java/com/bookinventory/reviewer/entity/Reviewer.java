@@ -1,4 +1,4 @@
-package com.bookinventory.reviewer;
+package com.bookinventory.reviewer.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -9,7 +9,6 @@ import jakarta.validation.constraints.*;
 public class Reviewer {
 	
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="ReviewerID")
 	private int reviewerID;
 	

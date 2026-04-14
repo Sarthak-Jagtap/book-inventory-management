@@ -1,0 +1,78 @@
+package com.bookinventory.reviewer.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.bookinventory.reviewer.dto.ReviewerDTO;
+import com.bookinventory.reviewer.entity.Reviewer;
+import com.bookinventory.reviewer.service.ReviewerService;
+import com.bookinventory.user.common.response.ApiResponse;
+
+@RestController
+@RequestMapping("/api/v1")
+public class ReviewerController {
+	
+	@Autowired
+	private ReviewerService service;
+	
+	@GetMapping("/reviewer/{reviewerID}")
+	public List<ReviewerDTO> getReviewer(@PathVariable int reviewerID,Model model) {
+		
+		return service.getReviewerByReviewerIDDTO(reviewerID);
+		
+	}
+	
+	// ✅ Get by NAME
+	@GetMapping(value = "/reviewer", params = "name")
+	public List<ReviewerDTO> getReviewerByName(@RequestParam String name) {
+	    return service.getReviewerByName(name);
+	}
+	
+	// ✅ Get by COMPANY
+	@GetMapping(value = "/reviewer", params = "employedBy")
+	public List<ReviewerDTO> getReviewerByCompany(@RequestParam String employedBy) {
+	    return service.getReviewerByCompany(employedBy);
+	}
+	
+	@GetMapping("/reviewer/count")
+    public ResponseEntity<ApiResponse<String>> getReviewsCount(@RequestParam String employedBy) {
+        int reviewerCount= service.getReviewerByCompany(employedBy).size();
+        
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success("Total reviewers employed by : "+employedBy+" = " +reviewerCount));
+    }
+	
+	@GetMapping("/reviewer")
+	public List<Reviewer> getAllReviewer(){
+		return service.getAllReviewers();
+	}
+	
+	@PostMapping("/reviewer")
+	public Reviewer createReviewer(@RequestBody Reviewer reviewer) {
+		return service.createReviewer(reviewer);
+	}
+	
+	@PutMapping("/reviewer")
+	public Reviewer updateReviewer(@RequestBody Reviewer reviewer) {
+		return service.createReviewer(reviewer);
+	}
+	
+	@DeleteMapping("/reviewer/{reviewerID}")
+	public String deleteReviewer(@PathVariable int reviewerID) {
+		service.deleteReviewer(reviewerID);
+		return "Reviewer deleted Succesfully"; 
+	}
+
+}

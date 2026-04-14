@@ -1,7 +1,7 @@
-package com.bookinventory.bookreview;
+package com.bookinventory.bookreview.entity;
 
 import com.bookinventory.book.entity.Book;
-import com.bookinventory.reviewer.Reviewer;
+import com.bookinventory.reviewer.entity.Reviewer;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -20,12 +20,12 @@ public class BookReview {
     private BookReviewId id;
 
     @ManyToOne
-    @MapsId("isbn")   // 🔥 link with id
+    @MapsId("isbn")   
     @JoinColumn(name="ISBN",columnDefinition = "CHAR(13)")
     private Book book;
 
     @ManyToOne
-    @MapsId("reviewerId")  // 🔥 link with id
+    @MapsId("reviewerId")  
     @JoinColumn(name="ReviewerID",columnDefinition = "int")
     private Reviewer reviewer;
 

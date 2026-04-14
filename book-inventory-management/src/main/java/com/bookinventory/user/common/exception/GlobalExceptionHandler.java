@@ -66,4 +66,14 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Object>> handleNoResourceFound(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+
+        ApiResponse<Object> response =
+                ApiResponse.failure("API endpoint not found: " + ex.getResourcePath());
+
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
 }

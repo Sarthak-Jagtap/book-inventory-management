@@ -1,14 +1,22 @@
-package com.bookinventory.reviewer;
+package com.bookinventory.reviewer.dto;
 
 
 public class ReviewerDTO {
 	
+	private int reviewerID;
 	private String name;
 	private String employedBy;
-	public ReviewerDTO(String name, String employedBy) {
+	public ReviewerDTO(int reviewerID,String name, String employedBy) {
 		super();
+		this.reviewerID= reviewerID;
 		this.name = name;
 		this.employedBy = employedBy;
+	}
+	public int getReviewerID() {
+		return reviewerID;
+	}
+	public void setReviewerID(int reviewerID) {
+		this.reviewerID = reviewerID;
 	}
 	public String getName() {
 		return name;
