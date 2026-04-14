@@ -1,11 +1,16 @@
-package com.bookinventory.inventory.dto;
+package com.bookinventory.cart.dto;
+
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class InventoryRequest {
+
+public class AddToCartRequest {
+
+	@NotNull(message = "User ID is required")
+	private Integer userId;
 
 	@NotBlank(message = "ISBN is required")
 	private String isbn;
@@ -15,9 +20,15 @@ public class InventoryRequest {
 	@Max(value = 6, message = "Rank must be at most 6")
 	private Integer rank;
 
-	private Boolean purchased;
+    public AddToCartRequest() {
+    }
 
-    public InventoryRequest() {
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     public String getIsbn() {
@@ -34,13 +45,5 @@ public class InventoryRequest {
 
     public void setRank(Integer rank) {
         this.rank = rank;
-    }
-
-    public Boolean getPurchased() {
-        return purchased;
-    }
-
-    public void setPurchased(Boolean purchased) {
-        this.purchased = purchased;
     }
 }

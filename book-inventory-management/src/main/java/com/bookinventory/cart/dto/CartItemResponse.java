@@ -1,12 +1,16 @@
-package com.bookinventory.inventory.dto;
+package com.bookinventory.cart.dto;
 
-public class AddToCartRequest {
+public class CartItemResponse {
 
     private Integer userId;
     private String isbn;
-    private Integer rank;
 
-    public AddToCartRequest() {
+    public CartItemResponse() {
+    }
+
+    public CartItemResponse(Integer userId, String isbn) {
+        this.userId = userId;
+        this.isbn = isbn;
     }
 
     public Integer getUserId() {
@@ -23,13 +27,5 @@ public class AddToCartRequest {
 
     public void setIsbn(String isbn) {
         this.isbn = isbn;
-    }
-
-    public Integer getRank() {
-        return rank;
-    }
-
-    public void setRank(Integer rank) {
-        this.rank = rank;
     }
 }

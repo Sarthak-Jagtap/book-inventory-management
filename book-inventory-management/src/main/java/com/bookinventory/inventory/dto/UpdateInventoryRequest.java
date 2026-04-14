@@ -2,30 +2,15 @@ package com.bookinventory.inventory.dto;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
-public class InventoryRequest {
+public class UpdateInventoryRequest {
 
-	@NotBlank(message = "ISBN is required")
-	private String isbn;
-
-	@NotNull(message = "Rank is required")
 	@Min(value = 1, message = "Rank must be at least 1")
 	@Max(value = 6, message = "Rank must be at most 6")
 	private Integer rank;
+    private Boolean purchased;
 
-	private Boolean purchased;
-
-    public InventoryRequest() {
-    }
-
-    public String getIsbn() {
-        return isbn;
-    }
-
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
+    public UpdateInventoryRequest() {
     }
 
     public Integer getRank() {

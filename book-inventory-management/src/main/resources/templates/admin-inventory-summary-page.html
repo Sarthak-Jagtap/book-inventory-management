@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Inventory Summary</title>
+</head>
+<body>
+    <h1>Inventory Summary for ISBN: <span th:text="${isbn}"></span></h1>
+
+    <table border="1">
+        <tr>
+            <th>Rank</th>
+            <th>Condition</th>
+            <th>Full Description</th>
+            <th>Price</th>
+            <th>Available Count</th>
+            <th>Total Count</th>
+        </tr>
+        <tr th:each="item : ${summaryList}">
+            <td th:text="${item.rank}"></td>
+            <td th:text="${item.condition}"></td>
+            <td th:text="${item.fullDescription}"></td>
+            <td th:text="${item.price}"></td>
+            <td th:text="${item.availableCount}"></td>
+            <td th:text="${item.totalCount}"></td>
+        </tr>
+    </table>
+</body>
+</html>
