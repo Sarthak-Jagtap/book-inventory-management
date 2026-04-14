@@ -54,5 +54,20 @@ public class BookAuthorService {
         repository.deleteById(id);
     }
     
+    public BookAuthor updateBookAuthor(String isbn, Integer authorId, BookAuthorDTO dto) {
+
+        BookAuthorId id = new BookAuthorId();
+        id.setISBN(isbn);
+        id.setAuthorID(authorId);
+
+        BookAuthor existing = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException(
+                        "BookAuthor mapping not found for ISBN: " + isbn + " and AuthorID: " + authorId));
+
+        // update fields
+        existing.setPrimaryAuthor(dto.getPrimaryAuthor());
+
+        return repository.save(existing);
+    }
 
 }
