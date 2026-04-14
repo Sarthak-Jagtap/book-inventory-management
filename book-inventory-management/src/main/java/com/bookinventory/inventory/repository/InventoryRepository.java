@@ -8,9 +8,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Integer> {
+	List<Inventory> findByRanks(Integer rank);
+	
+    @Query(value = "SELECT * FROM inventory WHERE ISBN = ?1", nativeQuery = true)
+    List<Inventory> getInventoryByIsbn(String isbn);
 
     @Query(value = "SELECT * FROM inventory WHERE ISBN = ?1 AND Purchased = 0", nativeQuery = true)
     List<Inventory> getAvailableInventoryByIsbn(String isbn);
+
+    @Query(value = "SELECT * FROM inventory WHERE ISBN = ?1 AND Ranks = ?2", nativeQuery = true)
+    List<Inventory> getInventoryByIsbnAndRank(String isbn, Integer rank);
 
     @Query(value = "SELECT * FROM inventory WHERE ISBN = ?1 AND Ranks = ?2 AND Purchased = 0", nativeQuery = true)
     List<Inventory> getAvailableInventoryByIsbnAndRank(String isbn, Integer rank);

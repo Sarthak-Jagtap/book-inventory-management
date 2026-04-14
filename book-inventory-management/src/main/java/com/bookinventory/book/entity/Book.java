@@ -9,31 +9,40 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "book")
 public class Book {
 
-	@Id
-	@Column(name = "ISBN", columnDefinition = "CHAR(13)", nullable = false)
-	private String isbn;
+    @Id
+    @NotBlank
+    @Size(max = 13)
+    @Column(name = "ISBN", columnDefinition = "CHAR(13)", nullable = false)
+    private String isbn;
 
-	@Column(name = "Title", nullable = false)
-	private String title;
+    @NotBlank
+    @Size(max = 70)
+    @Column(name = "Title", length = 70, nullable = false)
+    private String title;
 
-	@Column(name = "Description")
-	private String description;
+    @Size(max = 100)
+    @Column(name = "Description", length = 100)
+    private String description;
 
-	@Column(name = "Edition", columnDefinition = "CHAR(30)")
-	private String edition;
+    @Size(max = 30)
+    @Column(name = "Edition", columnDefinition = "CHAR(30)")
+    private String edition;
 
-	@ManyToOne
-	@JoinColumn(name = "Category")
-	private Category category;
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "Category")
+    private Category category;
 
-	@ManyToOne
-	@JoinColumn(name = "PublisherID", nullable = false)
-	private Publisher publisher;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "PublisherID", nullable = false)
+    private Publisher publisher;
+
 
 	public String getIsbn() {
 		return isbn;
