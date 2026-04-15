@@ -114,7 +114,7 @@ public class BookService {
 
 		Pageable pageable = PageRequest.of(page, size, Sort.by("title").ascending());
 
-		Page<Book> bookPage = bookRepository.findByCategory_CatID(categoryId, pageable);
+		Page<Book> bookPage = bookRepository.findByCategory_CatId(categoryId, pageable);
 
 		return bookPage.map(this::convertToDTO);
 	}
