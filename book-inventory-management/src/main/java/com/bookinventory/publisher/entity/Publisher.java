@@ -8,25 +8,31 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "publisher")
 public class Publisher {
 
-	@Id
-	@Column(name = "PublisherID")
-	private int publisherId;
+    @Id
+    @NotNull
+    @Column(name = "PublisherID")
+    private Integer publisherId;
 
-	@Column(name = "Name")
-	private String name;
+    @NotBlank
+    @Size(max = 50)
+    @Column(name = "Name", length = 50, nullable = false)
+    private String name;
 
-	@Column(name = "City")
-	private String city;
+    @Size(max = 30)
+    @Column(name = "City", length = 30)
+    private String city;
 
-	@ManyToOne
-	@JoinColumn(name = "StateCode")
-	private State state;
-
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "StateCode")
+    private State state;
 	public int getPublisherId() {
 		return publisherId;
 	}

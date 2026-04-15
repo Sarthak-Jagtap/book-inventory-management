@@ -4,18 +4,22 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "category")
 public class Category {
-	
-	@Id
-	@Column(name = "CatID")
-	private int catId;
-	
-	@Column(name = "CatDescription")
-	private String catDescription;
-	
+
+    @Id
+    @NotNull
+    @Column(name = "CatID")
+    private Integer catId;
+
+    @Size(max = 24)
+    @Column(name = "CatDescription", length = 24)
+    private String catDescription;
+
 	public int getCatId() {
 		return catId;
 	}
