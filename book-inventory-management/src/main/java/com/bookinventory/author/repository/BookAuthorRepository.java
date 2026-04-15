@@ -1,6 +1,7 @@
 package com.bookinventory.author.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +15,9 @@ public interface BookAuthorRepository extends JpaRepository<BookAuthor, BookAuth
 	List<BookAuthor> findByIdAuthorID(Integer authorID);
 	
 	List<BookAuthor> findByIdISBN(String isbn);
+	
+ Optional<BookAuthor> findByIdISBNAndPrimaryAuthor(String isbn, String primaryAuthor);
+
 
 
 }

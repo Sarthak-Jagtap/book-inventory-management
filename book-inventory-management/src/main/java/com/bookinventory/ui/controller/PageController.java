@@ -18,12 +18,12 @@ public class PageController {
         return "index";
     }
 
-    @GetMapping("/api-dashboard")
+    @GetMapping("/api-author-dashboard")
     public String apiDashboard() {
-        return "api-dashboard";
+        return "api-author-dashboard";
     }
     
-    @GetMapping("/api-result")
+    @GetMapping("/api-author-result")
     public String viewApi(@RequestParam String endpoint, Model model) {
 
         RestTemplate restTemplate = new RestTemplate();
@@ -34,6 +34,6 @@ public class PageController {
 
         model.addAttribute("response", response);
 
-        return "api-result";
+        return "api-author-result";
     }
 }

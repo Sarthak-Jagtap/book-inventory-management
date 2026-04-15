@@ -168,6 +168,20 @@ margin-bottom:20px;
 
 </div>
 
+<div class="endpoint">
+
+<div class="method get">GET</div>
+
+<div class="path">/api/v1/books/{isbn}/primary-author</div>
+
+<input id="primaryIsbn" placeholder="ISBN">
+
+<button onclick="openApi('/api/v1/books/' + document.getElementById('primaryIsbn').value + '/primary-author')">
+Run
+</button>
+
+</div>
+
 <hr>
 
 <div class="section">
