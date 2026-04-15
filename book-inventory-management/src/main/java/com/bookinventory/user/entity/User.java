@@ -26,10 +26,6 @@ public class User {
 	@Column(name = "Password", length = 30, nullable = false)
 	private String password;
 
-	// NEW: soft-delete flag — true = active user, false = deactivated
-	@Column(name = "active", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 1")
-	private boolean active = true;
-
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "RoleNumber", referencedColumnName = "RoleNumber")
 	private PermRole role;
@@ -46,7 +42,6 @@ public class User {
 		this.userName = userName;
 		this.password = password;
 		this.role = role;
-		this.active = true; // always start as active
 	}
 
 	// Getters & Setters
@@ -98,14 +93,6 @@ public class User {
 		this.password = v;
 	}
 
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
 	public PermRole getRole() {
 		return role;
 	}
@@ -116,7 +103,7 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User{userId=" + userId + ", userName='" + userName + "', active=" + active + ", role="
-				+ (role != null ? role.getPermRole() : "null") + '}';
+	    return "User{userId=" + userId + ", userName='" + userName + "', role="
+	            + (role != null ? role.getPermRole() : "null") + '}';
 	}
 }

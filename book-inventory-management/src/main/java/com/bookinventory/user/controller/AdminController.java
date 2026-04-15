@@ -30,13 +30,6 @@ public class AdminController {
 		return new ResponseEntity<>(ApiResponse.success(200, "All users fetched successfully", users), HttpStatus.OK);
 	}
 
-	@GetMapping("/users/active")
-	public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllActiveUsers() {
-		List<UserResponseDTO> users = userService.getAllActiveUsers();
-		return new ResponseEntity<>(ApiResponse.success(200, "Active users fetched successfully", users),
-				HttpStatus.OK);
-	}
-
 	@GetMapping("/users/{userId}")
 	public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(@PathVariable Integer userId) {
 
@@ -50,18 +43,6 @@ public class AdminController {
 
 		UserResponseDTO updated = userService.updateUserById(userId, dto);
 		return new ResponseEntity<>(ApiResponse.success(200, "User updated successfully", updated), HttpStatus.OK);
-	}
-
-	@PatchMapping("/users/{userId}/status")
-	public ResponseEntity<ApiResponse<UserResponseDTO>> updateUserStatus(@PathVariable Integer userId,
-			@Valid @RequestBody UserStatusUpdateDTO dto) {
-
-		UserResponseDTO updated = userService.updateUserStatus(userId, dto.getActive());
-
-		String message = dto.getActive() ? "User reactivated successfully" : "User deactivated successfully";
-
-		return new ResponseEntity<>(ApiResponse.success(200, message, updated),
-				HttpStatus.OK);
 	}
 
 	@PatchMapping("/users/{userId}/role")
@@ -109,12 +90,17 @@ public class AdminController {
 				HttpStatus.OK);
 	}
 	
-	// DELETE /api/v1/admin/users/{userId} — soft delete (sets active = false)
-	@DeleteMapping("/users/{userId}")
-	public ResponseEntity<ApiResponse<UserResponseDTO>> deleteUser(
-	        @PathVariable Integer userId) {
-	    UserResponseDTO updated = userService.updateUserStatus(userId, false);
-	    return new ResponseEntity<>(
-	        ApiResponse.success(200, "User deactivated successfully", updated), HttpStatus.OK);
-	}
+	/*
+	 * Delete user feature not needed
+	 * 
+	 * // DELETE /api/v1/admin/users/{userId} — soft delete (sets active = false)
+	 * 
+	 * @DeleteMapping("/users/{userId}") public
+	 * ResponseEntity<ApiResponse<UserResponseDTO>> deleteUser(
+	 * 
+	 * @PathVariable Integer userId) { UserResponseDTO updated =
+	 * userService.updateUserStatus(userId, false); return new ResponseEntity<>(
+	 * ApiResponse.success(200, "User deactivated successfully", updated),
+	 * HttpStatus.OK); }
+	 */
 }

@@ -7,7 +7,6 @@ public class UserResponseDTO {
 	private String firstName;
 	private String phoneNumber;
 	private String userName;
-	private boolean active;
 	private PermRoleResponseDTO role;
 
 	public UserResponseDTO() {
@@ -54,14 +53,6 @@ public class UserResponseDTO {
 		this.userName = v;
 	}
 
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
 	public PermRoleResponseDTO getRole() {
 		return role;
 	}
@@ -72,7 +63,6 @@ public class UserResponseDTO {
 
 	@Override
 	public String toString() {
-		return "UserResponseDTO{userId=" + userId + ", userName='" + userName + "', active=" + active + ", role=" + role
-				+ '}';
+	    return "UserResponseDTO{userId=" + userId + ", userName='" + userName + "', role=" + role + '}';
 	}
 }
