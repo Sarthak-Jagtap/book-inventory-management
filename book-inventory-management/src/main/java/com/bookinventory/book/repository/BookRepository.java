@@ -11,7 +11,7 @@ import com.bookinventory.book.entity.Book;
 
 public interface BookRepository extends JpaRepository<Book, String> {
 
-	Page<Book> findByCategory_CatID(Integer categoryId, Pageable pageable);
+	Page<Book> findByCategory_CatId(Integer categoryId, Pageable pageable);
 
 	Page<Book> findByPublisher_PublisherId(Integer publisherId, Pageable pageable);
 

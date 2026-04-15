@@ -20,17 +20,14 @@ public interface UserService {
 
 	// Admin — manage all users
 	List<UserResponseDTO> getAllUsers(); // all (active + inactive)
-
-	List<UserResponseDTO> getAllActiveUsers(); // active only
-
+	
 	UserResponseDTO getUserById(Integer userId);
 
 	UserResponseDTO updateUserById(Integer userId, UserUpdateRequestDTO dto);
 
 	UserResponseDTO updateUserRole(Integer userId, Integer roleNumber);
-
-	UserResponseDTO updateUserStatus(Integer userId, boolean active); // soft delete/reactivate
-
+	
+	
 	// Shared utility
 	List<UserResponseDTO> getUsersByRole(Integer roleNumber);
 }

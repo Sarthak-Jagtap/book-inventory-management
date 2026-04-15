@@ -14,32 +14,20 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Integer> {
 
     // Auth
-    // Find active user by username (used at login)
-    Optional<User> findByUserNameAndActiveTrue(String userName);
+	Optional<User> findByUserName(String userName);
 
     // Check if username already taken (among active users)
-    boolean existsByUserNameAndActiveTrue(String userName);
-
+	boolean existsByUserName(String userName);
     // Admin queries
 
     // Get ALL users (including inactive) — Admin only
     @Query("SELECT u FROM User u JOIN FETCH u.role")
     List<User> findAllUsersWithRole();
 
-    // Get only ACTIVE users with role — Admin only
-    @Query("SELECT u FROM User u JOIN FETCH u.role WHERE u.active = true")
-    List<User> findAllActiveUsersWithRole();
-
     // Get users by role number (active only)
-    List<User> findByRole_RoleNumberAndActiveTrue(Integer roleNumber);
+    List<User> findByRole_RoleNumber(Integer roleNumber);
 
     // PATCH queries
-
-    // Soft delete — set active = false
-    @Modifying
-    @Query("UPDATE User u SET u.active = :status WHERE u.userId = :userId")
-    int updateActiveStatus(@Param("userId") Integer userId,
-                           @Param("status") boolean status);
 
     // Update password
     @Modifying
@@ -54,6 +42,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
                        @Param("role") com.bookinventory.user.entity.PermRole role);
 
     // Search
-    List<User> findByLastNameIgnoreCaseAndActiveTrue(String lastName);
-    List<User> findByFirstNameIgnoreCaseAndActiveTrue(String firstName);
+    List<User> findByLastNameIgnoreCase(String lastName);
+    List<User> findByFirstNameIgnoreCase(String firstName);
 }

@@ -39,15 +39,14 @@ public class UserServiceImpl implements UserService {
 	}
 
 	private UserResponseDTO convertUserToDTO(User user) {
-		UserResponseDTO dto = new UserResponseDTO();
-		dto.setUserId(user.getUserId());
-		dto.setLastName(user.getLastName());
-		dto.setFirstName(user.getFirstName());
-		dto.setPhoneNumber(user.getPhoneNumber());
-		dto.setUserName(user.getUserName());
-		dto.setActive(user.isActive()); // NEW
-		dto.setRole(convertRoleToDTO(user.getRole()));
-		return dto;
+	    UserResponseDTO dto = new UserResponseDTO();
+	    dto.setUserId(user.getUserId());
+	    dto.setLastName(user.getLastName());
+	    dto.setFirstName(user.getFirstName());
+	    dto.setPhoneNumber(user.getPhoneNumber());
+	    dto.setUserName(user.getUserName());
+	    dto.setRole(convertRoleToDTO(user.getRole()));
+	    return dto;
 	}
 
 	// AUTH
@@ -57,8 +56,8 @@ public class UserServiceImpl implements UserService {
 	public UserResponseDTO registerUser(UserRequestDTO dto) {
 
 		// 1. Username must be unique among ACTIVE users
-		if (userRepository.existsByUserNameAndActiveTrue(dto.getUserName())) {
-			throw new DuplicateResourceException("User", "userName", dto.getUserName());
+		if (userRepository.existsByUserName(dto.getUserName())) {
+		    throw new DuplicateResourceException("User", "userName", dto.getUserName());
 		}
 
 		// 2. Resolve role — default to 2 (RegisteredUser) for self-registration
@@ -76,7 +75,6 @@ public class UserServiceImpl implements UserService {
 		user.setUserName(dto.getUserName());
 		user.setPassword(dto.getPassword());
 		user.setRole(role);
-		user.setActive(true);
 
 		return convertUserToDTO(userRepository.save(user));
 	}
@@ -85,8 +83,8 @@ public class UserServiceImpl implements UserService {
 	public LoginResponseDTO loginUser(LoginRequestDTO dto) {
 
 		// 1. Must exist AND be active
-		User user = userRepository.findByUserNameAndActiveTrue(dto.getUserName())
-				.orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
+		User user = userRepository.findByUserName(dto.getUserName())
+		        .orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
 
 		// 2. Password check
 		if (!user.getPassword().equals(dto.getPassword())) {
@@ -115,16 +113,16 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public UserResponseDTO getMyProfile(Integer userId) {
-		User user = userRepository.findById(userId).filter(User::isActive)
-				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+		User user = userRepository.findById(userId)
+		        .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 		return convertUserToDTO(user);
 	}
 
 	@Override
 	@Transactional
 	public UserResponseDTO updateMyProfile(Integer userId, UserUpdateRequestDTO dto) {
-		User user = userRepository.findById(userId).filter(User::isActive)
-				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+		User user = userRepository.findById(userId)
+		        .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
 		if (dto.getLastName() != null && !dto.getLastName().isBlank())
 			user.setLastName(dto.getLastName());
@@ -133,8 +131,8 @@ public class UserServiceImpl implements UserService {
 		if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isBlank())
 			user.setPhoneNumber(dto.getPhoneNumber());
 		if (dto.getUserName() != null && !dto.getUserName().isBlank()) {
-			if (userRepository.existsByUserNameAndActiveTrue(dto.getUserName())
-					&& !user.getUserName().equals(dto.getUserName())) {
+			if (userRepository.existsByUserName(dto.getUserName())
+			        && !user.getUserName().equals(dto.getUserName())) {
 				throw new DuplicateResourceException("User", "userName", dto.getUserName());
 			}
 			user.setUserName(dto.getUserName());
@@ -146,8 +144,8 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional
 	public void changeMyPassword(Integer userId, ChangePasswordRequestDTO dto) {
-		User user = userRepository.findById(userId).filter(User::isActive)
-				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+		User user = userRepository.findById(userId)
+		        .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
 		if (!user.getPassword().equals(dto.getCurrentPassword()))
 			throw new BadRequestException("Current password is incorrect");
@@ -167,14 +165,6 @@ public class UserServiceImpl implements UserService {
 	public List<UserResponseDTO> getAllUsers() {
 		List<UserResponseDTO> result = new ArrayList<>();
 		for (User u : userRepository.findAllUsersWithRole())
-			result.add(convertUserToDTO(u));
-		return result;
-	}
-
-	@Override
-	public List<UserResponseDTO> getAllActiveUsers() {
-		List<UserResponseDTO> result = new ArrayList<>();
-		for (User u : userRepository.findAllActiveUsersWithRole())
 			result.add(convertUserToDTO(u));
 		return result;
 	}
@@ -200,9 +190,9 @@ public class UserServiceImpl implements UserService {
 		if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isBlank())
 			user.setPhoneNumber(dto.getPhoneNumber());
 		if (dto.getUserName() != null && !dto.getUserName().isBlank()) {
-			if (userRepository.existsByUserNameAndActiveTrue(dto.getUserName())
-					&& !user.getUserName().equals(dto.getUserName())) {
-				throw new DuplicateResourceException("User", "userName", dto.getUserName());
+			if (userRepository.existsByUserName(dto.getUserName())
+			        && !user.getUserName().equals(dto.getUserName())) {
+			    throw new DuplicateResourceException("User", "userName", dto.getUserName());
 			}
 			user.setUserName(dto.getUserName());
 		}
@@ -221,24 +211,7 @@ public class UserServiceImpl implements UserService {
 		user.setRole(role);
 		return convertUserToDTO(userRepository.save(user));
 	}
-
-	// ── SOFT DELETE / REACTIVATE (replaces hard delete) ──────────
-
-	/**
-	 * PATCH /api/v1/admin/users/{userId}/status Admin sends { "active": false } to
-	 * deactivate, { "active": true } to reactivate. This REPLACES the old
-	 * deleteUser — data is kept in DB, just flagged inactive.
-	 */
-	@Override
-	@Transactional
-	public UserResponseDTO updateUserStatus(Integer userId, boolean active) {
-		User user = userRepository.findById(userId)
-				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
-
-		user.setActive(active);
-		return convertUserToDTO(userRepository.save(user));
-	}
-
+	
 	// ── Shared ────────────────────────────────────────────────────
 
 	@Override
@@ -247,7 +220,7 @@ public class UserServiceImpl implements UserService {
 			throw new ResourceNotFoundException("Role", "roleNumber", roleNumber);
 
 		List<UserResponseDTO> result = new ArrayList<>();
-		for (User u : userRepository.findByRole_RoleNumberAndActiveTrue(roleNumber))
+		for (User u : userRepository.findByRole_RoleNumber(roleNumber))
 			result.add(convertUserToDTO(u));
 		return result;
 	}
