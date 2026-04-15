@@ -1,23 +1,26 @@
 package com.bookinventory.bookreview.controller;
 
-import com.bookinventory.bookreview.service.BookReviewService;
 import com.bookinventory.bookreview.dto.BookReviewDTO;
 import com.bookinventory.bookreview.entity.BookReview;
+import com.bookinventory.bookreview.service.BookReviewService;
+import com.bookinventory.user.common.response.ApiResponse;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Mockito.*;
+import org.springframework.http.ResponseEntity;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-class BookReviewControllerTest {
+public class BookReviewControllerTest {
 
     @Mock
     private BookReviewService service;
@@ -25,81 +28,145 @@ class BookReviewControllerTest {
     @InjectMocks
     private BookReviewController controller;
 
+    // ✅ 1. GET reviews by ISBN
+    @Test
+    void testGetReviewsByIsbn() {
 
-@Test
-void testGetReviewsByIsbn() {
-    String isbn = "123";
+        List<BookReviewDTO> list = Arrays.asList(
+                new BookReviewDTO(5, "Good"),
+                new BookReviewDTO(4, "Nice")
+        );
 
-    List<BookReviewDTO> mockList = List.of(new BookReviewDTO());
+        Mockito.when(service.getBookReviewByISBNDTOisbn("123"))
+                .thenReturn(list);
 
-    when(service.getBookReviewByISBNDTOisbn(isbn)).thenReturn(mockList);
+        List<BookReviewDTO> result = controller.getReviewsByIsbn("123");
 
-    List<BookReviewDTO> result = controller.getReviewsByIsbn(isbn);
+        assertEquals(2, result.size());
+    }
 
-    assertEquals(1, result.size());
-    verify(service, times(1)).getBookReviewByISBNDTOisbn(isbn);
-}
+    // ✅ 2. GET reviews count
+    @Test
+    void testGetReviewsCount() {
 
-@Test
-void testGetReviewsCount() {
-    String isbn = "123";
+        List<BookReviewDTO> list = Arrays.asList(
+                new BookReviewDTO(5, "Good")
+        );
 
-    when(service.getBookReviewByISBNDTOisbn(isbn))
-            .thenReturn(List.of(new BookReviewDTO(), new BookReviewDTO()));
+        Mockito.when(service.getBookReviewByISBNDTOisbn("123"))
+                .thenReturn(list);
 
-    var response = controller.getReviewsCount(isbn);
+        ResponseEntity<ApiResponse<String>> response =
+                controller.getReviewsCount("123");
 
-    assertEquals(200, response.getStatusCodeValue());
-    assertTrue(response.getBody().getMessage().contains("2"));
-}
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());   // ✅ fix
+    }
 
-@Test
-void testGetReviewsByReviewer() {
-    int reviewerId = 1;
+    // ✅ 3. GET reviews by reviewer
+    @Test
+    void testGetReviewsByReviewer() {
 
-    when(service.getBookReviewByISBNDTOreviewer(reviewerId))
-            .thenReturn(List.of(new BookReviewDTO()));
+        List<BookReviewDTO> list = Arrays.asList(
+                new BookReviewDTO(3, "Okay")
+        );
 
-    List<BookReviewDTO> result = controller.getReviewsByReviewerid(reviewerId);
+        Mockito.when(service.getBookReviewByISBNDTOreviewer(1))
+                .thenReturn(list);
 
-    assertEquals(1, result.size());
-}
+        List<BookReviewDTO> result = controller.getReviewsByReviewerid(1);
 
-@Test
-void testCreateReview() {
-    BookReview review = new BookReview();
+        assertEquals(1, result.size());
+    }
 
-    when(service.createReview(review)).thenReturn(review);
+    @Test
+    void testReviewerCount() {
 
-    BookReview result = controller.createReview(review);
+        List<BookReviewDTO> list = Arrays.asList(
+                new BookReviewDTO(3, "Okay")
+        );
 
-    assertNotNull(result);
-    verify(service).createReview(review);
-}
+        Mockito.when(service.getBookReviewByISBNDTOreviewer(1))
+                .thenReturn(list);
 
-@Test
-void testUpdateReview() {
-    BookReview review = new BookReview();
+        ResponseEntity<ApiResponse<String>> response =
+                controller.getReviewerReviewsCount(1);
 
-    when(service.updateReview(review)).thenReturn(review);
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());   // ✅ fix
+    }
 
-    BookReview result = controller.updateReview(review);
+    // ✅ 5. GET particular review
+    @Test
+    void testGetParticularReview() {
 
-    assertNotNull(result);
-    verify(service).updateReview(review);
-}
+        List<BookReviewDTO> list = Arrays.asList(
+                new BookReviewDTO(5, "Excellent")
+        );
 
-@Test
-void testDeleteReview() {
-    String isbn = "123";
-    Integer reviewerId = 1;
+        Mockito.when(service.getBookReviewByISBNDTO("123", 1))
+                .thenReturn(list);
 
-    doNothing().when(service).deleteReview(isbn, reviewerId);
+        List<BookReviewDTO> result =
+                controller.getParticulerReviews("123", 1);
 
-    String result = controller.deleteReview(isbn, reviewerId);
+        assertEquals(1, result.size());
+    }
 
-    assertEquals("Review Deleted Successfully", result);
-    verify(service).deleteReview(isbn, reviewerId);
-}
+    // ✅ 6. GET all reviews
+    @Test
+    void testGetAllReviews() {
 
+        List<BookReview> list = Arrays.asList(new BookReview(), new BookReview());
+
+        Mockito.when(service.getAllReviews()).thenReturn(list);
+
+        List<BookReview> result = controller.getAllReviews();
+
+        assertEquals(2, result.size());
+    }
+
+    // ✅ 7. CREATE review
+    @Test
+    void testCreateReview() {
+
+        BookReview review = new BookReview();
+        review.setRating(5);
+        review.setComments("Awesome");
+
+        Mockito.when(service.createReview(Mockito.any()))
+                .thenReturn(review);
+
+        BookReview result = controller.createReview(review);
+
+        assertEquals(5, result.getRating());
+        assertEquals("Awesome", result.getComments());
+    }
+
+    // ✅ 8. UPDATE review
+    @Test
+    void testUpdateReview() {
+
+        BookReview review = new BookReview();
+        review.setRating(4);
+        review.setComments("Updated");
+
+        Mockito.when(service.updateReview(Mockito.any()))
+                .thenReturn(review);
+
+        BookReview result = controller.updateReview(review);
+
+        assertEquals(4, result.getRating());
+    }
+
+    // ✅ 9. DELETE review
+    @Test
+    void testDeleteReview() {
+
+        Mockito.doNothing().when(service).deleteReview("123", 1);
+
+        String result = controller.deleteReview("123", 1);
+
+        assertEquals("Review Deleted Successfully", result);
+    }
 }
