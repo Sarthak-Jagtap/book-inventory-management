@@ -65,6 +65,7 @@ package com.bookinventory.author.controller;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.bookinventory.author.dto.AuthorDTO;
 import com.bookinventory.author.dto.BookAuthorDTO;
 import com.bookinventory.author.entity.BookAuthor;
 import com.bookinventory.author.service.BookAuthorService;
@@ -129,5 +130,14 @@ public class BookAuthorController {
         service.removeAuthorFromBook(isbn, authorId);
 
         return ApiResponse.success(200, "Author removed from book successfully");
+    }
+    
+    
+    @GetMapping("/api/v1/books/{isbn}/primary-author")
+    public ApiResponse<AuthorDTO> getPrimaryAuthor(@PathVariable String isbn) {
+
+        AuthorDTO author = service.getPrimaryAuthor(isbn);
+
+        return ApiResponse.success(200, "Primary author fetched successfully", author);
     }
 }

@@ -2,9 +2,13 @@ package com.bookinventory.author.service;
 
 import org.springframework.stereotype.Service;
 
+import com.bookinventory.author.dto.AuthorDTO;
 import com.bookinventory.author.dto.BookAuthorDTO;
+import com.bookinventory.author.entity.Author;
 import com.bookinventory.author.entity.BookAuthor;
 import com.bookinventory.author.entity.BookAuthorId;
+import com.bookinventory.author.mapper.AuthorMapper;
+import com.bookinventory.author.repository.AuthorRepository;
 import com.bookinventory.author.repository.BookAuthorRepository;
 
 import java.util.List;
@@ -13,9 +17,11 @@ import java.util.List;
 public class BookAuthorService {
 
     private final BookAuthorRepository repository;
+     private final AuthorRepository authorRepository;
 
-    public BookAuthorService(BookAuthorRepository repository) {
+    public BookAuthorService(BookAuthorRepository repository , AuthorRepository authorRepository) {
         this.repository = repository;
+		this.authorRepository = authorRepository;
     }
 
     // ASSIGN AUTHOR TO BOOK
@@ -68,6 +74,20 @@ public class BookAuthorService {
         existing.setPrimaryAuthor(dto.getPrimaryAuthor());
 
         return repository.save(existing);
+    }
+    
+    public AuthorDTO getPrimaryAuthor(String isbn) {
+
+        BookAuthor mapping = repository
+                .findByIdISBNAndPrimaryAuthor(isbn, "Y")
+                .orElseThrow(() -> new RuntimeException("Primary author not found"));
+
+        Integer authorId = mapping.getId().getAuthorID();
+
+        Author author = authorRepository.findById(authorId)
+                .orElseThrow(() -> new RuntimeException("Author not found"));
+
+        return AuthorMapper.toDTO(author);
     }
 
 }
