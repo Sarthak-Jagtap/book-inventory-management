@@ -1,4 +1,4 @@
-package com.bookinventory.user.common.exception;
+package com.bookinventory.common.exception;
 
 public class DuplicateReviewException extends RuntimeException {
     public DuplicateReviewException(String message) {

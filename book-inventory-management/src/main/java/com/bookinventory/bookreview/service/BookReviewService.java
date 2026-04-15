@@ -13,8 +13,8 @@ import com.bookinventory.bookreview.entity.BookReviewId;
 import com.bookinventory.bookreview.repository.BookReviewRepository;
 import com.bookinventory.reviewer.entity.Reviewer;
 import com.bookinventory.reviewer.repository.ReviewerRepository;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
-import com.bookinventory.user.common.exception.DuplicateResourceException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.DuplicateResourceException;
 
 @Service
 public class BookReviewService {

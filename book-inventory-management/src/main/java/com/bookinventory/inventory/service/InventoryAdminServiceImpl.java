@@ -9,8 +9,8 @@ import com.bookinventory.inventory.entity.BookCondition;
 import com.bookinventory.inventory.entity.Inventory;
 import com.bookinventory.inventory.repository.BookConditionRepository;
 import com.bookinventory.inventory.repository.InventoryRepository;
-import com.bookinventory.user.common.exception.BadRequestException;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.BadRequestException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

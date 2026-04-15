@@ -11,7 +11,7 @@ import com.bookinventory.category.dto.CategoryResponseDTO;
 import com.bookinventory.category.dto.CategorySummaryDTO;
 import com.bookinventory.category.entity.Category;
 import com.bookinventory.category.repository.CategoryRepository;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 
 @Service
 public class CategoryService {

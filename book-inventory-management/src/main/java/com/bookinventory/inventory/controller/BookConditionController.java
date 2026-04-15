@@ -2,7 +2,7 @@ package com.bookinventory.inventory.controller;
 
 import com.bookinventory.inventory.entity.BookCondition;
 import com.bookinventory.inventory.repository.BookConditionRepository;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.user.common.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.bookinventory.user.common.exception;
+package com.bookinventory.common.exception;
 
 // Thrown when a requested resource does not exist in DB
 // Example: User with ID 99 not found → 404

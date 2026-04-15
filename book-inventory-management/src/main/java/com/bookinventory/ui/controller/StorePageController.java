@@ -12,7 +12,7 @@ import com.bookinventory.user.repository.UserRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 
 import java.util.List;
 

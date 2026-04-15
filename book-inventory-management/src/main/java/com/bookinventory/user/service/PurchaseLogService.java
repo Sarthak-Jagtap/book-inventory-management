@@ -24,4 +24,7 @@ public interface PurchaseLogService {
 
     // Get all purchases for a specific inventory item
     List<PurchaseLogResponseDTO> getPurchasesByInventory(Integer inventoryId);
+    
+    // In PurchaseLogService interface — add:
+    List<PurchaseLogResponseDTO> getAllPurchases();
 }

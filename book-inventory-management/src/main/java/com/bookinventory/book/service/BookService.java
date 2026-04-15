@@ -23,7 +23,7 @@ import com.bookinventory.category.entity.Category;
 import com.bookinventory.category.repository.CategoryRepository;
 import com.bookinventory.publisher.entity.Publisher;
 import com.bookinventory.publisher.repository.PublisherRepository;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 
 @Service
 public class BookService {

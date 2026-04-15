@@ -15,7 +15,7 @@ import com.bookinventory.state.dto.StateResponseDTO;
 import com.bookinventory.state.dto.StateWithPublishersDTO;
 import com.bookinventory.state.entity.State;
 import com.bookinventory.state.repository.StateRepository;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 
 @Service
 public class StateService {

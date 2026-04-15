@@ -1,43 +1,36 @@
 package com.bookinventory.user.service;
 
-import com.bookinventory.user.dto.ChangePasswordRequestDTO;
-import com.bookinventory.user.dto.LoginRequestDTO;
-import com.bookinventory.user.dto.LoginResponseDTO;
-import com.bookinventory.user.dto.UserRequestDTO;
-import com.bookinventory.user.dto.UserResponseDTO;
-import com.bookinventory.user.dto.UserUpdateRequestDTO;
+import com.bookinventory.user.dto.*;
 
 import java.util.List;
 
 public interface UserService {
 
-    // Register a new user
-    UserResponseDTO registerUser(UserRequestDTO userRequestDTO);
+	// Auth (Guest)
+	UserResponseDTO registerUser(UserRequestDTO dto);
 
-    // Login
-    LoginResponseDTO loginUser(LoginRequestDTO loginRequestDTO);
+	LoginResponseDTO loginUser(LoginRequestDTO dto);
 
-    // Get user by ID
-    UserResponseDTO getUserById(Integer userId);
+	// Own profile (RegisteredUser — userId comes from JWT)
+	UserResponseDTO getMyProfile(Integer userId);
 
-    // Get user by username
-    UserResponseDTO getUserByUsername(String userName);
+	UserResponseDTO updateMyProfile(Integer userId, UserUpdateRequestDTO dto);
 
-    // Get all users
-    List<UserResponseDTO> getAllUsers();
+	void changeMyPassword(Integer userId, ChangePasswordRequestDTO dto);
 
-    // Get all users by role
-    List<UserResponseDTO> getUsersByRole(Integer roleNumber);
+	// Admin — manage all users
+	List<UserResponseDTO> getAllUsers(); // all (active + inactive)
 
-    // Update user profile (name, phone, username)
-    UserResponseDTO updateUser(Integer userId, UserUpdateRequestDTO updateDTO);
+	List<UserResponseDTO> getAllActiveUsers(); // active only
 
-    // Change password
-    void changePassword(Integer userId, ChangePasswordRequestDTO changePasswordDTO);
+	UserResponseDTO getUserById(Integer userId);
 
-    // Assign / change role of a user
-    UserResponseDTO updateUserRole(Integer userId, Integer roleNumber);
+	UserResponseDTO updateUserById(Integer userId, UserUpdateRequestDTO dto);
 
-    // Delete user
-    void deleteUser(Integer userId);
+	UserResponseDTO updateUserRole(Integer userId, Integer roleNumber);
+
+	UserResponseDTO updateUserStatus(Integer userId, boolean active); // soft delete/reactivate
+
+	// Shared utility
+	List<UserResponseDTO> getUsersByRole(Integer roleNumber);
 }

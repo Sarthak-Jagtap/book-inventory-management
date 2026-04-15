@@ -1,201 +1,160 @@
 package com.bookinventory.user.controller;
 
-import com.bookinventory.user.common.response.ApiResponse;
-import com.bookinventory.user.dto.ChangePasswordRequestDTO;
-import com.bookinventory.user.dto.LoginRequestDTO;
-import com.bookinventory.user.dto.LoginResponseDTO;
-import com.bookinventory.user.dto.UserRequestDTO;
-import com.bookinventory.user.dto.UserResponseDTO;
-import com.bookinventory.user.dto.UserUpdateRequestDTO;
+import com.bookinventory.common.exception.ForbiddenException;
+import com.bookinventory.user.dto.*;
+import com.bookinventory.user.response.ApiResponse;
+import com.bookinventory.user.service.PurchaseLogService;
 import com.bookinventory.user.service.UserService;
+import com.bookinventory.user.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/user")
 public class UserController {
 
-    private final UserService userService;
+	private final UserService userService;
+	private final PurchaseLogService purchaseLogService;
+	private final JwtUtil jwtUtil;
 
-    // Constructor injection
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+	public UserController(UserService userService, PurchaseLogService purchaseLogService, JwtUtil jwtUtil) {
+		this.userService = userService;
+		this.purchaseLogService = purchaseLogService;
+		this.jwtUtil = jwtUtil;
+	}
 
-    // ─────────────────────────────────────────────────────────────────
-    // REGISTER NEW USER
-    // POST /api/users/register
-    // Body: { lastName, firstName, phoneNumber, userName, password, roleNumber }
-    // ─────────────────────────────────────────────────────────────────
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> registerUser(
-            @Valid @RequestBody UserRequestDTO userRequestDTO) {
+	private Integer extractUserId(HttpServletRequest request) {
+		String authHeader = request.getHeader("Authorization");
+		String token = authHeader.substring(7);
+		return jwtUtil.extractUserId(token);
+	}
 
-        UserResponseDTO registeredUser = userService.registerUser(userRequestDTO);
+	// GET PROFILE
+	@GetMapping("/profile")
+	public ResponseEntity<ApiResponse<UserResponseDTO>> getMyProfile(HttpServletRequest request) {
 
-        return new ResponseEntity<>(
-                ApiResponse.success("User registered successfully", registeredUser),
-                HttpStatus.CREATED   // 201
-        );
-    }
+		Integer userId = extractUserId(request);
+		UserResponseDTO user = userService.getMyProfile(userId);
 
-    // ─────────────────────────────────────────────────────────────────
-    // LOGIN
-    // POST /api/users/login
-    // Body: { userName, password }
-    // ─────────────────────────────────────────────────────────────────
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponseDTO>> loginUser(
-            @Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+		return new ResponseEntity<>(ApiResponse.success(200, "Profile fetched successfully", user), HttpStatus.OK);
+	}
 
-        LoginResponseDTO loginResponse = userService.loginUser(loginRequestDTO);
+	// UPDATE PROFILE
+	@PatchMapping("/profile")
+	public ResponseEntity<ApiResponse<UserResponseDTO>> updateMyProfile(HttpServletRequest request,
+			@Valid @RequestBody UserUpdateRequestDTO dto) {
 
-        return new ResponseEntity<>(
-                ApiResponse.success(loginResponse.getMessage(), loginResponse),
-                HttpStatus.OK   // 200
-        );
-    }
+		Integer userId = extractUserId(request);
+		UserResponseDTO updated = userService.updateMyProfile(userId, dto);
 
-    // ─────────────────────────────────────────────────────────────────
-    // GET ALL USERS
-    // GET /api/users
-    // ─────────────────────────────────────────────────────────────────
-    @GetMapping
-    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUsers() {
+		return new ResponseEntity<>(ApiResponse.success(200, "Profile updated successfully", updated), HttpStatus.OK);
+	}
+	
+	// Keep the existing PATCH, add PUT alongside it
+	@PutMapping("/profile")
+	public ResponseEntity<ApiResponse<UserResponseDTO>> updateMyProfilePut(
+	        HttpServletRequest request,
+	        @Valid @RequestBody UserUpdateRequestDTO dto) {
+	    Integer userId = extractUserId(request);
+	    UserResponseDTO updated = userService.updateMyProfile(userId, dto);
+	    return new ResponseEntity<>(
+	        ApiResponse.success(200, "Profile updated successfully", updated), HttpStatus.OK);
+	}
 
-        List<UserResponseDTO> users = userService.getAllUsers();
+	// CHANGE PASSWORD
+	@PatchMapping("/change-password")
+	public ResponseEntity<ApiResponse<Object>> changePassword(HttpServletRequest request,
+			@Valid @RequestBody ChangePasswordRequestDTO dto) {
 
-        return new ResponseEntity<>(
-                ApiResponse.success("Users fetched successfully", users),
-                HttpStatus.OK
-        );
-    }
+		Integer userId = extractUserId(request);
+		userService.changeMyPassword(userId, dto);
 
-    // ─────────────────────────────────────────────────────────────────
-    // GET USER BY ID
-    // GET /api/users/5
-    // ─────────────────────────────────────────────────────────────────
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(
-            @PathVariable Integer userId) {
+		return new ResponseEntity<>(ApiResponse.success(200, "Password changed successfully", null), HttpStatus.OK);
+	}
 
-        UserResponseDTO user = userService.getUserById(userId);
+	// GET PURCHASES
+	@GetMapping("/purchases")
+	public ResponseEntity<ApiResponse<List<PurchaseLogResponseDTO>>> getMyPurchases(HttpServletRequest request) {
 
-        return new ResponseEntity<>(
-                ApiResponse.success("User fetched successfully", user),
-                HttpStatus.OK
-        );
-    }
+		Integer userId = extractUserId(request);
+		List<PurchaseLogResponseDTO> purchases = purchaseLogService.getPurchasesByUser(userId);
 
-    // ─────────────────────────────────────────────────────────────────
-    // GET USER BY USERNAME
-    // GET /api/users/username/krishna123
-    // ─────────────────────────────────────────────────────────────────
-    @GetMapping("/username/{userName}")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserByUsername(
-            @PathVariable String userName) {
+		return new ResponseEntity<>(ApiResponse.success(200, "Purchase history fetched successfully", purchases),
+				HttpStatus.OK);
+	}
 
-        UserResponseDTO user = userService.getUserByUsername(userName);
+	// COUNT PURCHASES
+	@GetMapping("/purchases/count")
+	public ResponseEntity<ApiResponse<Long>> getMyPurchaseCount(HttpServletRequest request) {
 
-        return new ResponseEntity<>(
-                ApiResponse.success("User fetched successfully", user),
-                HttpStatus.OK
-        );
-    }
+		Integer userId = extractUserId(request);
+		long count = purchaseLogService.getPurchaseCount(userId);
 
-    // ─────────────────────────────────────────────────────────────────
-    // GET ALL USERS BY ROLE
-    // GET /api/users/role/1
-    // ─────────────────────────────────────────────────────────────────
-    @GetMapping("/role/{roleNumber}")
-    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getUsersByRole(
-            @PathVariable Integer roleNumber) {
+		return new ResponseEntity<>(ApiResponse.success(200, "Purchase count fetched successfully", count),
+				HttpStatus.OK);
+	}
 
-        List<UserResponseDTO> users = userService.getUsersByRole(roleNumber);
+	// INVENTORY IDS
+	@GetMapping("/purchases/inventory-ids")
+	public ResponseEntity<ApiResponse<List<Integer>>> getMyPurchasedInventoryIds(HttpServletRequest request) {
 
-        return new ResponseEntity<>(
-                ApiResponse.success("Users fetched successfully", users),
-                HttpStatus.OK
-        );
-    }
+		Integer userId = extractUserId(request);
+		List<Integer> ids = purchaseLogService.getInventoryIdsByUser(userId);
 
-    // ─────────────────────────────────────────────────────────────────
-    // UPDATE USER PROFILE
-    // PUT /api/users/5
-    // Body: { lastName, firstName, phoneNumber, userName }
-    // ─────────────────────────────────────────────────────────────────
-    @PutMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(
-            @PathVariable Integer userId,
-            @Valid @RequestBody UserUpdateRequestDTO updateDTO) {
+		return new ResponseEntity<>(ApiResponse.success(200, "Inventory IDs fetched successfully", ids), HttpStatus.OK);
+	}
 
-        UserResponseDTO updatedUser = userService.updateUser(userId, updateDTO);
+	// CHECK PURCHASE
+	@GetMapping("/purchases/check/{inventoryId}")
+	public ResponseEntity<ApiResponse<Boolean>> checkPurchase(HttpServletRequest request,
+			@PathVariable Integer inventoryId) {
 
-        return new ResponseEntity<>(
-                ApiResponse.success("User updated successfully", updatedUser),
-                HttpStatus.OK
-        );
-    }
+		Integer userId = extractUserId(request);
+		boolean hasPurchased = purchaseLogService.hasPurchased(userId, inventoryId);
 
-    // ─────────────────────────────────────────────────────────────────
-    // CHANGE PASSWORD
-    // PUT /api/users/5/change-password
-    // Body: { currentPassword, newPassword, confirmPassword }
-    // ─────────────────────────────────────────────────────────────────
-    @PutMapping("/{userId}/change-password")
-    public ResponseEntity<ApiResponse<Object>> changePassword(
-            @PathVariable Integer userId,
-            @Valid @RequestBody ChangePasswordRequestDTO changePasswordDTO) {
+		String message = hasPurchased ? "User has already purchased this item" : "User has not purchased this item";
 
-        userService.changePassword(userId, changePasswordDTO);
+		return new ResponseEntity<>(ApiResponse.success(200, message, hasPurchased), HttpStatus.OK);
+	}
 
-        return new ResponseEntity<>(
-                ApiResponse.success("Password changed successfully"),
-                HttpStatus.OK
-        );
-    }
+	// LOG PURCHASE
+	@PostMapping("/purchases")
+	public ResponseEntity<ApiResponse<PurchaseLogResponseDTO>> logPurchase(HttpServletRequest request,
+			@RequestBody PurchaseLogRequestDTO dto) {
 
-    // ─────────────────────────────────────────────────────────────────
-    // UPDATE USER ROLE  (Admin operation)
-    // PUT /api/users/5/role/2
-    // ─────────────────────────────────────────────────────────────────
-    @PutMapping("/{userId}/role/{roleNumber}")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUserRole(
-            @PathVariable Integer userId,
-            @PathVariable Integer roleNumber) {
+		Integer userId = extractUserId(request);
+		dto.setUserId(userId);
 
-        UserResponseDTO updatedUser = userService.updateUserRole(userId, roleNumber);
+		PurchaseLogResponseDTO purchase = purchaseLogService.addPurchase(dto);
 
-        return new ResponseEntity<>(
-                ApiResponse.success("User role updated successfully", updatedUser),
-                HttpStatus.OK
-        );
-    }
+		return new ResponseEntity<>(ApiResponse.success(201, "Purchase logged successfully", purchase),
+				HttpStatus.CREATED);
+	}
+	
+	// GET /api/v1/user/purchases/{userId}
+	// Validates that the JWT userId matches the path userId (users can only see own purchases)
+	@GetMapping("/purchases/{userId}")
+	public ResponseEntity<ApiResponse<List<PurchaseLogResponseDTO>>> getPurchasesByUserId(
+	        HttpServletRequest request,
+	        @PathVariable Integer userId) {
 
-    // ─────────────────────────────────────────────────────────────────
-    // DELETE USER
-    // DELETE /api/users/5
-    // ─────────────────────────────────────────────────────────────────
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<ApiResponse<Object>> deleteUser(
-            @PathVariable Integer userId) {
+	    Integer tokenUserId = extractUserId(request);
 
-        userService.deleteUser(userId);
+	    // Security check: registered user can only access own purchases
+	    // Admin / StoreOwner can see any userId's purchases via store-owner controller
+	    if (!tokenUserId.equals(userId)) {
+	        throw new ForbiddenException(
+	            "You are not allowed to view another user's purchases");
+	    }
 
-        return new ResponseEntity<>(
-                ApiResponse.success("User deleted successfully"),
-                HttpStatus.OK
-        );
-    }
+	    List<PurchaseLogResponseDTO> purchases = purchaseLogService.getPurchasesByUser(userId);
+	    return new ResponseEntity<>(
+	        ApiResponse.success(200, "Purchase history fetched successfully", purchases),
+	        HttpStatus.OK);
+	}
 }

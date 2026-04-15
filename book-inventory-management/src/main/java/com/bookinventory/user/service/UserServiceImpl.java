@@ -1,21 +1,10 @@
 package com.bookinventory.user.service;
 
-import com.bookinventory.user.common.exception.BadRequestException;
-import com.bookinventory.user.common.exception.DuplicateResourceException;
-import com.bookinventory.user.common.exception.InvalidCredentialsException;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
-import com.bookinventory.user.dto.ChangePasswordRequestDTO;
-import com.bookinventory.user.dto.LoginRequestDTO;
-import com.bookinventory.user.dto.LoginResponseDTO;
-import com.bookinventory.user.dto.PermRoleResponseDTO;
-import com.bookinventory.user.dto.UserRequestDTO;
-import com.bookinventory.user.dto.UserResponseDTO;
-import com.bookinventory.user.dto.UserUpdateRequestDTO;
-import com.bookinventory.user.entity.PermRole;
-import com.bookinventory.user.entity.User;
-import com.bookinventory.user.repository.PermRoleRepository;
-import com.bookinventory.user.repository.PurchaseLogRepository;
-import com.bookinventory.user.repository.UserRepository;
+import com.bookinventory.common.exception.*;
+import com.bookinventory.user.dto.*;
+import com.bookinventory.user.entity.*;
+import com.bookinventory.user.repository.*;
+import com.bookinventory.user.util.JwtUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,240 +14,241 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository        userRepository;
-    private final PermRoleRepository    permRoleRepository;
-    private final PurchaseLogRepository purchaseLogRepository;
+	private final UserRepository userRepository;
+	private final PermRoleRepository permRoleRepository;
+	private final PurchaseLogRepository purchaseLogRepository;
+	private final JwtUtil jwtUtil;
 
-    // Constructor injection
-    public UserServiceImpl(UserRepository userRepository,
-                           PermRoleRepository permRoleRepository,
-                           PurchaseLogRepository purchaseLogRepository) {
-        this.userRepository        = userRepository;
-        this.permRoleRepository    = permRoleRepository;
-        this.purchaseLogRepository = purchaseLogRepository;
-    }
+	public UserServiceImpl(UserRepository userRepository, PermRoleRepository permRoleRepository,
+			PurchaseLogRepository purchaseLogRepository, JwtUtil jwtUtil) {
+		this.userRepository = userRepository;
+		this.permRoleRepository = permRoleRepository;
+		this.purchaseLogRepository = purchaseLogRepository;
+		this.jwtUtil = jwtUtil;
+	}
 
-    private PermRoleResponseDTO convertRoleToDTO(PermRole role) {
-        if (role == null) return null;
-        PermRoleResponseDTO dto = new PermRoleResponseDTO();
-        dto.setRoleNumber(role.getRoleNumber());
-        dto.setPermRole(role.getPermRole());
-        return dto;
-    }
+	// Private helpers
 
-    private UserResponseDTO convertUserToDTO(User user) {
-        UserResponseDTO dto = new UserResponseDTO();
-        dto.setUserId(user.getUserId());
-        dto.setLastName(user.getLastName());
-        dto.setFirstName(user.getFirstName());
-        dto.setPhoneNumber(user.getPhoneNumber());
-        dto.setUserName(user.getUserName());
-        dto.setRole(convertRoleToDTO(user.getRole()));
-        return dto;
-    }
+	private PermRoleResponseDTO convertRoleToDTO(PermRole role) {
+		if (role == null)
+			return null;
+		PermRoleResponseDTO dto = new PermRoleResponseDTO();
+		dto.setRoleNumber(role.getRoleNumber());
+		dto.setPermRole(role.getPermRole());
+		return dto;
+	}
 
-    // REGISTER USER
-    @Override
-    @Transactional
-    public UserResponseDTO registerUser(UserRequestDTO dto) {
+	private UserResponseDTO convertUserToDTO(User user) {
+		UserResponseDTO dto = new UserResponseDTO();
+		dto.setUserId(user.getUserId());
+		dto.setLastName(user.getLastName());
+		dto.setFirstName(user.getFirstName());
+		dto.setPhoneNumber(user.getPhoneNumber());
+		dto.setUserName(user.getUserName());
+		dto.setActive(user.isActive()); // NEW
+		dto.setRole(convertRoleToDTO(user.getRole()));
+		return dto;
+	}
 
-        // 1. Check if username is already taken
-        if (userRepository.existsByUserName(dto.getUserName())) {
-            throw new DuplicateResourceException(
-                    "User", "userName", dto.getUserName());
-        }
+	// AUTH
 
-        // 2. Resolve role — use provided roleNumber, otherwise default to 1 (Guest)
-        Integer roleNumberToUse = (dto.getRoleNumber() != null) ? dto.getRoleNumber() : 1;
+	@Override
+	@Transactional
+	public UserResponseDTO registerUser(UserRequestDTO dto) {
 
-        PermRole role = permRoleRepository.findById(roleNumberToUse)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Role", "roleNumber", roleNumberToUse));
+		// 1. Username must be unique among ACTIVE users
+		if (userRepository.existsByUserNameAndActiveTrue(dto.getUserName())) {
+			throw new DuplicateResourceException("User", "userName", dto.getUserName());
+		}
 
-        // 3. Build and save User entity
-        User user = new User();
-        user.setLastName(dto.getLastName());
-        user.setFirstName(dto.getFirstName());
-        user.setPhoneNumber(dto.getPhoneNumber());
-        user.setUserName(dto.getUserName());
-        user.setPassword(dto.getPassword());
-        user.setRole(role);
+		// 2. Resolve role — default to 2 (RegisteredUser) for self-registration
+		// Only Admin can assign StoreOwner(3) or Admin(4)
+		Integer roleNumberToUse = (dto.getRoleNumber() != null) ? dto.getRoleNumber() : 2;
 
-        User savedUser = userRepository.save(user);
+		PermRole role = permRoleRepository.findById(roleNumberToUse)
+				.orElseThrow(() -> new ResourceNotFoundException("Role", "roleNumber", roleNumberToUse));
 
-        return convertUserToDTO(savedUser);
-    }
+		// 3. Build and save
+		User user = new User();
+		user.setLastName(dto.getLastName());
+		user.setFirstName(dto.getFirstName());
+		user.setPhoneNumber(dto.getPhoneNumber());
+		user.setUserName(dto.getUserName());
+		user.setPassword(dto.getPassword());
+		user.setRole(role);
+		user.setActive(true);
 
-    // LOGIN
-    @Override
-    public LoginResponseDTO loginUser(LoginRequestDTO dto) {
+		return convertUserToDTO(userRepository.save(user));
+	}
 
-        // 1. Check username exists
-        User user = userRepository.findByUserName(dto.getUserName())
-                .orElseThrow(() -> new InvalidCredentialsException(
-                        "Invalid username or password"));
+	@Override
+	public LoginResponseDTO loginUser(LoginRequestDTO dto) {
 
-        // 2. Check password matches
-        if (!user.getPassword().equals(dto.getPassword())) {
-            throw new InvalidCredentialsException("Invalid username or password");
-        }
+		// 1. Must exist AND be active
+		User user = userRepository.findByUserNameAndActiveTrue(dto.getUserName())
+				.orElseThrow(() -> new InvalidCredentialsException("Invalid username or password"));
 
-        // 3. Build login response
-        LoginResponseDTO response = new LoginResponseDTO();
-        response.setUserId(user.getUserId());
-        response.setUserName(user.getUserName());
-        response.setFirstName(user.getFirstName());
-        response.setLastName(user.getLastName());
-        response.setRoleName(user.getRole() != null
-                ? user.getRole().getPermRole() : "Guest");
-        response.setMessage("Login successful");
+		// 2. Password check
+		if (!user.getPassword().equals(dto.getPassword())) {
+			throw new InvalidCredentialsException("Invalid username or password");
+		}
 
-        return response;
-    }
+		// 3. Build JWT
+		String roleName = user.getRole() != null ? user.getRole().getPermRole() : "Guest";
+		String token = jwtUtil.generateToken(user.getUserName(), user.getUserId(), roleName);
 
-    // GET USER BY ID
-    @Override
-    public UserResponseDTO getUserById(Integer userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User", "userId", userId));
-        return convertUserToDTO(user);
-    }
+		// 4. Build response
+		LoginResponseDTO response = new LoginResponseDTO();
+		response.setUserId(user.getUserId());
+		response.setUserName(user.getUserName());
+		response.setFirstName(user.getFirstName());
+		response.setLastName(user.getLastName());
+		response.setRoleName(roleName);
+		response.setMessage("Login successful");
+		response.setToken(token);
+		response.setTokenType("Bearer");
 
-    // GET USER BY USERNAME
-    @Override
-    public UserResponseDTO getUserByUsername(String userName) {
-        User user = userRepository.findByUserName(userName)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User", "userName", userName));
-        return convertUserToDTO(user);
-    }
+		return response;
+	}
 
-    // GET ALL USERS
-    @Override
-    public List<UserResponseDTO> getAllUsers() {
-        List<User> users = userRepository.findAllUsersWithRole();
-        List<UserResponseDTO> dtoList = new ArrayList<>();
-        for (User user : users) {
-            dtoList.add(convertUserToDTO(user));
-        }
-        return dtoList;
-    }
-    
-    // GET USERS BY ROLE
-    @Override
-    public List<UserResponseDTO> getUsersByRole(Integer roleNumber) {
+	// OWN PROFILE (RegisteredUser)
 
-        // Validate role exists first
-        if (!permRoleRepository.existsById(roleNumber)) {
-            throw new ResourceNotFoundException("Role", "roleNumber", roleNumber);
-        }
+	@Override
+	public UserResponseDTO getMyProfile(Integer userId) {
+		User user = userRepository.findById(userId).filter(User::isActive)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+		return convertUserToDTO(user);
+	}
 
-        List<User> users = userRepository.findByRole_RoleNumber(roleNumber);
-        List<UserResponseDTO> dtoList = new ArrayList<>();
-        for (User user : users) {
-            dtoList.add(convertUserToDTO(user));
-        }
-        return dtoList;
-    }
+	@Override
+	@Transactional
+	public UserResponseDTO updateMyProfile(Integer userId, UserUpdateRequestDTO dto) {
+		User user = userRepository.findById(userId).filter(User::isActive)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
-    // UPDATE USER PROFILE
-    @Override
-    @Transactional
-    public UserResponseDTO updateUser(Integer userId, UserUpdateRequestDTO dto) {
+		if (dto.getLastName() != null && !dto.getLastName().isBlank())
+			user.setLastName(dto.getLastName());
+		if (dto.getFirstName() != null && !dto.getFirstName().isBlank())
+			user.setFirstName(dto.getFirstName());
+		if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isBlank())
+			user.setPhoneNumber(dto.getPhoneNumber());
+		if (dto.getUserName() != null && !dto.getUserName().isBlank()) {
+			if (userRepository.existsByUserNameAndActiveTrue(dto.getUserName())
+					&& !user.getUserName().equals(dto.getUserName())) {
+				throw new DuplicateResourceException("User", "userName", dto.getUserName());
+			}
+			user.setUserName(dto.getUserName());
+		}
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User", "userId", userId));
+		return convertUserToDTO(userRepository.save(user));
+	}
 
-        // Only update fields that are actually provided (not null)
-        if (dto.getLastName() != null && !dto.getLastName().isBlank()) {
-            user.setLastName(dto.getLastName());
-        }
-        if (dto.getFirstName() != null && !dto.getFirstName().isBlank()) {
-            user.setFirstName(dto.getFirstName());
-        }
-        if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isBlank()) {
-            user.setPhoneNumber(dto.getPhoneNumber());
-        }
-        if (dto.getUserName() != null && !dto.getUserName().isBlank()) {
-            // Check new username is not already taken by someone else
-            if (userRepository.existsByUserName(dto.getUserName()) &&
-                !user.getUserName().equals(dto.getUserName())) {
-                throw new DuplicateResourceException(
-                        "User", "userName", dto.getUserName());
-            }
-            user.setUserName(dto.getUserName());
-        }
+	@Override
+	@Transactional
+	public void changeMyPassword(Integer userId, ChangePasswordRequestDTO dto) {
+		User user = userRepository.findById(userId).filter(User::isActive)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
-        User updatedUser = userRepository.save(user);
-        return convertUserToDTO(updatedUser);
-    }
+		if (!user.getPassword().equals(dto.getCurrentPassword()))
+			throw new BadRequestException("Current password is incorrect");
 
-    // CHANGE PASSWORD
-    @Override
-    @Transactional
-    public void changePassword(Integer userId, ChangePasswordRequestDTO dto) {
+		if (!dto.getNewPassword().equals(dto.getConfirmPassword()))
+			throw new BadRequestException("New password and confirm password do not match");
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User", "userId", userId));
+		if (dto.getNewPassword().equals(dto.getCurrentPassword()))
+			throw new BadRequestException("New password must be different from current password");
 
-        // 1. Verify current password is correct
-        if (!user.getPassword().equals(dto.getCurrentPassword())) {
-            throw new BadRequestException("Current password is incorrect");
-        }
+		userRepository.updatePassword(userId, dto.getNewPassword());
+	}
 
-        // 2. New password and confirm password must match
-        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
-            throw new BadRequestException(
-                    "New password and confirm password do not match");
-        }
+	// ADMIN — all users
 
-        // 3. New password must not be the same as current
-        if (dto.getNewPassword().equals(dto.getCurrentPassword())) {
-            throw new BadRequestException(
-                    "New password must be different from current password");
-        }
+	@Override
+	public List<UserResponseDTO> getAllUsers() {
+		List<UserResponseDTO> result = new ArrayList<>();
+		for (User u : userRepository.findAllUsersWithRole())
+			result.add(convertUserToDTO(u));
+		return result;
+	}
 
-        // 4. Update password using the targeted repository query
-        userRepository.updatePassword(userId, dto.getNewPassword());
-    }
+	@Override
+	public List<UserResponseDTO> getAllActiveUsers() {
+		List<UserResponseDTO> result = new ArrayList<>();
+		for (User u : userRepository.findAllActiveUsersWithRole())
+			result.add(convertUserToDTO(u));
+		return result;
+	}
 
-    // UPDATE USER ROLE (Admin operation)
-    @Override
-    @Transactional
-    public UserResponseDTO updateUserRole(Integer userId, Integer roleNumber) {
+	@Override
+	public UserResponseDTO getUserById(Integer userId) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+		return convertUserToDTO(user);
+	}
 
-        // Validate user exists
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User", "userId", userId));
+	@Override
+	@Transactional
+	public UserResponseDTO updateUserById(Integer userId, UserUpdateRequestDTO dto) {
+		// Admin can update any user — same logic as updateMyProfile but no active check
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
-        // Validate role exists
-        PermRole role = permRoleRepository.findById(roleNumber)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Role", "roleNumber", roleNumber));
+		if (dto.getLastName() != null && !dto.getLastName().isBlank())
+			user.setLastName(dto.getLastName());
+		if (dto.getFirstName() != null && !dto.getFirstName().isBlank())
+			user.setFirstName(dto.getFirstName());
+		if (dto.getPhoneNumber() != null && !dto.getPhoneNumber().isBlank())
+			user.setPhoneNumber(dto.getPhoneNumber());
+		if (dto.getUserName() != null && !dto.getUserName().isBlank()) {
+			if (userRepository.existsByUserNameAndActiveTrue(dto.getUserName())
+					&& !user.getUserName().equals(dto.getUserName())) {
+				throw new DuplicateResourceException("User", "userName", dto.getUserName());
+			}
+			user.setUserName(dto.getUserName());
+		}
+		return convertUserToDTO(userRepository.save(user));
+	}
 
-        user.setRole(role);
-        User updatedUser = userRepository.save(user);
-        return convertUserToDTO(updatedUser);
-    }
+	@Override
+	@Transactional
+	public UserResponseDTO updateUserRole(Integer userId, Integer roleNumber) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
-    // DELETE USER
-    @Override
-    @Transactional
-    public void deleteUser(Integer userId) {
+		PermRole role = permRoleRepository.findById(roleNumber)
+				.orElseThrow(() -> new ResourceNotFoundException("Role", "roleNumber", roleNumber));
 
-        // 1. Check user exists
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User", "userId", userId);
-        }
+		user.setRole(role);
+		return convertUserToDTO(userRepository.save(user));
+	}
 
-        // 2. Delete all purchase logs for this user first (FK constraint)
-        purchaseLogRepository.deleteById_UserId(userId);
+	// ── SOFT DELETE / REACTIVATE (replaces hard delete) ──────────
 
-        // 3. Delete the user
-        userRepository.deleteById(userId);
-    }
+	/**
+	 * PATCH /api/v1/admin/users/{userId}/status Admin sends { "active": false } to
+	 * deactivate, { "active": true } to reactivate. This REPLACES the old
+	 * deleteUser — data is kept in DB, just flagged inactive.
+	 */
+	@Override
+	@Transactional
+	public UserResponseDTO updateUserStatus(Integer userId, boolean active) {
+		User user = userRepository.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+		user.setActive(active);
+		return convertUserToDTO(userRepository.save(user));
+	}
+
+	// ── Shared ────────────────────────────────────────────────────
+
+	@Override
+	public List<UserResponseDTO> getUsersByRole(Integer roleNumber) {
+		if (!permRoleRepository.existsById(roleNumber))
+			throw new ResourceNotFoundException("Role", "roleNumber", roleNumber);
+
+		List<UserResponseDTO> result = new ArrayList<>();
+		for (User u : userRepository.findByRole_RoleNumberAndActiveTrue(roleNumber))
+			result.add(convertUserToDTO(u));
+		return result;
+	}
 }

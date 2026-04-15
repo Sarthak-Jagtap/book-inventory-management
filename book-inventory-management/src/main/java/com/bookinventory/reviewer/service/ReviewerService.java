@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.bookinventory.reviewer.dto.ReviewerDTO;
 import com.bookinventory.reviewer.entity.Reviewer;
 import com.bookinventory.reviewer.repository.ReviewerRepository;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 
 @Service
 public class ReviewerService {

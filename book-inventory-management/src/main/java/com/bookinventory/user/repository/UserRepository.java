@@ -6,52 +6,54 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-    // Login / Auth
+    // Auth
+    // Find active user by username (used at login)
+    Optional<User> findByUserNameAndActiveTrue(String userName);
 
-    // Find user by username
-    Optional<User> findByUserName(String userName);
+    // Check if username already taken (among active users)
+    boolean existsByUserNameAndActiveTrue(String userName);
 
-    // Find user by username AND password
-    Optional<User> findByUserNameAndPassword(String userName, String password);
+    // Admin queries
 
-    // Check if a username is already taken
-    boolean existsByUserName(String userName);
+    // Get ALL users (including inactive) — Admin only
+    @Query("SELECT u FROM User u JOIN FETCH u.role")
+    List<User> findAllUsersWithRole();
 
-    // Role-based Queries
+    // Get only ACTIVE users with role — Admin only
+    @Query("SELECT u FROM User u JOIN FETCH u.role WHERE u.active = true")
+    List<User> findAllActiveUsersWithRole();
 
-    // Get all users who have a specific role number
-    List<User> findByRole_RoleNumber(Integer roleNumber);
+    // Get users by role number (active only)
+    List<User> findByRole_RoleNumberAndActiveTrue(Integer roleNumber);
 
-    // Search Queries
+    // PATCH queries
 
-    // Find users by last name
-    List<User> findByLastNameIgnoreCase(String lastName);
+    // Soft delete — set active = false
+    @Modifying
+    @Query("UPDATE User u SET u.active = :status WHERE u.userId = :userId")
+    int updateActiveStatus(@Param("userId") Integer userId,
+                           @Param("status") boolean status);
 
-    // Find users by first name
-    List<User> findByFirstNameIgnoreCase(String firstName);
-
-    // Custom JPQL Queries
-
-    // Update only the password for a specific user
-    // @Modifying + @Transactional (on service) required for UPDATE/DELETE
+    // Update password
     @Modifying
     @Query("UPDATE User u SET u.password = :newPassword WHERE u.userId = :userId")
     int updatePassword(@Param("userId") Integer userId,
                        @Param("newPassword") String newPassword);
 
-    // Update the role of a specific user
+    // Update role
     @Modifying
-    @Query("UPDATE User u SET u.role.roleNumber = :roleNumber WHERE u.userId = :userId")
+    @Query("UPDATE User u SET u.role = :role WHERE u.userId = :userId")
     int updateUserRole(@Param("userId") Integer userId,
-                       @Param("roleNumber") Integer roleNumber);
+                       @Param("role") com.bookinventory.user.entity.PermRole role);
 
-    // Get all users along with their role info in one query
-    @Query("SELECT u FROM User u JOIN FETCH u.role")
-    List<User> findAllUsersWithRole();
+    // Search
+    List<User> findByLastNameIgnoreCaseAndActiveTrue(String lastName);
+    List<User> findByFirstNameIgnoreCaseAndActiveTrue(String firstName);
 }
