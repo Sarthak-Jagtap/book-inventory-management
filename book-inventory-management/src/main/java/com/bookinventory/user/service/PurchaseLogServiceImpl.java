@@ -1,7 +1,7 @@
 package com.bookinventory.user.service;
 
-import com.bookinventory.user.common.exception.BadRequestException;
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.BadRequestException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.user.dto.PurchaseLogRequestDTO;
 import com.bookinventory.user.dto.PurchaseLogResponseDTO;
 import com.bookinventory.user.entity.PurchaseLog;
@@ -130,5 +130,14 @@ public class PurchaseLogServiceImpl implements PurchaseLogService {
             dtoList.add(convertToDTO(purchase));
         }
         return dtoList;
+    }
+    
+    // In PurchaseLogServiceImpl — add:
+    @Override
+    public List<PurchaseLogResponseDTO> getAllPurchases() {
+        List<PurchaseLogResponseDTO> result = new ArrayList<>();
+        for (PurchaseLog p : purchaseLogRepository.findAll())
+            result.add(convertToDTO(p));
+        return result;
     }
 }

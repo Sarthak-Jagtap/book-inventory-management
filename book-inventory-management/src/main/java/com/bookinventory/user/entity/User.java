@@ -1,124 +1,122 @@
 package com.bookinventory.user.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "user")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "UserID")
-    private Integer userId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "UserID")
+	private Integer userId;
 
-    @Column(name = "LastName", length = 30, nullable = false)
-    private String lastName;
+	@Column(name = "LastName", length = 30, nullable = false)
+	private String lastName;
 
-    @Column(name = "FirstName", length = 20, nullable = false)
-    private String firstName;
+	@Column(name = "FirstName", length = 20, nullable = false)
+	private String firstName;
 
-    @Column(name = "PhoneNumber", length = 14,columnDefinition="CHAR(14)")
-    private String phoneNumber;
+	@Column(name = "PhoneNumber", length = 14, columnDefinition = "CHAR(14)")
+	private String phoneNumber;
 
-    @Column(name = "UserName", length = 30, nullable = false)
-    private String userName;
+	@Column(name = "UserName", length = 30, nullable = false)
+	private String userName;
 
-    @Column(name = "Password", length = 30, nullable = false)
-    private String password;
+	@Column(name = "Password", length = 30, nullable = false)
+	private String password;
 
-    // FK → permrole.RoleNumber  (default = 1 = Guest, handled at DB level)
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "RoleNumber", referencedColumnName = "RoleNumber")
-    private PermRole role;
+	// NEW: soft-delete flag — true = active user, false = deactivated
+	@Column(name = "active", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 1")
+	private boolean active = true;
 
-    // Constructors
-    public User() {}
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "RoleNumber", referencedColumnName = "RoleNumber")
+	private PermRole role;
 
-    public User(String lastName, String firstName, String phoneNumber,
-                String userName, String password, PermRole role) {
-        this.lastName    = lastName;
-        this.firstName   = firstName;
-        this.phoneNumber = phoneNumber;
-        this.userName    = userName;
-        this.password    = password;
-        this.role        = role;
-    }
+	// Constructors
+	public User() {
+	}
 
-    // Getters & Setters
-    public Integer getUserId() {
-        return userId;
-    }
+	public User(String lastName, String firstName, String phoneNumber, String userName, String password,
+			PermRole role) {
+		this.lastName = lastName;
+		this.firstName = firstName;
+		this.phoneNumber = phoneNumber;
+		this.userName = userName;
+		this.password = password;
+		this.role = role;
+		this.active = true; // always start as active
+	}
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
+	// Getters & Setters
+	public Integer getUserId() {
+		return userId;
+	}
 
-    public String getLastName() {
-        return lastName;
-    }
+	public void setUserId(Integer userId) {
+		this.userId = userId;
+	}
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+	public String getLastName() {
+		return lastName;
+	}
 
-    public String getFirstName() {
-        return firstName;
-    }
+	public void setLastName(String v) {
+		this.lastName = v;
+	}
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+	public String getFirstName() {
+		return firstName;
+	}
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
+	public void setFirstName(String v) {
+		this.firstName = v;
+	}
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
 
-    public String getUserName() {
-        return userName;
-    }
+	public void setPhoneNumber(String v) {
+		this.phoneNumber = v;
+	}
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
+	public String getUserName() {
+		return userName;
+	}
 
-    public String getPassword() {
-        return password;
-    }
+	public void setUserName(String v) {
+		this.userName = v;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public PermRole getRole() {
-        return role;
-    }
+	public void setPassword(String v) {
+		this.password = v;
+	}
 
-    public void setRole(PermRole role) {
-        this.role = role;
-    }
+	public boolean isActive() {
+		return active;
+	}
 
-    // toString
-    @Override
-    public String toString() {
-        return "User{" +
-                "userId=" + userId +
-                ", lastName='" + lastName + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", userName='" + userName + '\'' +
-                ", role=" + (role != null ? role.getPermRole() : "null") +
-                '}';
-    }
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+
+	public PermRole getRole() {
+		return role;
+	}
+
+	public void setRole(PermRole role) {
+		this.role = role;
+	}
+
+	@Override
+	public String toString() {
+		return "User{userId=" + userId + ", userName='" + userName + "', active=" + active + ", role="
+				+ (role != null ? role.getPermRole() : "null") + '}';
+	}
 }

@@ -1,6 +1,6 @@
 package com.bookinventory.user.service;
 
-import com.bookinventory.user.common.exception.ResourceNotFoundException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.user.dto.PermRoleResponseDTO;
 import com.bookinventory.user.entity.PermRole;
 import com.bookinventory.user.repository.PermRoleRepository;
