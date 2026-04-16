@@ -266,14 +266,9 @@ Run
 
 <script>
 
-function openApi(url){
-
-window.location.href="/api-result?endpoint="+encodeURIComponent(url)
-
-}
 
 function openApi(url){
-window.location.href="/api-result?endpoint="+encodeURIComponent(url)
+window.location.href="/api-author-result?endpoint="+encodeURIComponent(url)
 }
 
 
@@ -295,7 +290,7 @@ photo:""
 })
 .then(res=>res.json())
 .then(data=>{
-window.open("/api-result?endpoint="+encodeURIComponent("/api/v1/authors/"+id))
+window.open("/api-author-result?endpoint="+encodeURIComponent("/api/v1/authors/"+id))
 })
 
 }
