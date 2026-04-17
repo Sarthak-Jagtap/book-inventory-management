@@ -22,7 +22,7 @@ public class PageController {
     public String apiDashboard() {
         return "api-author-dashboard";
     }
-    
+
     @GetMapping("/api-author-result")
     public String viewApi(@RequestParam String endpoint, Model model) {
 

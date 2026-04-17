@@ -27,7 +27,9 @@ public class SecurityConfig {
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-
+            		
+            		
+            		
                 // ══════════════════════════════════════════════════
                 // GUEST — fully public, no token needed
                 // ══════════════════════════════════════════════════
@@ -224,6 +226,7 @@ public class SecurityConfig {
                     "/api/v1/admin/**")
                     .hasRole("Admin")
 
+                    
                 // ══════════════════════════════════════════════════
                 // CATCH-ALL — anything else needs a valid token
                 // ══════════════════════════════════════════════════
