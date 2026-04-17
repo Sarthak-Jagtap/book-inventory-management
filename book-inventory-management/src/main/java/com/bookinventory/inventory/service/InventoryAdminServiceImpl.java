@@ -178,15 +178,15 @@ public class InventoryAdminServiceImpl implements InventoryAdminService {
     }
 
     @Override
-    public InventoryResponse markAsPurchased(Integer inventoryId) {
+    public InventoryResponse updatePurchaseStatus(Integer inventoryId, UpdateInventoryRequest request) {
         Inventory inventory = inventoryRepository.findById(inventoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory", "inventoryId", inventoryId));
 
-        if (Boolean.TRUE.equals(inventory.getPurchased())) {
-            throw new BadRequestException("Inventory item already purchased: " + inventoryId);
+        if (request == null || request.getPurchased() == null) {
+            throw new BadRequestException("Purchased status is required");
         }
 
-        inventory.setPurchased(true);
+        inventory.setPurchased(request.getPurchased());
         Inventory updated = inventoryRepository.save(inventory);
 
         return mapToResponse(updated);
