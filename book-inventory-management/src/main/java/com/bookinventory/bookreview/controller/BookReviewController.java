@@ -54,8 +54,8 @@ public class BookReviewController {
 
     //  GET all reviews
     @GetMapping("reviews/book")
-    public List<BookReview> getAllReviews(){
-        return service.getAllReviews();
+    public List<BookReviewDTO> getAllReviewsDTO(){
+        return service.getAllReviewsDTO();
     }
 
     //  CREATE review

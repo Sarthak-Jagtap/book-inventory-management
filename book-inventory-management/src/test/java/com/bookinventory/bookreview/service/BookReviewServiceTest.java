@@ -38,7 +38,18 @@ public class BookReviewServiceTest {
     @Test
     void testGetBookReviewByISBNDTOisbn() {
 
+        // 🔥 create Book
+        Book book = new Book();
+        book.setIsbn("123");
+
+        // 🔥 create Reviewer
+        Reviewer reviewer = new Reviewer();
+        reviewer.setReviewerID(1);
+
+        // 🔥 attach to review
         BookReview review = new BookReview();
+        review.setBook(book);
+        review.setReviewer(reviewer);
         review.setRating(5);
         review.setComments("Good");
 
@@ -48,6 +59,7 @@ public class BookReviewServiceTest {
         List<BookReviewDTO> result = service.getBookReviewByISBNDTOisbn("123");
 
         assertEquals(1, result.size());
+        assertEquals("123", result.get(0).getIsbn());
     }
 
     // ❌ EXCEPTION case
@@ -179,11 +191,23 @@ public class BookReviewServiceTest {
 
     // ✅ 5. GET ALL
     @Test
-    void testGetAllReviews() {
+    void testGetAllReviewsDTO() {
 
-        Mockito.when(repo.findAll()).thenReturn(List.of(new BookReview()));
+        Book book = new Book();
+        book.setIsbn("123");
 
-        List<BookReview> result = service.getAllReviews();
+        Reviewer reviewer = new Reviewer();
+        reviewer.setReviewerID(1);
+
+        BookReview review = new BookReview();
+        review.setBook(book);
+        review.setReviewer(reviewer);
+        review.setRating(5);
+        review.setComments("Nice");
+
+        Mockito.when(repo.findAll()).thenReturn(List.of(review));
+
+        List<BookReviewDTO> result = service.getAllReviewsDTO();
 
         assertEquals(1, result.size());
     }
