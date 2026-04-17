@@ -99,6 +99,17 @@ public class SecurityConfig {
                     "/api/v1/reviewer",
                     "/api/v1/reviewer/**")
                     .permitAll()
+                
+                 // ══════════════════════════════════════════════════
+                 // UI PAGES — public, no token needed
+                 // ══════════════════════════════════════════════════
+                .requestMatchers(HttpMethod.GET,
+                        "/",
+                        "/home",
+                        "/ui/**",
+                        "/css/**",
+                        "/images/**")
+                        .permitAll()
 
                 // ══════════════════════════════════════════════════
                 // REGISTERED USER — needs valid token
@@ -232,9 +243,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE,
                     "/api/v1/admin/**")
                     .hasRole("Admin")
-
                     
-
+                 
                 // ══════════════════════════════════════════════════
                 // CATCH-ALL — anything else needs a valid token
                 // ══════════════════════════════════════════════════
