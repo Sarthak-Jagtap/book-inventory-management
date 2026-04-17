@@ -104,6 +104,19 @@
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
+		
+		<!-- Spring Security Thymeleaf extras — lets Thymeleaf know about logged-in user -->
+		<dependency>
+		    <groupId>org.thymeleaf.extras</groupId>
+		    <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+		</dependency>
+		
+		<!--JSON in tests-->
+		<dependency>
+		    <groupId>com.fasterxml.jackson.core</groupId>
+		    <artifactId>jackson-databind</artifactId>
+		    <scope>test</scope>
+		</dependency>
 	</dependencies>
 	
 	<dependencyManagement>
