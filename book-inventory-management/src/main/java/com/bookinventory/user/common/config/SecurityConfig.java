@@ -28,6 +28,15 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
 
+//                  ----------------------------------
+                    // allow UI pages
+                    .requestMatchers(
+                        "/",
+                        "/api-author-dashboard",    
+                        "/api-author-result",
+                        "/css/**",
+                        "/js/**"
+                    ).permitAll()
                 // ══════════════════════════════════════════════════
                 // GUEST — fully public, no token needed
                 // ══════════════════════════════════════════════════
