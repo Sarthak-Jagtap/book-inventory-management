@@ -1,9 +1,10 @@
 package com.bookinventory.bookreview.controller;
 
-import com.bookinventory.bookreview.dto.BookReviewDTO;
-import com.bookinventory.bookreview.entity.BookReview;
-import com.bookinventory.bookreview.service.BookReviewService;
-import com.bookinventory.user.common.response.ApiResponse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,13 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 
-import static org.junit.jupiter.api.Assertions.*;
+import com.bookinventory.bookreview.dto.BookReviewDTO;
+import com.bookinventory.bookreview.entity.BookReview;
+import com.bookinventory.bookreview.service.BookReviewService;
+import com.bookinventory.user.common.response.ApiResponse;
 
 @ExtendWith(MockitoExtension.class)
 public class BookReviewControllerTest {
@@ -33,8 +33,8 @@ public class BookReviewControllerTest {
     void testGetReviewsByIsbn() {
 
         List<BookReviewDTO> list = Arrays.asList(
-                new BookReviewDTO(5, "Good"),
-                new BookReviewDTO(4, "Nice")
+                new BookReviewDTO("123", 1, 5, "Good"),
+                new BookReviewDTO("123", 2, 4, "Nice")
         );
 
         Mockito.when(service.getBookReviewByISBNDTOisbn("123"))
@@ -43,6 +43,7 @@ public class BookReviewControllerTest {
         List<BookReviewDTO> result = controller.getReviewsByIsbn("123");
 
         assertEquals(2, result.size());
+        assertEquals("123", result.get(0).getIsbn());
     }
 
     // ✅ 2. GET reviews count
@@ -50,7 +51,7 @@ public class BookReviewControllerTest {
     void testGetReviewsCount() {
 
         List<BookReviewDTO> list = Arrays.asList(
-                new BookReviewDTO(5, "Good")
+                new BookReviewDTO("123", 1, 5, "Good")
         );
 
         Mockito.when(service.getBookReviewByISBNDTOisbn("123"))
@@ -60,7 +61,7 @@ public class BookReviewControllerTest {
                 controller.getReviewsCount("123");
 
         assertEquals(200, response.getStatusCodeValue());
-        assertNotNull(response.getBody());   // ✅ fix
+        assertNotNull(response.getBody());
     }
 
     // ✅ 3. GET reviews by reviewer
@@ -68,7 +69,7 @@ public class BookReviewControllerTest {
     void testGetReviewsByReviewer() {
 
         List<BookReviewDTO> list = Arrays.asList(
-                new BookReviewDTO(3, "Okay")
+                new BookReviewDTO("123", 1, 3, "Okay")
         );
 
         Mockito.when(service.getBookReviewByISBNDTOreviewer(1))
@@ -77,13 +78,15 @@ public class BookReviewControllerTest {
         List<BookReviewDTO> result = controller.getReviewsByReviewerid(1);
 
         assertEquals(1, result.size());
+        assertEquals(1, result.get(0).getReviewerId());
     }
 
+    // ✅ 4. Reviewer count
     @Test
     void testReviewerCount() {
 
         List<BookReviewDTO> list = Arrays.asList(
-                new BookReviewDTO(3, "Okay")
+                new BookReviewDTO("123", 1, 3, "Okay")
         );
 
         Mockito.when(service.getBookReviewByISBNDTOreviewer(1))
@@ -93,7 +96,7 @@ public class BookReviewControllerTest {
                 controller.getReviewerReviewsCount(1);
 
         assertEquals(200, response.getStatusCodeValue());
-        assertNotNull(response.getBody());   // ✅ fix
+        assertNotNull(response.getBody());
     }
 
     // ✅ 5. GET particular review
@@ -101,7 +104,7 @@ public class BookReviewControllerTest {
     void testGetParticularReview() {
 
         List<BookReviewDTO> list = Arrays.asList(
-                new BookReviewDTO(5, "Excellent")
+                new BookReviewDTO("123", 1, 5, "Excellent")
         );
 
         Mockito.when(service.getBookReviewByISBNDTO("123", 1))
@@ -111,19 +114,24 @@ public class BookReviewControllerTest {
                 controller.getParticulerReviews("123", 1);
 
         assertEquals(1, result.size());
+        assertEquals("123", result.get(0).getIsbn());
     }
 
     // ✅ 6. GET all reviews
     @Test
     void testGetAllReviews() {
 
-        List<BookReview> list = Arrays.asList(new BookReview(), new BookReview());
+        List<BookReviewDTO> list = Arrays.asList(
+                new BookReviewDTO("123", 1, 5, "Good"),
+                new BookReviewDTO("456", 2, 4, "Nice")
+        );
 
-        Mockito.when(service.getAllReviews()).thenReturn(list);
+        Mockito.when(service.getAllReviewsDTO()).thenReturn(list);
 
-        List<BookReview> result = controller.getAllReviews();
+        List<BookReviewDTO> result = controller.getAllReviewsDTO();
 
         assertEquals(2, result.size());
+        assertEquals("123", result.get(0).getIsbn());
     }
 
     // ✅ 7. CREATE review

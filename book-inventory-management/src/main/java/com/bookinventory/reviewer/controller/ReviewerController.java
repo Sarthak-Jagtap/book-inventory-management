@@ -35,13 +35,13 @@ public class ReviewerController {
 		
 	}
 	
-	// ✅ Get by NAME
+	
 	@GetMapping(value = "/reviewer", params = "name")
 	public List<ReviewerDTO> getReviewerByName(@RequestParam String name) {
 	    return service.getReviewerByName(name);
 	}
 	
-	// ✅ Get by COMPANY
+	
 	@GetMapping(value = "/reviewer", params = "employedBy")
 	public List<ReviewerDTO> getReviewerByCompany(@RequestParam String employedBy) {
 	    return service.getReviewerByCompany(employedBy);

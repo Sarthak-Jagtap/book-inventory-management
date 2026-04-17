@@ -28,15 +28,18 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
 
-//                  ----------------------------------
-                    // allow UI pages
-                    .requestMatchers(
-                        "/",
-                        "/api-author-dashboard",    
-                        "/api-author-result",
-                        "/css/**",
-                        "/js/**"
-                    ).permitAll()
+            	    // 🔥 UI + Static + Dashboard (merged from both)
+            	    .requestMatchers(
+            	        "/",
+            	        "/home",
+            	        "/ui/**",
+            	        "/reviewui/**",
+            	        "/api-author-dashboard",
+            	        "/api-author-result",
+            	        "/css/**",
+            	        "/js/**",
+            	        "/images/**"
+            	    ).permitAll()
                 // ══════════════════════════════════════════════════
                 // GUEST — fully public, no token needed
                 // ══════════════════════════════════════════════════
@@ -243,8 +246,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE,
                     "/api/v1/admin/**")
                     .hasRole("Admin")
-                    
-                 
                 // ══════════════════════════════════════════════════
                 // CATCH-ALL — anything else needs a valid token
                 // ══════════════════════════════════════════════════

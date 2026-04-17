@@ -11,10 +11,10 @@ import com.bookinventory.bookreview.dto.BookReviewDTO;
 import com.bookinventory.bookreview.entity.BookReview;
 import com.bookinventory.bookreview.entity.BookReviewId;
 import com.bookinventory.bookreview.repository.BookReviewRepository;
+import com.bookinventory.common.exception.DuplicateResourceException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.reviewer.entity.Reviewer;
 import com.bookinventory.reviewer.repository.ReviewerRepository;
-import com.bookinventory.common.exception.ResourceNotFoundException;
-import com.bookinventory.common.exception.DuplicateResourceException;
 
 @Service
 public class BookReviewService {
@@ -28,9 +28,10 @@ public class BookReviewService {
     @Autowired
     private BookRepository bookRepo;
 
-   
+    // ================= ENTITY METHODS =================
+
     public List<BookReview> getBookReviewByISBN(String isbn){
-    	
+        
         if(!bookRepo.existsById(isbn)) {
             throw new ResourceNotFoundException("Book", "isbn", isbn);
         }
@@ -39,106 +40,97 @@ public class BookReviewService {
     }
     
     public List<BookReview> getBookReviewByISBN(String isbn,int reviewerid){
-    	
+        
         if(!bookRepo.existsById(isbn)) {
             throw new ResourceNotFoundException("Book", "isbn", isbn);
         }
         if(!reviewerRepo.existsById(reviewerid)) {
             throw new ResourceNotFoundException("Reviewer", "reviewerid", reviewerid);
         }
-        
 
         return repo.findByBookIsbnAndReviewerReviewerID(isbn, reviewerid);
     }
 
-   
+    // ================= DTO METHODS (🔥 FIXED) =================
+
     public List<BookReviewDTO> getBookReviewByISBNDTO(String isbn,int reviewerid){
-    	
-    	if(!bookRepo.existsById(isbn)) {
+        
+        if(!bookRepo.existsById(isbn)) {
             throw new ResourceNotFoundException("Book", "isbn", isbn);
         }
-    	if(!reviewerRepo.existsById(reviewerid)) {
+        if(!reviewerRepo.existsById(reviewerid)) {
             throw new ResourceNotFoundException("Reviewer", "reviewerid", reviewerid);
         }
-    	
-    	
+
         List<BookReview> reviews = repo.findByBookIsbnAndReviewerReviewerID(isbn, reviewerid);
         
         if (reviews.isEmpty()) {
             throw new ResourceNotFoundException(
                 "Review", "isbn & reviewerId", isbn + " , " + reviewerid);
         }
-        
-        return reviews.stream().map(review -> {
-            BookReviewDTO dto = new BookReviewDTO();
-            dto.setRating(review.getRating());
-            dto.setComments(review.getComments());
-            return dto;
-        }).toList();
+
+        return reviews.stream().map(review -> new BookReviewDTO(
+                review.getBook().getIsbn(),
+                review.getReviewer().getReviewerID(),
+                review.getRating(),
+                review.getComments()
+        )).toList();
     }
     
     public List<BookReviewDTO> getBookReviewByISBNDTOisbn(String isbn){
-    	
-    	if(!bookRepo.existsById(isbn)) {
+        
+        if(!bookRepo.existsById(isbn)) {
             throw new ResourceNotFoundException("Book", "isbn", isbn);
         }
-    	
+
         List<BookReview> reviews = repo.findByBookIsbn(isbn);
-        
-        
-        
-        return reviews.stream().map(review -> {
-            BookReviewDTO dto = new BookReviewDTO();
-            dto.setRating(review.getRating());
-            dto.setComments(review.getComments());
-            return dto;
-        }).toList();
+
+        return reviews.stream().map(review -> new BookReviewDTO(
+                review.getBook().getIsbn(),
+                review.getReviewer().getReviewerID(),
+                review.getRating(),
+                review.getComments()
+        )).toList();
     }
     
-public List<BookReviewDTO> getBookReviewByISBNDTOreviewer(int reviewerid){
-    	
-    	if(!reviewerRepo.existsById(reviewerid)) {
-            throw new ResourceNotFoundException("Book", "isbn", reviewerid);
+    public List<BookReviewDTO> getBookReviewByISBNDTOreviewer(int reviewerid){
+        
+        if(!reviewerRepo.existsById(reviewerid)) {
+            throw new ResourceNotFoundException("Reviewer", "reviewerid", reviewerid);
         }
-    	
+
         List<BookReview> reviews = repo.findByReviewerReviewerID(reviewerid);
-        
-        
-        
-        return reviews.stream().map(review -> {
-            BookReviewDTO dto = new BookReviewDTO();
-            dto.setRating(review.getRating());
-            dto.setComments(review.getComments());
-            return dto;
-        }).toList();
+
+        return reviews.stream().map(review -> new BookReviewDTO(
+                review.getBook().getIsbn(),
+                review.getReviewer().getReviewerID(),
+                review.getRating(),
+                review.getComments()
+        )).toList();
     }
 
-   
+    // ================= CREATE =================
+
     public BookReview createReview(BookReview review) {
 
-        
         Book book = bookRepo.findById(review.getBook().getIsbn())
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Book not found with ISBN: " + review.getBook().getIsbn()));
 
-        
         Reviewer reviewer = reviewerRepo.findById(review.getReviewer().getReviewerID())
             .orElseThrow(() -> new ResourceNotFoundException(
                 "Reviewer not found with ID: " + review.getReviewer().getReviewerID()));
 
-        
         BookReviewId id = new BookReviewId(
             book.getIsbn(),
             reviewer.getReviewerID()
         );
 
-        
         if(repo.existsById(id)) {
             throw new DuplicateResourceException(
                 "Review already exists for this Book and Reviewer");
         }
 
-        
         review.setBook(book);
         review.setReviewer(reviewer);
         review.setId(id);
@@ -146,7 +138,8 @@ public List<BookReviewDTO> getBookReviewByISBNDTOreviewer(int reviewerid){
         return repo.save(review);
     }
 
-    
+    // ================= UPDATE =================
+
     public BookReview updateReview(BookReview review) {
 
         Book book = bookRepo.findById(review.getBook().getIsbn())
@@ -162,7 +155,6 @@ public List<BookReviewDTO> getBookReviewByISBNDTOreviewer(int reviewerid){
             reviewer.getReviewerID()
         );
 
-        
         if(!repo.existsById(id)) {
             throw new ResourceNotFoundException("Review not found to update");
         }
@@ -174,12 +166,12 @@ public List<BookReviewDTO> getBookReviewByISBNDTOreviewer(int reviewerid){
         return repo.save(review);
     }
 
-    
+    // ================= DELETE =================
+
     public void deleteReview(String isbn, Integer reviewerid) {
 
         BookReviewId id = new BookReviewId(isbn, reviewerid);
 
-        
         if(!repo.existsById(id)) {
             throw new ResourceNotFoundException("Review not found to delete");
         }
@@ -187,8 +179,17 @@ public List<BookReviewDTO> getBookReviewByISBNDTOreviewer(int reviewerid){
         repo.deleteById(id);
     }
 
-    
-    public List<BookReview> getAllReviews(){
-        return repo.findAll();
+    // ================= GET ALL =================
+
+    public List<BookReviewDTO> getAllReviewsDTO() {
+        return repo.findAll()
+                .stream()
+                .map(review -> new BookReviewDTO(
+                        review.getBook().getIsbn(),
+                        review.getReviewer().getReviewerID(),
+                        review.getRating(),
+                        review.getComments()
+                ))
+                .toList();
     }
 }
