@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>Purchase Count</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-header">
+  <a class="page-header-back" th:href="@{/team/user-module}">←</a>
+  <div><h1>My Purchase Count</h1>
+    <p><code style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted-d);" th:text="${apiEndpoint}"></code></p>
+  </div>
+</div>
+<div class="section-sm" style="max-width:700px;">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="breadcrumb-sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="breadcrumb-sep">›</span><span>Purchase Count</span></div>
+  <div class="result-description animate-in" th:text="${apiDescription}"></div>
+  <div class="alert alert-error" th:if="${error != null}"><span>⚠️</span><span th:text="${error}"></span></div>
+  <div th:if="${count != null}" class="animate-in delay-1" style="text-align:center;padding:40px 0;">
+    <div style="font-size:80px;font-weight:700;color:var(--text-dark);font-family:'Playfair Display',serif;" th:text="${count}">0</div>
+    <div style="font-size:18px;color:var(--text-muted-d);margin-top:8px;">inventory items purchased</div>
+    <div style="margin-top:24px;display:flex;gap:10px;justify-content:center;">
+      <a class="btn btn-primary" th:href="@{/user/api/purchases}">View All Purchases →</a>
+      <a class="btn btn-outline-dark" th:href="@{/user/api/dashboard}">Full Dashboard →</a>
+    </div>
+  </div>
+</div>
+<footer class="footer"><p>Book Inventory · <a th:href="@{/team/user-module}">← Back to endpoints</a></p></footer>
+</body>
+</html>

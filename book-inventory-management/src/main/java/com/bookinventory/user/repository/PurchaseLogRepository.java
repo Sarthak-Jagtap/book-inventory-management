@@ -27,4 +27,19 @@ public interface PurchaseLogRepository extends JpaRepository<PurchaseLog, Purcha
 	List<Integer> findInventoryIdsByUserId(@Param("userId") Integer userId);
 
 	void deleteById_UserId(Integer userId);
+	
+	// Count distinct users who have made at least one purchase
+	@Query("SELECT COUNT(DISTINCT p.id.userId) FROM PurchaseLog p")
+	long countDistinctBuyers();
+
+	// Count distinct inventory items that have been sold
+	@Query("SELECT COUNT(DISTINCT p.id.inventoryId) FROM PurchaseLog p")
+	long countDistinctItemsSold();
+	
+	// Returns top buyers: userId + count, ordered by count descending
+	@Query("SELECT p.id.userId, COUNT(p.id.userId) as cnt " +
+	       "FROM PurchaseLog p " +
+	       "GROUP BY p.id.userId " +
+	       "ORDER BY cnt DESC")
+	List<Object[]> findTopBuyers(org.springframework.data.domain.Pageable pageable);
 }

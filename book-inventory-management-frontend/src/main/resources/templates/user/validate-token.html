@@ -1,0 +1,64 @@
+<!-- validate-token.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Validate Token</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=Fira+Code:wght@400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-header">
+  <a class="page-header-back" th:href="@{/team/user-module}">←</a>
+  <div><h1>Validate Token</h1>
+    <p><code style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted-d);" th:text="${apiEndpoint}"></code></p>
+  </div>
+</div>
+<div class="section-sm" style="max-width:800px;">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="breadcrumb-sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="breadcrumb-sep">›</span><span>Validate Token</span></div>
+  <div class="result-description animate-in" th:text="${apiDescription}"></div>
+  <div class="alert alert-error" th:if="${error != null}"><span>⚠️</span><span th:text="${error}"></span></div>
+
+  <div th:if="${tokenResult != null}" class="animate-in delay-1">
+    <!-- Valid / Invalid alert -->
+    <div class="alert" th:classappend="${tokenResult.get('valid') == true} ? 'alert-success' : 'alert-error'" style="margin-bottom:20px;">
+      <span th:text="${tokenResult.get('valid') == true} ? '✅' : '❌'">✅</span>
+      <div>
+        <strong th:text="${tokenResult.get('valid') == true} ? 'Token is VALID' : 'Token is INVALID'">Status</strong><br/>
+        <span th:text="${tokenResult.get('message')}">Message</span>
+      </div>
+    </div>
+
+    <!-- Token preview -->
+    <div class="stat-card mb-3">
+      <div class="stat-label">Token Preview</div>
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted-d);word-break:break-all;margin-top:6px;background:var(--bg-muted);padding:10px;border-radius:6px;"
+           th:text="${tokenPreview}">eyJhbG...</div>
+    </div>
+
+    <!-- Claims if valid -->
+    <div th:if="${tokenResult.get('valid') == true}">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-blue">👤</div>
+          <div class="stat-label">Username (Subject)</div>
+          <div class="stat-value" style="font-size:18px;" th:text="${tokenResult.get('userName')}">username</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-teal">🆔</div>
+          <div class="stat-label">User ID (Claim)</div>
+          <div class="stat-value" th:text="${tokenResult.get('userId')}">1</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-gold">🎭</div>
+          <div class="stat-label">Role (Claim)</div>
+          <div class="stat-value" style="font-size:18px;" th:text="${tokenResult.get('roleName')}">Admin</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="footer"><p>Book Inventory · <a th:href="@{/team/user-module}">← Back to endpoints</a></p></footer>
+</body>
+</html>

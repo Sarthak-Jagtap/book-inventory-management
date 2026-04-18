@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>All Roles — Book Inventory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-header">
+  <a class="page-header-back" th:href="@{/team/user-module}">←</a>
+  <div>
+    <h1>All Roles</h1>
+    <p><code style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted-d);" th:text="${apiEndpoint}"></code></p>
+  </div>
+</div>
+<div class="section-sm" style="max-width:900px;">
+  <div class="breadcrumb">
+    <a th:href="@{/home}">Home</a><span class="breadcrumb-sep">›</span>
+    <a th:href="@{/team/user-module}">User Module</a><span class="breadcrumb-sep">›</span>
+    <span>All Roles</span>
+  </div>
+  <div class="result-description animate-in" th:text="${apiDescription}"></div>
+  <div class="alert alert-error" th:if="${error != null}"><span>⚠️</span><span th:text="${error}"></span></div>
+
+  <!-- Roles as visual cards -->
+  <div th:if="${roles != null and !roles.isEmpty()}" class="animate-in delay-1">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px;">
+
+      <div th:each="role, stat : ${roles}"
+           class="stat-card"
+           th:style="${stat.index == 0} ? 'border-left:3px solid #64748B;' :
+                     (${stat.index == 1} ? 'border-left:3px solid #22C55E;' :
+                     (${stat.index == 2} ? 'border-left:3px solid #4A8FE7;' : 'border-left:3px solid #EF4444;'))">
+
+        <div class="stat-icon"
+             th:style="${stat.index == 0} ? 'background:#F1F5F9;' :
+                       (${stat.index == 1} ? 'background:#DCFCE7;' :
+                       (${stat.index == 2} ? 'background:#DBEAFE;' : 'background:#FEE2E2;'))">
+          <span th:text="${stat.index == 0} ? '👤' : (${stat.index == 1} ? '📖' : (${stat.index == 2} ? '🏪' : '🔑'))">👤</span>
+        </div>
+
+        <div class="stat-value" th:text="${role.permRole}">Role</div>
+        <div class="stat-label">Role ID: <strong th:text="${role.roleNumber}">1</strong></div>
+
+        <!-- Quick link to user count for this role -->
+        <a th:href="@{/user/api/roles/{n}/user-count(n=${role.roleNumber})}"
+           style="display:inline-block;margin-top:10px;font-size:12px;color:var(--accent-teal);font-weight:500;">
+          View user count →
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Also show as table -->
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Role ID</th>
+            <th>Role Name</th>
+            <th>Access Level</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="role : ${roles}">
+            <td><span style="font-family:var(--font-mono);font-size:13px;" th:text="${role.roleNumber}"></span></td>
+            <td>
+              <span class="role-pill"
+                    th:classappend="${role.permRole == 'Admin'} ? 'role-admin' :
+                                   (${role.permRole == 'StoreOwner'} ? 'role-owner' :
+                                   (${role.permRole == 'RegisteredUser'} ? 'role-user-r' : 'role-guest'))"
+                    th:text="${role.permRole}">Role</span>
+            </td>
+            <td style="font-size:13px;color:var(--text-muted-d);"
+                th:text="${role.permRole == 'Admin'} ? 'Full system access' :
+                         (${role.permRole == 'StoreOwner'} ? 'Inventory + purchase management' :
+                         (${role.permRole == 'RegisteredUser'} ? 'Profile + cart + purchases' : 'Read-only public APIs'))">
+            </td>
+            <td>
+              <a th:href="@{/user/api/roles/{n}(n=${role.roleNumber})}" class="btn btn-sm btn-outline-dark">View</a>
+              <a th:href="@{/user/api/roles/{n}/user-count(n=${role.roleNumber})}" class="btn btn-sm btn-outline-dark" style="margin-left:4px;">Count</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="empty-state" th:if="${roles == null or roles.isEmpty()}">
+    <div class="empty-state-icon">📭</div>
+    <h3>No roles found</h3>
+    <p>Backend returned empty data</p>
+  </div>
+</div>
+<footer class="footer"><p>Book Inventory · <a th:href="@{/team/user-module}">← Back to endpoints</a></p></footer>
+</body>
+</html>

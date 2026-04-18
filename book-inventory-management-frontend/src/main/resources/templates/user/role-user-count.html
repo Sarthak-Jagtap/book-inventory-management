@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>Role User Count</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-header">
+  <a class="page-header-back" th:href="@{/user/api/roles}">←</a>
+  <div><h1>Role User Count</h1>
+    <p><code style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted-d);" th:text="${apiEndpoint}"></code></p>
+  </div>
+  <span class="new-tag" style="margin-left:auto;">NEW</span>
+</div>
+<div class="section-sm" style="max-width:700px;">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="breadcrumb-sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="breadcrumb-sep">›</span><a th:href="@{/user/api/roles}">Roles</a><span class="breadcrumb-sep">›</span><span>User Count</span></div>
+  <div class="result-description animate-in" th:text="${apiDescription}"></div>
+  <div class="alert alert-error" th:if="${error != null}"><span>⚠️</span><span th:text="${error}"></span></div>
+  <div th:if="${countData != null}" class="animate-in delay-1" style="text-align:center;padding:32px 0;">
+    <div th:if="${role != null}" style="margin-bottom:16px;">
+      <span class="role-pill" style="font-size:15px;padding:6px 16px;"
+            th:classappend="${role.permRole == 'Admin'} ? 'role-admin' : (${role.permRole == 'StoreOwner'} ? 'role-owner' : (${role.permRole == 'RegisteredUser'} ? 'role-user-r' : 'role-guest'))"
+            th:text="${role.permRole}">Role</span>
+    </div>
+    <div style="font-size:80px;font-weight:700;color:var(--text-dark);font-family:'Playfair Display',serif;" th:text="${countData.get('userCount')}">0</div>
+    <div style="font-size:18px;color:var(--text-muted-d);margin-top:8px;">users have this role</div>
+    <a class="btn btn-outline-dark btn-sm" style="margin-top:20px;" th:href="@{/user/api/roles}">← See All Roles</a>
+  </div>
+</div>
+<footer class="footer"><p>Book Inventory · <a th:href="@{/team/user-module}">← Back to endpoints</a></p></footer>
+</body>
+</html>

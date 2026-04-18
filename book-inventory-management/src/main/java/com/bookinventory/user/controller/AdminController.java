@@ -3,6 +3,7 @@ package com.bookinventory.user.controller;
 import com.bookinventory.user.dto.*;
 import com.bookinventory.user.response.ApiResponse;
 import com.bookinventory.user.service.PermRoleService;
+import com.bookinventory.user.service.PurchaseLogService;
 import com.bookinventory.user.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -17,10 +18,12 @@ public class AdminController {
 
 	private final UserService userService;
 	private final PermRoleService permRoleService;
+	private final PurchaseLogService purchaseLogService;
 
-	public AdminController(UserService userService, PermRoleService permRoleService) {
+	public AdminController(UserService userService, PermRoleService permRoleService, PurchaseLogService purchaseLogService) {
 		this.userService = userService;
 		this.permRoleService = permRoleService;
+		this.purchaseLogService = purchaseLogService;
 	}
 
 	// USER MANAGEMENT
@@ -103,4 +106,70 @@ public class AdminController {
 	 * ApiResponse.success(200, "User deactivated successfully", updated),
 	 * HttpStatus.OK); }
 	 */
+	
+	// GET /api/v1/admin/users/search?firstName=John
+	// GET /api/v1/admin/users/search?lastName=Smith
+	// GET /api/v1/admin/users/search?firstName=John&lastName=Smith
+	// Leverages UserRepository.findByFirstNameIgnoreCase and findByLastNameIgnoreCase
+	// which already exist but were never exposed via an endpoint
+	@GetMapping("/users/search")
+	public ResponseEntity<ApiResponse<List<UserResponseDTO>>> searchUsers(
+	        @RequestParam(required = false) String firstName,
+	        @RequestParam(required = false) String lastName) {
+
+	    if ((firstName == null || firstName.isBlank()) &&
+	        (lastName  == null || lastName.isBlank())) {
+	        return ResponseEntity.badRequest()
+	            .body(ApiResponse.failure(400,
+	                "Provide at least one search param: firstName or lastName"));
+	    }
+
+	    List<UserResponseDTO> results = userService.searchUsers(firstName, lastName);
+	    return ResponseEntity.ok(
+	        ApiResponse.success(200, "Search results fetched successfully", results));
+	}
+	
+	// GET /api/v1/admin/users/by-role/{roleNumber}
+	// Example: /admin/users/by-role/2 → all RegisteredUsers
+	// getUsersByRole() already existed in UserService — this just exposes it
+	@GetMapping("/users/by-role/{roleNumber}")
+	public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getUsersByRole(
+	        @PathVariable Integer roleNumber) {
+
+	    List<UserResponseDTO> users = userService.getUsersByRole(roleNumber);
+	    return ResponseEntity.ok(
+	        ApiResponse.success(200, "Users by role fetched successfully", users));
+	}
+	
+	// Also inject these — add to AdminController constructor:
+	// private final PurchaseLogService purchaseLogService;
+	// private final PermRoleService permRoleService;
+
+	// GET /api/v1/admin/dashboard
+	// Master overview for admin: total users, breakdown by role, total purchases
+	@GetMapping("/dashboard")
+	public ResponseEntity<ApiResponse<AdminDashboardDTO>> getAdminDashboard() {
+
+	    // 1. Total user count
+	    long totalUsers = userService.getAllUsers().size();
+
+	    // 2. Total purchases
+	    long totalPurchases = purchaseLogService.getAllPurchases().size();
+
+	    // 3. Users per role — loop through all roles
+	    java.util.Map<String, Long> countByRole = new java.util.LinkedHashMap<>();
+	    for (PermRoleResponseDTO role : permRoleService.getAllRoles()) {
+	        long count = userService.getUsersByRole(role.getRoleNumber()).size();
+	        countByRole.put(role.getPermRole(), count);
+	    }
+
+	    // 4. Build dashboard
+	    AdminDashboardDTO dashboard = new AdminDashboardDTO();
+	    dashboard.setTotalUsers(totalUsers);
+	    dashboard.setTotalPurchases(totalPurchases);
+	    dashboard.setUserCountByRole(countByRole);
+
+	    return ResponseEntity.ok(
+	        ApiResponse.success(200, "Admin dashboard fetched successfully", dashboard));
+	}
 }

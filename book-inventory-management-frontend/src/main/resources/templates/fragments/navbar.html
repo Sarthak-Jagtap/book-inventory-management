@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+
+<nav class="navbar" th:fragment="navbar">
+
+  <!-- Brand -->
+  <a class="navbar-brand" th:href="@{/home}">
+    Book<span>Inventory</span>
+  </a>
+
+  <!-- Nav links — only show when logged in -->
+  <sec:authorize access="isAuthenticated()">
+    <a class="nav-link" th:href="@{/home}"            th:classappend="${activePage=='home'} ? 'active'">Home</a>
+    <a class="nav-link" th:href="@{/team/user-module}" th:classappend="${activePage=='user-module'} ? 'active'">My APIs</a>
+    <a class="nav-link" th:href="@{/user/api/profile}" th:classappend="${activePage=='profile'} ? 'active'">Profile</a>
+    <a class="nav-link" th:href="@{/user/api/dashboard}" th:classappend="${activePage=='dashboard'} ? 'active'">Dashboard</a>
+  </sec:authorize>
+
+  <sec:authorize access="hasAnyRole('StoreOwner','Admin')">
+    <a class="nav-link" th:href="@{/user/api/store-owner/purchases}" th:classappend="${activePage=='store'} ? 'active'">Store</a>
+  </sec:authorize>
+
+  <sec:authorize access="hasRole('Admin')">
+    <a class="nav-link" th:href="@{/user/api/admin/users}" th:classappend="${activePage=='admin'} ? 'active'">Admin</a>
+  </sec:authorize>
+
+  <!-- Right side -->
+  <div class="navbar-right">
+
+    <sec:authorize access="!isAuthenticated()">
+      <a class="btn btn-secondary btn-sm" th:href="@{/auth/login}">Login</a>
+      <a class="btn btn-primary  btn-sm" th:href="@{/auth/register}">Register</a>
+    </sec:authorize>
+
+    <sec:authorize access="isAuthenticated()">
+      <div class="nav-user-info">
+        <span sec:authentication="name">user</span>
+        <span class="role-tag"
+              th:with="r=${#authentication.authorities[0].authority.replace('ROLE_','')}"
+              th:text="${r}">Role</span>
+      </div>
+      <a class="btn btn-secondary btn-sm" th:href="@{/auth/logout}">Logout</a>
+    </sec:authorize>
+
+  </div>
+</nav>
+
+</html>

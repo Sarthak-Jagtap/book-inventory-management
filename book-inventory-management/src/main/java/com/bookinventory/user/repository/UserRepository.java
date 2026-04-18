@@ -44,4 +44,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // Search
     List<User> findByLastNameIgnoreCase(String lastName);
     List<User> findByFirstNameIgnoreCase(String firstName);
+    
+    // Count users by role number
+    long countByRole_RoleNumber(Integer roleNumber);
 }

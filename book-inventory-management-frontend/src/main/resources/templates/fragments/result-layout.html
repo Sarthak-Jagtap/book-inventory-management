@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<!--
+  result-layout.html
+  ==================
+  Reusable fragment for ALL API result pages.
+  Usage in any page:
+    <div th:replace="~{fragments/result-layout :: result-page(~{::content})}">
+
+  Every result page has:
+  - Back button → /team/user-module
+  - API endpoint + description
+  - Error alert (if model has "error")
+  - Custom content slot
+-->
+
+<th:block th:fragment="result-page(content)">
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title th:text="${currentPage + ' — Book Inventory'}">Result — Book Inventory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<!-- Page Header with back button -->
+<div class="page-header">
+  <a class="page-header-back" th:href="@{/team/user-module}" title="Back to endpoints">←</a>
+  <div>
+    <h1 th:text="${currentPage}">Page Title</h1>
+    <p>
+      <code style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted-d);"
+            th:text="${apiEndpoint}">GET /api/endpoint</code>
+    </p>
+  </div>
+</div>
+
+<div class="section-sm" style="max-width:960px;">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a th:href="@{/home}">Home</a>
+    <span class="breadcrumb-sep">›</span>
+    <a th:href="@{/team/user-module}">User Module</a>
+    <span class="breadcrumb-sep">›</span>
+    <span th:text="${currentPage}">Result</span>
+  </div>
+
+  <!-- Description box -->
+  <div class="result-description animate-in" th:if="${apiDescription != null}">
+    <strong style="font-size:13px;color:var(--text-dark);display:block;margin-bottom:4px;">What this API does</strong>
+    <span th:text="${apiDescription}">Description</span>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="alert alert-error animate-in" th:if="${error != null}">
+    <span>⚠️</span>
+    <div>
+      <strong>Backend Error</strong><br/>
+      <span th:text="${error}">Error message</span>
+    </div>
+  </div>
+
+  <!-- Main content slot -->
+  <div class="animate-in delay-1">
+    <th:block th:replace="${content}"/>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <p>Book Inventory Management · User Module ·
+    <a th:href="@{/team/user-module}">← Back to endpoints</a>
+  </p>
+</footer>
+</body>
+</html>
+</th:block>
+</html>

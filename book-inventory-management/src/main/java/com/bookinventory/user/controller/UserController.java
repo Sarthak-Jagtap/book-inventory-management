@@ -54,16 +54,14 @@ public class UserController {
 
 		return new ResponseEntity<>(ApiResponse.success(200, "Profile updated successfully", updated), HttpStatus.OK);
 	}
-	
+
 	// Keep the existing PATCH, add PUT alongside it
 	@PutMapping("/profile")
-	public ResponseEntity<ApiResponse<UserResponseDTO>> updateMyProfilePut(
-	        HttpServletRequest request,
-	        @Valid @RequestBody UserUpdateRequestDTO dto) {
-	    Integer userId = extractUserId(request);
-	    UserResponseDTO updated = userService.updateMyProfile(userId, dto);
-	    return new ResponseEntity<>(
-	        ApiResponse.success(200, "Profile updated successfully", updated), HttpStatus.OK);
+	public ResponseEntity<ApiResponse<UserResponseDTO>> updateMyProfilePut(HttpServletRequest request,
+			@Valid @RequestBody UserUpdateRequestDTO dto) {
+		Integer userId = extractUserId(request);
+		UserResponseDTO updated = userService.updateMyProfile(userId, dto);
+		return new ResponseEntity<>(ApiResponse.success(200, "Profile updated successfully", updated), HttpStatus.OK);
 	}
 
 	// CHANGE PASSWORD
@@ -135,26 +133,55 @@ public class UserController {
 		return new ResponseEntity<>(ApiResponse.success(201, "Purchase logged successfully", purchase),
 				HttpStatus.CREATED);
 	}
-	
+
 	// GET /api/v1/user/purchases/{userId}
-	// Validates that the JWT userId matches the path userId (users can only see own purchases)
+	// Validates that the JWT userId matches the path userId (users can only see own
+	// purchases)
 	@GetMapping("/purchases/{userId}")
-	public ResponseEntity<ApiResponse<List<PurchaseLogResponseDTO>>> getPurchasesByUserId(
-	        HttpServletRequest request,
-	        @PathVariable Integer userId) {
+	public ResponseEntity<ApiResponse<List<PurchaseLogResponseDTO>>> getPurchasesByUserId(HttpServletRequest request,
+			@PathVariable Integer userId) {
 
-	    Integer tokenUserId = extractUserId(request);
+		Integer tokenUserId = extractUserId(request);
 
-	    // Security check: registered user can only access own purchases
-	    // Admin / StoreOwner can see any userId's purchases via store-owner controller
-	    if (!tokenUserId.equals(userId)) {
-	        throw new ForbiddenException(
-	            "You are not allowed to view another user's purchases");
-	    }
+		// Security check: registered user can only access own purchases
+		// Admin / StoreOwner can see any userId's purchases via store-owner controller
+		if (!tokenUserId.equals(userId)) {
+			throw new ForbiddenException("You are not allowed to view another user's purchases");
+		}
 
-	    List<PurchaseLogResponseDTO> purchases = purchaseLogService.getPurchasesByUser(userId);
-	    return new ResponseEntity<>(
-	        ApiResponse.success(200, "Purchase history fetched successfully", purchases),
-	        HttpStatus.OK);
+		List<PurchaseLogResponseDTO> purchases = purchaseLogService.getPurchasesByUser(userId);
+		return new ResponseEntity<>(ApiResponse.success(200, "Purchase history fetched successfully", purchases),
+				HttpStatus.OK);
+	}
+
+	// GET /api/v1/user/dashboard
+	// One-shot endpoint: profile + purchase summary in a single response
+	// No need to call 3 separate APIs — great for frontend dashboard pages
+	@GetMapping("/dashboard")
+	public ResponseEntity<ApiResponse<UserDashboardDTO>> getMyDashboard(HttpServletRequest request) {
+
+		Integer userId = extractUserId(request);
+
+		// 1. Get profile
+		UserResponseDTO profile = userService.getMyProfile(userId);
+
+		// 2. Get purchase count
+		long count = purchaseLogService.getPurchaseCount(userId);
+
+		// 3. Get purchased inventory IDs
+		List<Integer> inventoryIds = purchaseLogService.getInventoryIdsByUser(userId);
+
+		// 4. Build dashboard object
+		UserDashboardDTO dashboard = new UserDashboardDTO();
+		dashboard.setUserId(profile.getUserId());
+		dashboard.setFirstName(profile.getFirstName());
+		dashboard.setLastName(profile.getLastName());
+		dashboard.setUserName(profile.getUserName());
+		dashboard.setPhoneNumber(profile.getPhoneNumber());
+		dashboard.setRoleName(profile.getRole() != null ? profile.getRole().getPermRole() : "Guest");
+		dashboard.setTotalPurchases(count);
+		dashboard.setPurchasedInventoryIds(inventoryIds);
+
+		return ResponseEntity.ok(ApiResponse.success(200, "Dashboard data fetched successfully", dashboard));
 	}
 }
