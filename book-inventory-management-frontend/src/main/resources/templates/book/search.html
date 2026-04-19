@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Search Books</title>
+</head>
+
+<body>
+
+	<h2>Search Books</h2>
+
+	<form action="/books/search" method="get">
+
+		<label>Title:</label>
+		<input type="text" name="title">
+
+		<label>Category ID:</label>
+		<input type="number" name="categoryId">
+
+		<label>Publisher ID:</label>
+		<input type="number" name="publisherId">
+
+		<button type="submit">Search</button>
+	</form>
+
+	<hr>
+
+	<!-- Show results only if present -->
+	<div th:if="${books != null}">
+
+		<h3>Results:</h3>
+
+		<table border="1">
+			<tr>
+				<th>ISBN</th>
+				<th>Title</th>
+				<th>Edition</th>
+			</tr>
+
+			<tr th:each="book : ${books}">
+				<td th:text="${book.isbn}"></td>
+				<td th:text="${book.title}"></td>
+				<td th:text="${book.edition}"></td>
+			</tr>
+		</table>
+
+	</div>
+
+</body>
+
+</html>
