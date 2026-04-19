@@ -40,7 +40,11 @@
 			<tr th:each="book : ${books}">
 				<td th:text="${book.isbn}"></td>
 				<td th:text="${book.title}"></td>
+				<td th:text="${book.description}"></td>
 				<td th:text="${book.edition}"></td>
+
+				<td th:text="${categoryMap[book.categoryId]}"></td>
+				<td th:text="${publisherMap[book.publisherId]}"></td>
 			</tr>
 		</table>
 
