@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Category Summary</title>
+</head>
+
+<body>
+
+	<h2>Category Summary</h2>
+
+	<table border="1">
+		<tr>
+			<th>Category</th>
+			<th>Book Count</th>
+		</tr>
+
+		<tr th:each="s : ${summaryList}">
+			<td th:text="${s.category}"></td>
+			<td th:text="${s.bookCount}"></td>
+		</tr>
+
+	</table>
+
+</body>
+
+</html>
