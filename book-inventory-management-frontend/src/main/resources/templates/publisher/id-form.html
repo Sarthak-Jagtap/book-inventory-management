@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Find Publisher</title>
+</head>
+
+<body>
+
+	<h2>Search Publisher by ID</h2>
+
+	<form action="/publishers/details" method="get">
+
+		<label>Publisher ID:</label>
+		<input type="number" name="publisherId" required>
+
+		<button type="submit">Search</button>
+	</form>
+
+</body>
+
+</html>

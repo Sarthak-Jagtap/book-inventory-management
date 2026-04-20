@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map Author | Book Inventory System</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{ --bg:#f7f8fc;--surface:#fff;--surface2:#f0f2f8;--text:#1a1d2e;--text2:#6b7280;--text3:#9ca3af; --border:#e5e7eb;--border2:#d1d5db; --accent:#6366f1;--accent-hover:#4f46e5; }
+body.dark{ --bg:#0f1117;--surface:#1a1d2e;--surface2:#252840;--text:#e8eaf6;--text2:#9ca3af;--text3:#6b7280; --border:#2d3148;--border2:#3d4165; --accent:#818cf8;--accent-hover:#6366f1;}
+body{ background:var(--bg);color:var(--text); font-family:system-ui,-apple-system,sans-serif; padding:0 0 60px; }
+
+.topbar{ background:var(--surface);border-bottom:1px solid var(--border); padding:16px 32px;display:flex;align-items:center; }
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{ width:32px;height:32px;background:var(--accent);border-radius:8px; display:flex;align-items:center;justify-content:center; }
+.logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
+.logo-title{font-size:15px;font-weight:600;color:var(--text)}
+
+.container{max-width:600px;margin:40px auto;padding:0 32px;}
+.card{ background:var(--surface);border:1px solid var(--border); border-radius:12px;padding:32px;box-shadow:0 4px 16px rgba(0,0,0,.02); }
+.card-title{font-size:24px;font-weight:700;margin-bottom:24px;color:var(--text)}
+
+.form-group{margin-bottom:20px}
+.form-label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px}
+.form-control{
+  width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);
+  padding:12px 16px;border-radius:8px;font-size:15px;outline:none;
+}
+.form-control:focus{border-color:var(--accent)}
+
+.btn-group{display:flex;gap:12px;margin-top:32px}
+.btn{ padding:12px 24px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;flex:1;text-align:center;text-decoration:none; }
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn-outline:hover{background:var(--surface2)}
+</style>
+</head>
+<body class="dark">
+
+<div class="topbar">
+  <a href="/" class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+    <div class="logo-title">Book Inventory System</div>
+  </a>
+</div>
+
+<div class="container">
+  <div class="card">
+    
+    <h2 class="card-title" th:text="${bookAuthor.primaryAuthor == null ? 'Assign Author to Book' : 'Edit Author Role'}">Assign Author</h2>
+    
+    <div th:if="${param.error}" style="color:#ef4444;margin-bottom:16px;font-size:14px;font-weight:500;">
+        Assignment failed. Please check inputs.
+    </div>
+
+    <form th:action="@{${bookAuthor.primaryAuthor == null ? '/store-owner/book-authors' : '/store-owner/book-authors/' + bookAuthor.isbn + '/' + bookAuthor.authorID + '/update'}}" 
+          th:object="${bookAuthor}" method="post">
+      
+      <div class="form-group">
+        <label class="form-label">Book ISBN *</label>
+        <input type="text" class="form-control" th:field="*{isbn}" required placeholder="13-digit ISBN" th:readonly="${bookAuthor.primaryAuthor != null}">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Author ID *</label>
+        <input type="number" class="form-control" th:field="*{authorID}" required placeholder="e.g. 50" th:readonly="${bookAuthor.primaryAuthor != null}">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Is Primary Author?</label>
+        <select class="form-control" th:field="*{primaryAuthor}" required>
+          <option value="Y">Yes (Y)</option>
+          <option value="N">No (N)</option>
+        </select>
+      </div>
+
+      <div class="btn-group">
+        <a th:href="@{/books/{isbn}(isbn=${bookAuthor.isbn})}" class="btn btn-outline">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Mapping</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if(localStorage.getItem('theme') === 'light') document.body.classList.remove('dark');
+});
+</script>
+</body>
+</html>

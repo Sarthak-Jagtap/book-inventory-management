@@ -12,6 +12,7 @@ import com.bookinventory.publisher.entity.Publisher;
 import com.bookinventory.publisher.repository.PublisherRepository;
 import com.bookinventory.state.entity.State;
 import com.bookinventory.state.repository.StateRepository;
+import com.bookinventory.common.exception.DuplicateResourceException;
 import com.bookinventory.common.exception.ResourceNotFoundException;
 
 @Service
@@ -25,14 +26,20 @@ public class PublisherService {
 
 	public PublisherResponseDTO createPublisher(PublisherRequestDTO dto) {
 
-		State state = stateRepository.findById(dto.getStateCode())
-				.orElseThrow(() -> new ResourceNotFoundException("State", "code", dto.getStateCode()));
+	    if (publisherRepository.existsById(dto.getPublisherId())) {
+	        throw new DuplicateResourceException(
+	                "Publisher", "id", dto.getPublisherId());
+	    }
 
-		Publisher publisher = convertToEntity(dto, state);
+	    State state = stateRepository.findById(dto.getStateCode())
+	            .orElseThrow(() ->
+	                    new ResourceNotFoundException("State", "code", dto.getStateCode()));
 
-		Publisher savedPublisher = publisherRepository.save(publisher);
+	    Publisher publisher = convertToEntity(dto, state);
 
-		return convertToDTO(savedPublisher);
+	    Publisher savedPublisher = publisherRepository.save(publisher);
+
+	    return convertToDTO(savedPublisher);
 	}
 
 	public List<PublisherResponseDTO> getAllPublishers() {
@@ -50,19 +57,28 @@ public class PublisherService {
 
 	public PublisherResponseDTO updatePublisher(int id, PublisherRequestDTO dto) {
 
-		Publisher existingPublisher = publisherRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Publisher", "id", id));
+	    Publisher existingPublisher = publisherRepository.findById(id)
+	            .orElseThrow(() -> 
+	                    new ResourceNotFoundException("Publisher", "id", id));
 
-		State state = stateRepository.findById(dto.getStateCode())
-				.orElseThrow(() -> new ResourceNotFoundException("State", "code", dto.getStateCode()));
+	    if (dto.getPublisherId() != null && dto.getPublisherId() != id) {
+	        if (publisherRepository.existsById(dto.getPublisherId())) {
+	            throw new DuplicateResourceException(
+	                    "Publisher", "id", dto.getPublisherId());
+	        }
+	    }
 
-		existingPublisher.setName(dto.getName());
-		existingPublisher.setCity(dto.getCity());
-		existingPublisher.setState(state);
+	    State state = stateRepository.findById(dto.getStateCode())
+	            .orElseThrow(() -> 
+	                    new ResourceNotFoundException("State", "code", dto.getStateCode()));
 
-		Publisher updatedPublisher = publisherRepository.save(existingPublisher);
+	    existingPublisher.setName(dto.getName());
+	    existingPublisher.setCity(dto.getCity());
+	    existingPublisher.setState(state);
 
-		return convertToDTO(updatedPublisher);
+	    Publisher updatedPublisher = publisherRepository.save(existingPublisher);
+
+	    return convertToDTO(updatedPublisher);
 	}
 
 	public void deletePublisher(int id) {
@@ -85,6 +101,7 @@ public class PublisherService {
 
 	private Publisher convertToEntity(PublisherRequestDTO dto, State state) {
 		Publisher publisher = new Publisher();
+		publisher.setPublisherId(dto.getPublisherId()); 
 		publisher.setName(dto.getName());
 		publisher.setCity(dto.getCity());
 		publisher.setState(state);
@@ -93,7 +110,7 @@ public class PublisherService {
 
 	public PublisherResponseDTO convertToDTO(Publisher publisher) {
 		PublisherResponseDTO dto = new PublisherResponseDTO();
-		dto.setPublisherId(publisher.getPublisherId()); // adjust based on your entity naming
+		dto.setPublisherId(publisher.getPublisherId());
 		dto.setName(publisher.getName());
 		dto.setCity(publisher.getCity());
 		dto.setStateCode(publisher.getState().getStateCode());

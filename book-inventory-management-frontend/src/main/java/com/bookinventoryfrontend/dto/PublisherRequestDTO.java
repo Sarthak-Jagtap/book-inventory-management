@@ -1,18 +1,10 @@
-package com.bookinventory.publisher.dto;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+package com.bookinventoryfrontend.dto;
 
 public class PublisherRequestDTO {
 
-	@NotNull(message = "Publisher ID is required")
 	private Integer publisherId;
-
-	@NotBlank(message = "Publisher name is required")
 	private String name;
 	private String city;
-
-	@NotNull(message = "State code is required")
 	private String stateCode;
 
 	public Integer getPublisherId() {
@@ -46,5 +38,4 @@ public class PublisherRequestDTO {
 	public void setStateCode(String stateCode) {
 		this.stateCode = stateCode;
 	}
-
 }
