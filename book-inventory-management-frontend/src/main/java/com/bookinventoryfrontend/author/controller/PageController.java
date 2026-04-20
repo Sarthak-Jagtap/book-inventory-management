@@ -26,7 +26,7 @@ public class PageController {
 	    // IMPORTANT: Point this to your backend server's address and port!
 	    private final RestClient restClient = RestClient.create("http://localhost:8080");
 
-	    @GetMapping("/")
+	    @GetMapping("/index")
 	    public String home() {
 	        return "index";
 	    }

@@ -137,32 +137,42 @@ public class BookReviewControllerTest {
     // ✅ 7. CREATE review
     @Test
     void testCreateReview() {
+    	
+    BookReviewDTO reviewdto = new BookReviewDTO();
+    reviewdto.setIsbn("123"); 
+    reviewdto.setReviewerId(1);
+    reviewdto.setRating(5);
+    reviewdto.setComments("Awesome");
 
-        BookReview review = new BookReview();
-        review.setRating(5);
-        review.setComments("Awesome");
+    BookReview review = new BookReview();
+    review.setRating(5);
+    review.setComments("Awesome");
 
-        Mockito.when(service.createReview(Mockito.any()))
-                .thenReturn(review);
+    Mockito.when(service.createReview(Mockito.any()))
+            .thenReturn(reviewdto);
 
-        BookReview result = controller.createReview(review);
+    BookReviewDTO result = controller.createReview(reviewdto);
 
-        assertEquals(5, result.getRating());
-        assertEquals("Awesome", result.getComments());
+    assertEquals(5, result.getRating());
+    assertEquals("Awesome", result.getComments());
+
     }
+
 
     // ✅ 8. UPDATE review
     @Test
     void testUpdateReview() {
 
-        BookReview review = new BookReview();
-        review.setRating(4);
-        review.setComments("Updated");
+        BookReviewDTO reviewdto = new BookReviewDTO();
+        reviewdto.setIsbn("123"); 
+        reviewdto.setReviewerId(1);
+        reviewdto.setRating(4);
+        reviewdto.setComments("Updated");
 
         Mockito.when(service.updateReview(Mockito.any()))
-                .thenReturn(review);
+                .thenReturn(reviewdto);
 
-        BookReview result = controller.updateReview(review);
+        BookReviewDTO result = controller.updateReview(reviewdto);
 
         assertEquals(4, result.getRating());
     }
