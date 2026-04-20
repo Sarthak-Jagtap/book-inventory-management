@@ -30,4 +30,6 @@ public interface UserService {
 	
 	// Shared utility
 	List<UserResponseDTO> getUsersByRole(Integer roleNumber);
+	
+	List<UserResponseDTO> searchUsers(String firstName, String lastName);
 }

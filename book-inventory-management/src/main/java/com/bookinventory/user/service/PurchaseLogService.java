@@ -2,6 +2,8 @@ package com.bookinventory.user.service;
 
 import com.bookinventory.user.dto.PurchaseLogRequestDTO;
 import com.bookinventory.user.dto.PurchaseLogResponseDTO;
+import com.bookinventory.user.dto.PurchaseStatsDTO;
+import com.bookinventory.user.dto.TopBuyerDTO;
 
 import java.util.List;
 
@@ -27,4 +29,8 @@ public interface PurchaseLogService {
     
     // In PurchaseLogService interface — add:
     List<PurchaseLogResponseDTO> getAllPurchases();
+    
+    PurchaseStatsDTO getPurchaseStats();
+    
+    List<TopBuyerDTO> getTopBuyers(int limit);
 }
