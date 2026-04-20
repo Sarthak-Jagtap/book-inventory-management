@@ -34,6 +34,7 @@ public class SecurityConfig {
             	        "/home",
             	        "/ui/**",
             	        "/reviewui/**",
+            	        "/api/v1/**",
             	        "/api-author-dashboard",
             	        "/api-author-result",
             	        "/css/**",
@@ -47,10 +48,11 @@ public class SecurityConfig {
             	    .requestMatchers("/api/v1/store-owner/inventory/**").permitAll()
             	    .requestMatchers("/api/v1/user/cart/**").permitAll()
                 // Auth
-                .requestMatchers(HttpMethod.POST,
-                    "/api/v1/auth/register",
-                    "/api/v1/auth/login")
-                    .permitAll()
+            	.requestMatchers(HttpMethod.POST,
+            	    "/api/v1/auth/register",
+            	    "/api/v1/auth/login",
+            	    "/api/v1/auth/validate-token")   // ← add this line
+            	    .permitAll()
 
                 // Roles (public read)
                 .requestMatchers(HttpMethod.GET,

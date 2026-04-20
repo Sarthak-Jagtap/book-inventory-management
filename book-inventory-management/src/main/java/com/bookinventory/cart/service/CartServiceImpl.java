@@ -6,8 +6,11 @@ import com.bookinventory.cart.dto.AddToCartRequest;
 import com.bookinventory.cart.dto.CartItemResponse;
 import com.bookinventory.cart.dto.CartOptionResponse;
 import com.bookinventory.cart.dto.CartViewResponse;
+import com.bookinventory.cart.dto.CheckoutItemRequest;
+import com.bookinventory.cart.dto.CheckoutRequest;
 import com.bookinventory.cart.dto.CheckoutResponse;
-import com.bookinventory.cart.dto.SelectedCartItem;
+import com.bookinventory.common.exception.BadRequestException;
+import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.inventory.entity.BookCondition;
 import com.bookinventory.inventory.entity.Inventory;
 import com.bookinventory.inventory.entity.ShoppingCart;
@@ -15,43 +18,39 @@ import com.bookinventory.inventory.entity.ShoppingCartId;
 import com.bookinventory.inventory.repository.BookConditionRepository;
 import com.bookinventory.inventory.repository.InventoryRepository;
 import com.bookinventory.inventory.repository.ShoppingCartRepository;
-import com.bookinventory.common.exception.BadRequestException;
-import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.user.entity.PurchaseLog;
 import com.bookinventory.user.entity.PurchaseLogId;
 import com.bookinventory.user.entity.User;
 import com.bookinventory.user.repository.PurchaseLogRepository;
 import com.bookinventory.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class CartServiceImpl implements CartService {
 
     private final ShoppingCartRepository cartRepository;
     private final InventoryRepository inventoryRepository;
-    private final BookConditionRepository bookConditionRepository;
+    private final BookConditionRepository conditionRepository;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
     private final PurchaseLogRepository purchaseLogRepository;
 
-    private final Map<String, SelectedCartItem> selectedItems = new HashMap<>();
-
     public CartServiceImpl(ShoppingCartRepository cartRepository,
                            InventoryRepository inventoryRepository,
-                           BookConditionRepository bookConditionRepository,
+                           BookConditionRepository conditionRepository,
                            BookRepository bookRepository,
                            UserRepository userRepository,
                            PurchaseLogRepository purchaseLogRepository) {
         this.cartRepository = cartRepository;
         this.inventoryRepository = inventoryRepository;
-        this.bookConditionRepository = bookConditionRepository;
+        this.conditionRepository = conditionRepository;
         this.bookRepository = bookRepository;
         this.userRepository = userRepository;
         this.purchaseLogRepository = purchaseLogRepository;
@@ -68,34 +67,30 @@ public class CartServiceImpl implements CartService {
             return new ArrayList<>();
         }
 
-        Map<Integer, Long> rankCountMap = new HashMap<>();
+        Map<Integer, Long> countMap = new HashMap<>();
 
-        for (Inventory inventory : inventoryList) {
-            Integer rank = inventory.getRanks();
+        for (Inventory inv : inventoryList) {
+            Integer rank = inv.getRanks();
             if (rank != null) {
-                rankCountMap.put(rank, rankCountMap.getOrDefault(rank, 0L) + 1);
+                countMap.put(rank, countMap.getOrDefault(rank, 0L) + 1);
             }
         }
 
         List<CartOptionResponse> responseList = new ArrayList<>();
 
-        for (Map.Entry<Integer, Long> entry : rankCountMap.entrySet()) {
-            Integer rank = entry.getKey();
-            Long count = entry.getValue();
+        for (Map.Entry<Integer, Long> entry : countMap.entrySet()) {
+            BookCondition condition = conditionRepository
+                    .getConditionByRank(entry.getKey())
+                    .orElseThrow(() -> new BadRequestException("Condition not found for rank: " + entry.getKey()));
 
-            BookCondition condition = bookConditionRepository.getConditionByRank(rank)
-                    .orElseThrow(() -> new BadRequestException(
-                            "Condition not found for rank: " + rank
-                    ));
+            CartOptionResponse res = new CartOptionResponse();
+            res.setIsbn(isbn);
+            res.setRank(entry.getKey());
+            res.setCondition(condition.getDescription());
+            res.setPrice(condition.getPrice());
+            res.setAvailableCount(entry.getValue());
 
-            CartOptionResponse response = new CartOptionResponse();
-            response.setIsbn(isbn);
-            response.setRank(rank);
-            response.setCondition(condition.getDescription());
-            response.setPrice(condition.getPrice());
-            response.setAvailableCount(count);
-
-            responseList.add(response);
+            responseList.add(res);
         }
 
         responseList.sort(Comparator.comparing(CartOptionResponse::getRank));
@@ -169,7 +164,7 @@ public class CartServiceImpl implements CartService {
         List<CartItemResponse> responseList = new ArrayList<>();
 
         for (ShoppingCart cart : cartList) {
-            responseList.add(mapToCartItemResponse(cart));
+            responseList.add(new CartItemResponse(cart.getUserId(), cart.getIsbn()));
         }
 
         return responseList;
@@ -177,11 +172,11 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public List<CartViewResponse> getCartViewByUser(Integer userId) {
-        List<ShoppingCart> cartList = cartRepository.findByUserId(userId);
-        List<CartViewResponse> responseList = new ArrayList<>();
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+        List<ShoppingCart> cartList = cartRepository.findByUserId(userId);
+        List<CartViewResponse> responseList = new ArrayList<>();
 
         String userName = user.getFirstName() + " " + user.getLastName();
 
@@ -189,37 +184,16 @@ public class CartServiceImpl implements CartService {
             Book book = bookRepository.findById(cart.getIsbn())
                     .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", cart.getIsbn()));
 
-            String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
-            SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
+            List<CartOptionResponse> options = getCartOptionsByIsbn(cart.getIsbn());
 
-            if (selectedCartItem == null) {
-                responseList.add(new CartViewResponse(
-                        cart.getUserId(),
-                        userName,
-                        cart.getIsbn(),
-                        book.getTitle(),
-                        false,
-                        null,
-                        null,
-                        null
-                ));
-            } else {
-                BookCondition condition = bookConditionRepository.getConditionByRank(selectedCartItem.getRank())
-                        .orElseThrow(() -> new BadRequestException(
-                                "Condition not found for rank: " + selectedCartItem.getRank()
-                        ));
+            CartViewResponse response = new CartViewResponse();
+            response.setUserId(cart.getUserId());
+            response.setUserName(userName);
+            response.setIsbn(cart.getIsbn());
+            response.setBookTitle(book.getTitle());
+            response.setQualityOptions(options);
 
-                responseList.add(new CartViewResponse(
-                        cart.getUserId(),
-                        userName,
-                        cart.getIsbn(),
-                        book.getTitle(),
-                        true,
-                        selectedCartItem.getRank(),
-                        condition.getDescription(),
-                        selectedCartItem.getPrice()
-                ));
-            }
+            responseList.add(response);
         }
 
         return responseList;
@@ -230,90 +204,76 @@ public class CartServiceImpl implements CartService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
-        ShoppingCartId cartId = new ShoppingCartId(userId, isbn);
+        ShoppingCartId id = new ShoppingCartId(userId, isbn);
 
-        if (!cartRepository.existsById(cartId)) {
-            throw new ResourceNotFoundException("CartItem", "userId/isbn", userId + "/" + isbn);
+        if (!cartRepository.existsById(id)) {
+            throw new ResourceNotFoundException("CartItem", "id", id);
         }
 
-        cartRepository.deleteById(cartId);
-        selectedItems.remove(buildSelectionKey(userId, isbn));
+        cartRepository.deleteById(id);
     }
 
     @Override
-    public CheckoutResponse checkoutAll(Integer userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+@Transactional
+public CheckoutResponse checkoutAll(CheckoutRequest request) {
+    if (request == null || request.getUserId() == null) {
+        throw new BadRequestException("User ID is required");
+    }
 
-        List<ShoppingCart> cartList = cartRepository.findByUserId(userId);
+    Integer userId = request.getUserId();
 
-        if (cartList.isEmpty()) {
-            return new CheckoutResponse(false, "Cart is empty");
-        }
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
-        for (ShoppingCart cart : cartList) {
-            String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
-            SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
+    List<ShoppingCart> cartItems = cartRepository.findByUserId(userId);
 
-            if (selectedCartItem == null) {
-                throw new BadRequestException(
-                        "Selection missing for isbn: " + cart.getIsbn() + ". Please reselect quality before checkout."
-                );
+    if (cartItems == null || cartItems.isEmpty()) {
+        return new CheckoutResponse(false, "Cart is empty");
+    }
+
+    Map<String, Integer> selectedRankByIsbn = new HashMap<>();
+    if (request.getItems() != null) {
+        for (CheckoutItemRequest item : request.getItems()) {
+            if (item != null && item.getIsbn() != null && item.getRank() != null) {
+                selectedRankByIsbn.put(item.getIsbn(), item.getRank());
             }
         }
+    }
 
-        for (ShoppingCart cart : cartList) {
-            String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
-            SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
-
-            Inventory inventory = inventoryRepository.findById(selectedCartItem.getInventoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Inventory",
-                            "inventoryId",
-                            selectedCartItem.getInventoryId()
-                    ));
-
-            if (Boolean.TRUE.equals(inventory.getPurchased())) {
-                throw new BadRequestException(
-                        "Inventory item already purchased: " + inventory.getInventoryId()
-                );
-            }
+    for (ShoppingCart cartItem : cartItems) {
+        Integer selectedRank = selectedRankByIsbn.get(cartItem.getIsbn());
+        if (selectedRank == null) {
+            return new CheckoutResponse(false, "Select quality choice for cart items");
         }
-
-        for (ShoppingCart cart : cartList) {
-            String selectionKey = buildSelectionKey(cart.getUserId(), cart.getIsbn());
-            SelectedCartItem selectedCartItem = selectedItems.get(selectionKey);
-
-            Inventory inventory = inventoryRepository.findById(selectedCartItem.getInventoryId())
-                    .orElseThrow(() -> new ResourceNotFoundException(
-                            "Inventory",
-                            "inventoryId",
-                            selectedCartItem.getInventoryId()
-                    ));
-
-            inventory.setPurchased(true);
-            inventoryRepository.save(inventory);
-
-            PurchaseLogId purchaseLogId = new PurchaseLogId(userId, inventory.getInventoryId());
-
-            PurchaseLog log = new PurchaseLog();
-            log.setId(purchaseLogId);
-            log.setUser(user);
-
-            purchaseLogRepository.save(log);
-
-            cartRepository.deleteById(new ShoppingCartId(cart.getUserId(), cart.getIsbn()));
-            selectedItems.remove(selectionKey);
-        }
-
-        return new CheckoutResponse(true, "Checkout successful for all cart items.");
     }
 
-    private String buildSelectionKey(Integer userId, String isbn) {
-        return userId + "_" + isbn;
+    List<Inventory> inventoriesToPurchase = new ArrayList<>();
+
+    for (ShoppingCart cartItem : cartItems) {
+        Integer selectedRank = selectedRankByIsbn.get(cartItem.getIsbn());
+
+        Inventory inventory = inventoryRepository
+                .getFirstAvailableInventoryByIsbnAndRank(cartItem.getIsbn(), selectedRank)
+                .orElseThrow(() -> new BadRequestException(
+                        "No available copy for selected quality/rank: " + selectedRank + " for isbn: " + cartItem.getIsbn()
+                ));
+
+        inventoriesToPurchase.add(inventory);
     }
 
-    private CartItemResponse mapToCartItemResponse(ShoppingCart cart) {
-        return new CartItemResponse(cart.getUserId(), cart.getIsbn());
+    for (Inventory inventory : inventoriesToPurchase) {
+        inventory.setPurchased(true);
+        inventoryRepository.save(inventory);
+
+        PurchaseLogId purchaseLogId = new PurchaseLogId(userId, inventory.getInventoryId());
+        PurchaseLog purchaseLog = new PurchaseLog(purchaseLogId, user);
+        purchaseLogRepository.save(purchaseLog);
     }
+
+    for (ShoppingCart cartItem : cartItems) {
+        cartRepository.delete(cartItem);
+    }
+
+    return new CheckoutResponse(true, "Checkout successful for all cart items.");
+}
 }

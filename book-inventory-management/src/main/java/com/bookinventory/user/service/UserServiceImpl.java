@@ -224,4 +224,30 @@ public class UserServiceImpl implements UserService {
 			result.add(convertUserToDTO(u));
 		return result;
 	}
+	
+	@Override
+	public List<UserResponseDTO> searchUsers(String firstName, String lastName) {
+
+	    // Use a Set to avoid duplicates if both params given and same user matches both
+	    java.util.Set<Integer> seenIds = new java.util.HashSet<>();
+	    List<UserResponseDTO> result   = new ArrayList<>();
+
+	    if (firstName != null && !firstName.isBlank()) {
+	        for (User u : userRepository.findByFirstNameIgnoreCase(firstName)) {
+	            if (seenIds.add(u.getUserId())) {
+	                result.add(convertUserToDTO(u));
+	            }
+	        }
+	    }
+
+	    if (lastName != null && !lastName.isBlank()) {
+	        for (User u : userRepository.findByLastNameIgnoreCase(lastName)) {
+	            if (seenIds.add(u.getUserId())) {
+	                result.add(convertUserToDTO(u));
+	            }
+	        }
+	    }
+
+	    return result;
+	}
 }

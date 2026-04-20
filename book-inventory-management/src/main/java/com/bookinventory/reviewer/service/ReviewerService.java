@@ -62,19 +62,54 @@ public class ReviewerService {
 	    ).toList();
 	}
 	
-	
-	public Reviewer createReviewer(Reviewer reviewer) {
-		return repo.save(reviewer);
-	}
-	
-	public List<Reviewer> getAllReviewers(){
-		return repo.findAll();
-		
-	}
-	
+	public List<ReviewerDTO> getAllReviewers(){
 
-	public Reviewer updateReviewer(Reviewer reviewer) {
-		return repo.save(reviewer);
+	    List<Reviewer> reviewers = repo.findAll();
+
+	    return reviewers.stream()
+	            .map(reviewer -> new ReviewerDTO(
+	                    reviewer.getReviewerID(),
+	                    reviewer.getName(),
+	                    reviewer.getEmployedBy()
+	            ))
+	            .toList();
+	}
+	
+	public ReviewerDTO createReviewer(ReviewerDTO dto) {
+
+	    // DTO → ENTITY
+	    Reviewer reviewer = new Reviewer();
+	    reviewer.setReviewerID(dto.getReviewerID());
+	    reviewer.setName(dto.getName());
+	    reviewer.setEmployedBy(dto.getEmployedBy());
+
+	    // SAVE
+	    Reviewer saved = repo.save(reviewer);
+
+	    // ENTITY → DTO
+	    ReviewerDTO response = new ReviewerDTO();
+	    response.setReviewerID(saved.getReviewerID());
+	    response.setName(saved.getName());
+	    response.setEmployedBy(saved.getEmployedBy());
+
+	    return response;
+	}
+	
+	public ReviewerDTO updateReviewer(ReviewerDTO dto) {
+
+	    Reviewer reviewer = new Reviewer();
+	    reviewer.setReviewerID(dto.getReviewerID());
+	    reviewer.setName(dto.getName());
+	    reviewer.setEmployedBy(dto.getEmployedBy());
+
+	    Reviewer updated = repo.save(reviewer);
+
+	    ReviewerDTO response = new ReviewerDTO();
+	    response.setReviewerID(updated.getReviewerID());
+	    response.setName(updated.getName());
+	    response.setEmployedBy(updated.getEmployedBy());
+
+	    return response;
 	}
 	
 	public void deleteReviewer(int reviewerID) {

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>Search Users</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/team/user-module}">← Back</a>
+  <div><h1>Search Users</h1><div class="meta" th:text="${apiEndpoint}"></div></div>
+  <span class="new-tag" style="margin-left:auto;">NEW</span>
+</div>
+<div class="page-wrapper-sm">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="sep">›</span><span>Search Users</span></div>
+  <div class="api-info"><strong>What this API does</strong><span th:text="${apiDescription}"></span></div>
+  <div class="alert alert-error" th:if="${error!=null}"><span>⚠</span><span th:text="${error}"></span></div>
+  <!-- Search form -->
+  <div class="card mb-2">
+    <div class="card-header">Search Parameters</div>
+    <form th:action="@{/user/api/admin/search}" method="get">
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:flex-end;">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">First Name</label>
+          <input class="form-control" type="text" name="firstName" th:value="${firstName}" placeholder="e.g. John"/>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label class="form-label">Last Name</label>
+          <input class="form-control" type="text" name="lastName" th:value="${lastName}" placeholder="e.g. Smith"/>
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+      <div class="form-hint mt-1">At least one field required. Matching is case-insensitive.</div>
+    </form>
+  </div>
+  <!-- Results -->
+  <div th:if="${searched!=null}">
+    <div th:if="${results!=null and !results.isEmpty()}">
+      <p class="text-muted text-small mb-1" th:text="${resultCount+' result(s) found'}"></p>
+      <div class="card" style="padding:0;">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Name</th><th>Username</th><th>Phone</th><th>Role</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr th:each="u : ${results}">
+                <td class="mono" th:text="${u.userId}"></td>
+                <td th:text="${u.fullName}"></td>
+                <td class="mono" th:text="${u.userName}"></td>
+                <td class="text-muted" th:text="${u.phoneNumber!=null?u.phoneNumber:'—'}"></td>
+                <td><span class="role-pill" th:if="${u.role!=null}"
+                  th:classappend="${u.role.permRole=='Admin'}?'role-admin':(${u.role.permRole=='StoreOwner'}?'role-owner':(${u.role.permRole=='RegisteredUser'}?'role-user':'role-guest'))"
+                  th:text="${u.role.permRole}">Role</span></td>
+                <td><a class="btn btn-secondary btn-sm" th:href="@{/user/api/admin/users/{id}(id=${u.userId})}">View</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="empty" th:if="${results==null or results.isEmpty()}"><div class="icon">🔍</div><h3>No results found</h3><p>No users match your search</p></div>
+  </div>
+</div>
+<div class="footer">Book Inventory Management — User Module</div>
+</body></html>

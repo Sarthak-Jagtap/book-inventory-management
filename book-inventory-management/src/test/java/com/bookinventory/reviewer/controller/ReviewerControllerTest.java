@@ -96,11 +96,11 @@ public class ReviewerControllerTest {
     @Test
     void testGetAllReviewers() {
 
-        List<Reviewer> list = Arrays.asList(new Reviewer(), new Reviewer());
+        List<ReviewerDTO> list = Arrays.asList(new ReviewerDTO(), new ReviewerDTO());
 
         Mockito.when(service.getAllReviewers()).thenReturn(list);
 
-        List<Reviewer> result = controller.getAllReviewer();
+        List<ReviewerDTO> result = controller.getAllReviewer();
 
         assertEquals(2, result.size());
     }
@@ -109,12 +109,12 @@ public class ReviewerControllerTest {
     @Test
     void testCreateReviewer() {
 
-        Reviewer reviewer = new Reviewer();
+        ReviewerDTO reviewerdto = new ReviewerDTO();
 
         Mockito.when(service.createReviewer(Mockito.any()))
-                .thenReturn(reviewer);
+                .thenReturn(reviewerdto);
 
-        Reviewer result = controller.createReviewer(reviewer);
+        ReviewerDTO result = controller.createReviewer(reviewerdto);
 
         assertNotNull(result);
     }
@@ -123,12 +123,12 @@ public class ReviewerControllerTest {
     @Test
     void testUpdateReviewer() {
 
-        Reviewer reviewer = new Reviewer();
+        ReviewerDTO reviewerdto = new ReviewerDTO();
 
-        Mockito.when(service.createReviewer(Mockito.any()))
-                .thenReturn(reviewer);
+        Mockito.when(service.updateReviewer(Mockito.any()))
+                .thenReturn(reviewerdto);
 
-        Reviewer result = controller.updateReviewer(reviewer);
+        ReviewerDTO result = controller.updateReviewer(reviewerdto);
 
         assertNotNull(result);
     }

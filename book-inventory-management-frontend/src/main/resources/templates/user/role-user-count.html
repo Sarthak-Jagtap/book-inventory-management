@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>Role User Count — Book Inventory</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/user/api/roles}">&#8592; Back to Roles</a>
+  <div>
+    <h1>Role User Count</h1>
+    <div class="meta" th:text="${apiEndpoint}">GET /api/v1/roles/{roleNumber}/user-count</div>
+  </div>
+  <span class="new-tag" style="margin-left:auto;">NEW</span>
+</div>
+<div class="page-wrapper-sm">
+  <div class="breadcrumb">
+    <a th:href="@{/home}">Home</a><span class="sep">&#8250;</span>
+    <a th:href="@{/team/user-module}">User Module</a><span class="sep">&#8250;</span>
+    <a th:href="@{/user/api/roles}">Roles</a><span class="sep">&#8250;</span>
+    <span>User Count</span>
+  </div>
+  <div class="api-info">
+    <strong>What this API does</strong>
+    <span th:text="${apiDescription}">Returns how many registered users belong to a specific role.</span>
+  </div>
+  <div class="alert alert-error" th:if="${error!=null}">
+    <span>&#9888;</span><span th:text="${error}"></span>
+  </div>
+
+  <div th:if="${countData!=null}">
+    <!-- Result card -->
+    <div class="card" style="padding:0;margin-bottom:16px;">
+      <table class="data-table">
+        <thead><tr><th colspan="2">API Response</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="width:200px;color:#6b7280;">Role</td>
+            <td>
+              <span class="role-pill" th:if="${role!=null}"
+                th:classappend="${role.permRole=='Admin'}?'role-admin':(${role.permRole=='StoreOwner'}?'role-owner':(${role.permRole=='RegisteredUser'}?'role-user':'role-guest'))"
+                th:text="${role!=null?role.permRole:'Unknown'}">Role</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="color:#6b7280;">Role Number</td>
+            <td class="mono" th:text="${countData.get('roleNumber')}"></td>
+          </tr>
+          <tr>
+            <td style="color:#6b7280;">Users with this role</td>
+            <td>
+              <strong style="font-size:24px;color:#1a6dbd;" th:text="${countData.get('userCount')}">0</strong>
+              <span style="font-size:14px;color:#6b7280;margin-left:6px;">registered users</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="color:#6b7280;">Repository method</td>
+            <td class="mono" style="font-size:12px;color:#6b7280;">countByRole_RoleNumber(roleNumber)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Navigation to other roles -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="btn btn-secondary btn-sm" th:href="@{/user/api/roles}">&#8592; All Roles</a>
+      <a class="btn btn-secondary btn-sm"
+         th:if="${role!=null}"
+         th:href="@{/user/api/roles/{n}(n=${role.roleNumber})}">View Role Detail</a>
+    </div>
+  </div>
+</div>
+<div class="footer">Book Inventory Management &#8212; User Module</div>
+</body></html>

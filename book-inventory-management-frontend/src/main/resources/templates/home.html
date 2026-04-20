@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Book Inventory Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<!-- Hero -->
+<div class="home-hero">
+  <h1>Book Inventory <span>Management System</span></h1>
+  <p>A Spring Boot REST API project built by a 5-member team.
+     Click on a team member below to explore the APIs they built.</p>
+
+  <!-- NOT logged in -->
+  <th:block th:if="${session.JWT_TOKEN == null}">
+    <div class="hero-btns">
+      <a class="btn btn-primary" th:href="@{/auth/login}">Login</a>
+      <a class="btn btn-secondary" th:href="@{/auth/register}">Register</a>
+    </div>
+  </th:block>
+
+  <!-- Logged in -->
+  <th:block th:if="${session.JWT_TOKEN != null}">
+    <div class="hero-note">
+      Logged in as <strong th:text="${session.USER_NAME}">username</strong>
+      &nbsp;&mdash;&nbsp;
+      <span th:text="${session.ROLE_NAME}">Role</span>
+    </div>
+  </th:block>
+</div>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="n">5</div><div class="l">Team Members</div></div>
+  <div class="stat-item"><div class="n">100+</div><div class="l">API Endpoints</div></div>
+  <div class="stat-item"><div class="n">3</div><div class="l">Machines</div></div>
+  <div class="stat-item"><div class="n">JWT</div><div class="l">Auth</div></div>
+</div>
+
+<!-- Team grid -->
+<div class="page-wrapper">
+  <div class="flex-between mb-2">
+    <div>
+      <div style="font-size:17px;font-weight:600;color:#111827;">Team Members</div>
+      <div style="font-size:13px;color:#6b7280;margin-top:3px;">
+        Click any card to see that member's API endpoints
+      </div>
+    </div>
+  </div>
+
+  <div class="team-grid">
+    <!-- Member 1 — YOUR card -->
+    <a class="team-card" th:href="@{/team/user-module}">
+      <div class="avatar av-1"
+           th:text="${members[0] != null ? #strings.substring(members[0].name,0,2).toUpperCase() : 'YN'}">YN</div>
+      <div class="name" th:text="${members[0] != null ? members[0].name : 'Your Name'}">Your Name</div>
+      <div class="module">User Module</div>
+      <div class="api-count"><strong>24</strong> endpoints</div>
+    </a>
+    <!-- Member 2 -->
+    <a class="team-card" th:href="@{/team/book-module}">
+      <div class="avatar av-2"
+           th:text="${members[1] != null ? #strings.substring(members[1].name,0,2).toUpperCase() : 'M2'}">M2</div>
+      <div class="name" th:text="${members[1] != null ? members[1].name : 'Team Member 2'}">Team Member 2</div>
+      <div class="module">Book Module</div>
+      <div class="api-count"><strong>20+</strong> endpoints</div>
+    </a>
+    <!-- Member 3 -->
+    <a class="team-card" th:href="@{/team/inventory-module}">
+      <div class="avatar av-3"
+           th:text="${members[2] != null ? #strings.substring(members[2].name,0,2).toUpperCase() : 'M3'}">M3</div>
+      <div class="name" th:text="${members[2] != null ? members[2].name : 'Team Member 3'}">Team Member 3</div>
+      <div class="module">Inventory Module</div>
+      <div class="api-count"><strong>20+</strong> endpoints</div>
+    </a>
+    <!-- Member 4 -->
+    <a class="team-card" th:href="@{/team/review-module}">
+      <div class="avatar av-4"
+           th:text="${members[3] != null ? #strings.substring(members[3].name,0,2).toUpperCase() : 'M4'}">M4</div>
+      <div class="name" th:text="${members[3] != null ? members[3].name : 'Team Member 4'}">Team Member 4</div>
+      <div class="module">Review Module</div>
+      <div class="api-count"><strong>15+</strong> endpoints</div>
+    </a>
+    <!-- Member 5 -->
+    <a class="team-card" th:href="@{/team/cart-module}">
+      <div class="avatar av-5"
+           th:text="${members[4] != null ? #strings.substring(members[4].name,0,2).toUpperCase() : 'M5'}">M5</div>
+      <div class="name" th:text="${members[4] != null ? members[4].name : 'Team Member 5'}">Team Member 5</div>
+      <div class="module">Cart Module</div>
+      <div class="api-count"><strong>15+</strong> endpoints</div>
+    </a>
+  </div>
+
+  <!-- Login note for guests -->
+  <th:block th:if="${session.JWT_TOKEN == null}">
+    <div class="alert alert-info mt-3">
+      <span>i</span>
+      <span>Some API endpoints require login. Please
+        <a th:href="@{/auth/login}" style="color:#1e40af;font-weight:600;">log in</a>
+        to access all features.
+      </span>
+    </div>
+  </th:block>
+</div>
+
+<div class="footer">Book Inventory Management System — Capgemini Project</div>
+</body>
+</html>

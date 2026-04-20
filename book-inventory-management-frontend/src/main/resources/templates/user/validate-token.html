@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Validate Token — Book Inventory</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="page-head">
+  <a class="back-link" th:href="@{/team/user-module}">&#8592; Back</a>
+  <div>
+    <h1>Validate Token</h1>
+    <div class="meta">POST /api/v1/auth/validate-token</div>
+  </div>
+  <span class="new-tag" style="margin-left:auto;">NEW</span>
+</div>
+
+<div class="page-wrapper-sm">
+
+  <div class="breadcrumb">
+    <a th:href="@{/home}">Home</a><span class="sep">&#8250;</span>
+    <a th:href="@{/team/user-module}">User Module</a><span class="sep">&#8250;</span>
+    <span>Validate Token</span>
+  </div>
+
+  <div class="api-info">
+    <strong>What this API does</strong>
+    Sends a JWT token to the backend and checks if it is still valid.
+    Returns the token's embedded claims: username, user ID, and role name.
+    Useful for checking token expiry without making a full protected API call.
+  </div>
+
+  <!-- ── Not logged in — show info instead of error ─────────────── -->
+  <th:block th:if="${session.JWT_TOKEN == null}">
+    <div class="alert alert-warning">
+      <span>&#128274;</span>
+      <div>
+        <strong>Login required to test this endpoint</strong><br/>
+        This API validates a JWT token. You need to be logged in so that
+        a JWT token exists in your session to validate.
+        <br/>
+        <a th:href="@{/auth/login}"
+           style="color:#92400e;font-weight:600;margin-top:6px;display:inline-block;">
+          Login first, then come back here &#8594;
+        </a>
+      </div>
+    </div>
+
+    <!-- Still explain what the API does -->
+    <div class="card" style="padding:0;">
+      <table class="data-table">
+        <thead><tr><th>Response Field</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">valid</td><td class="mono">Boolean</td><td>true if token is valid, false if expired or invalid</td></tr>
+          <tr><td class="mono">userName</td><td class="mono">String</td><td>Username extracted from token subject claim</td></tr>
+          <tr><td class="mono">userId</td><td class="mono">Integer</td><td>User ID extracted from token claims</td></tr>
+          <tr><td class="mono">roleName</td><td class="mono">String</td><td>Role name extracted from token claims</td></tr>
+          <tr><td class="mono">message</td><td class="mono">String</td><td>"Token is valid" or reason for invalidity</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </th:block>
+
+  <!-- ── Logged in — show actual token validation result ────────── -->
+  <th:block th:if="${session.JWT_TOKEN != null}">
+
+    <!-- Error from backend (unexpected) -->
+    <div class="alert alert-error" th:if="${error!=null}">
+      <span>&#9888;</span><span th:text="${error}"></span>
+    </div>
+
+    <!-- Token validation result -->
+    <div th:if="${tokenResult!=null}">
+
+      <!-- Status banner -->
+      <div class="alert" style="margin-bottom:18px;font-size:15px;"
+           th:classappend="${tokenResult.get('valid')==true}?'alert-success':'alert-error'">
+        <span style="font-size:18px;"
+              th:text="${tokenResult.get('valid')==true}?'&#10003;':'&#10007;'">&#10003;</span>
+        <div>
+          <strong th:text="${tokenResult.get('valid')==true}?'Token is VALID':'Token is INVALID'">
+            Status
+          </strong>
+          &nbsp;&#8212;&nbsp;
+          <span th:text="${tokenResult.get('message')}">message</span>
+        </div>
+      </div>
+
+      <!-- Token preview -->
+      <div class="card" style="padding:0;margin-bottom:16px;">
+        <table class="data-table">
+          <thead><tr><th colspan="2">Token Preview</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="width:180px;color:#6b7280;">JWT Token (partial)</td>
+              <td class="mono" style="font-size:12px;color:#6b7280;word-break:break-all;"
+                  th:text="${tokenPreview}">eyJhbG...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Claims table — only when valid -->
+      <div class="card" style="padding:0;" th:if="${tokenResult.get('valid')==true}">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>JWT Claim</th>
+              <th>Value</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">sub (subject)</td>
+              <td><strong th:text="${tokenResult.get('userName')}">username</strong></td>
+              <td style="color:#6b7280;">The authenticated username</td>
+            </tr>
+            <tr>
+              <td class="mono">userId</td>
+              <td class="mono" th:text="${tokenResult.get('userId')}">1000019</td>
+              <td style="color:#6b7280;">User's unique database ID</td>
+            </tr>
+            <tr>
+              <td class="mono">roleName</td>
+              <td>
+                <span class="role-pill"
+                  th:classappend="${tokenResult.get('roleName')=='Admin'}?'role-admin':
+                                  (${tokenResult.get('roleName')=='StoreOwner'}?'role-owner':
+                                  (${tokenResult.get('roleName')=='RegisteredUser'}?'role-user':'role-guest'))"
+                  th:text="${tokenResult.get('roleName')}">Role</span>
+              </td>
+              <td style="color:#6b7280;">Role embedded in JWT claims</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </th:block>
+
+</div>
+
+<div class="footer">Book Inventory Management &#8212; User Module</div>
+</body>
+</html>

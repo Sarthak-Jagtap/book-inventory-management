@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<style>
+	    body {
+	        margin: 0;
+	        font-family: 'Segoe UI', sans-serif;
+	        background: linear-gradient(135deg, #eef2ff, #f8fafc);
+	        height: 100vh;
+	        display: flex;
+	        justify-content: center;
+	        align-items: center;
+	    }
+
+	    /* CARD */
+	    .card {
+	        background: #ffffff;
+	        padding: 40px;
+	        border-radius: 16px;
+	        width: 360px;
+	        box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+	        text-align: center;
+	    }
+
+	    h2 {
+	        margin-bottom: 25px;
+	        color: #111827;
+	    }
+
+	    /* INPUT GROUP */
+	    .input-group {
+	        position: relative;
+	        margin-bottom: 20px;
+	    }
+
+	    input {
+	        width: 100%;
+	        padding: 12px 12px;
+	        border-radius: 10px;
+	        border: 1px solid #ddd;
+	        outline: none;
+	        font-size: 14px;
+	        transition: 0.2s;
+	    }
+
+	    input:focus {
+	        border-color: #6366f1;
+	        box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+	    }
+
+	    /* BUTTON */
+	    button {
+	        width: 100%;
+	        padding: 12px;
+	        border: none;
+	        border-radius: 10px;
+	        background: linear-gradient(135deg, #6366f1, #4f46e5);
+	        color: white;
+	        font-weight: 600;
+	        font-size: 15px;
+	        cursor: pointer;
+	        transition: 0.2s;
+	    }
+
+	    button:hover {
+	        transform: translateY(-1px);
+	        box-shadow: 0 8px 20px rgba(99,102,241,0.3);
+	    }
+
+	    /* BACK LINK */
+	    .back {
+	        margin-top: 15px;
+	        font-size: 13px;
+	    }
+
+	    .back a {
+	        text-decoration: none;
+	        color: #6366f1;
+	    }
+
+	    .back a:hover {
+	        text-decoration: underline;
+	    }
+
+	</style>
+<body>
+
+<h2>Update Reviewer</h2>
+
+<form action="/ui/reviewer/update-form" method="post" th:object="${reviewer}">
+    <input type="number" th:field="*{reviewerID}" placeholder="ID" required>
+    <input type="text" th:field="*{name}" placeholder="Name">
+    <input type="text" th:field="*{employedBy}" placeholder="Company">
+    <button type="submit">Update</button>
+</form>
+
+<a href="/ui/review-dashboard">Back</a>
+
+</body>
+</html>

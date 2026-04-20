@@ -8,11 +8,15 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class RestClientConfig {
 
+    // Spring reads this value from application.properties
+    // backend.api.base-url=http://localhost:8080
+    @Value("${backend.api.base-url}")
+    private String backendBaseUrl;
+
     @Bean
-    public RestClient restClient(RestClient.Builder builder,
-                                 @Value("${backend.base-url}") String backendBaseUrl) {
-        return builder
-                .baseUrl(backendBaseUrl)
+    public RestClient restClient() {
+        return RestClient.builder()
+                .baseUrl(backendBaseUrl)   // All requests will start from this URL
                 .build();
     }
 }

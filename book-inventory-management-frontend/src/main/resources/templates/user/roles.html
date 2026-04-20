@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>All Roles — Book Inventory</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/team/user-module}">&#8592; Back</a>
+  <div>
+    <h1>All Roles</h1>
+    <div class="meta">GET /api/v1/roles</div>
+  </div>
+  <span class="tag" style="margin-left:auto;"
+        th:text="${roles!=null?(roles.size()+' roles'):'0 roles'}">0 roles</span>
+</div>
+<div class="page-wrapper-sm">
+  <div class="breadcrumb">
+    <a th:href="@{/home}">Home</a><span class="sep">&#8250;</span>
+    <a th:href="@{/team/user-module}">User Module</a><span class="sep">&#8250;</span>
+    <span>All Roles</span>
+  </div>
+  <div class="api-info">
+    <strong>What this API does</strong>
+    Returns all permission roles defined in the system. Roles control what each user can access.
+    Public endpoint — no login required.
+    Currently 4 roles: Guest (1), RegisteredUser (2), StoreOwner (3), Admin (4).
+  </div>
+  <div class="alert alert-error" th:if="${error!=null}">
+    <span>&#9888;</span><span th:text="${error}"></span>
+  </div>
+
+  <!-- Roles table -->
+  <div th:if="${roles!=null and !roles.isEmpty()}" class="card" style="padding:0;margin-bottom:16px;">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Role ID</th>
+            <th>Role Name</th>
+            <th>Access Level</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="r : ${roles}">
+            <td class="mono" th:text="${r.roleNumber}"></td>
+            <td>
+              <span class="role-pill"
+                th:classappend="${r.permRole=='Admin'}?'role-admin':(${r.permRole=='StoreOwner'}?'role-owner':(${r.permRole=='RegisteredUser'}?'role-user':'role-guest'))"
+                th:text="${r.permRole}">Role</span>
+            </td>
+            <td style="font-size:13px;color:#6b7280;"
+                th:text="${r.permRole=='Admin'}?'Full system access':(${r.permRole=='StoreOwner'}?'Inventory + purchase management':(${r.permRole=='RegisteredUser'}?'Profile, cart, purchases':'Public read-only APIs'))">
+            </td>
+            <td style="display:flex;gap:6px;">
+              <a class="btn btn-secondary btn-sm"
+                 th:href="@{/user/api/roles/{n}(n=${r.roleNumber})}">Detail</a>
+              <a class="btn btn-secondary btn-sm"
+                 th:href="@{/user/api/roles/{n}/user-count(n=${r.roleNumber})}">Count</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="empty" th:if="${roles==null or roles.isEmpty()}">
+    <div class="icon">&#128230;</div>
+    <h3>No roles found</h3>
+    <p>Backend returned empty data</p>
+  </div>
+</div>
+<div class="footer">Book Inventory Management &#8212; User Module</div>
+</body></html>

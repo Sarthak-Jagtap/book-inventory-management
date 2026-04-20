@@ -16,11 +16,11 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // Auth
 	Optional<User> findByUserName(String userName);
 
-    // Check if username already taken (among active users)
+    
 	boolean existsByUserName(String userName);
     // Admin queries
 
-    // Get ALL users (including inactive) — Admin only
+    // Get ALL users
     @Query("SELECT u FROM User u JOIN FETCH u.role")
     List<User> findAllUsersWithRole();
 
@@ -44,4 +44,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // Search
     List<User> findByLastNameIgnoreCase(String lastName);
     List<User> findByFirstNameIgnoreCase(String firstName);
+    
+    // Count users by role number
+    long countByRole_RoleNumber(Integer roleNumber);
 }
