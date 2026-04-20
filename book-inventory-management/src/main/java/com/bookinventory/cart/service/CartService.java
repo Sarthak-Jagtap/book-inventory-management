@@ -15,8 +15,6 @@ public interface CartService {
 
     CartItemResponse addToCart(AddToCartRequest request);
 
-    CartItemResponse selectCartQuality(Integer userId, String isbn, Integer rank);
-
     List<CartItemResponse> getCartByUser(Integer userId);
 
     List<CartViewResponse> getCartViewByUser(Integer userId);

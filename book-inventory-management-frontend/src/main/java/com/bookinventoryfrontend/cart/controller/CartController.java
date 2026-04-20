@@ -4,6 +4,9 @@ import com.bookinventoryfrontend.cart.dto.AddToCartRequest;
 import com.bookinventoryfrontend.cart.dto.CartItemResponse;
 import com.bookinventoryfrontend.cart.dto.CartOptionResponse;
 import com.bookinventoryfrontend.cart.dto.CartViewResponse;
+import com.bookinventoryfrontend.cart.dto.CheckoutItemRequest;
+import com.bookinventoryfrontend.cart.dto.CheckoutRequest;
+import com.bookinventoryfrontend.cart.dto.CheckoutResponse;
 import com.bookinventoryfrontend.common.dto.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.core.ParameterizedTypeReference;
@@ -15,6 +18,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,33 +29,10 @@ public class CartController {
 
     private final RestClient restClient;
 
-    public CartController(RestClient restClient) {
-        this.restClient = restClient;
-    }
-
-    @GetMapping("/items")
-    public String getCartItemsByUser(@RequestParam Integer userId, Model model) {
-        if (userId == null || userId <= 0) {
-            model.addAttribute("apiError", "User ID must be greater than 0.");
-            model.addAttribute("cartItems", List.of());
-            return "cart/list";
-        }
-
-        try {
-            ApiResponse<List<CartItemResponse>> response = restClient.get()
-                    .uri("/api/v1/user/cart/{userId}", userId)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<ApiResponse<List<CartItemResponse>>>() {});
-
-            model.addAttribute("cartItems", response != null ? response.getData() : List.of());
-            model.addAttribute("userId", userId);
-            return "cart/list";
-        } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-            model.addAttribute("cartItems", List.of());
-            model.addAttribute("userId", userId);
-            return "cart/list";
-        }
+    public CartController(RestClient.Builder builder) {
+        this.restClient = builder
+                .baseUrl("http://localhost:8080")
+                .build();
     }
 
     @GetMapping("/options")
@@ -79,27 +60,14 @@ public class CartController {
         }
     }
 
-    @GetMapping("/options/{isbn}")
-    public String getOptions(@PathVariable String isbn, Model model) {
-        try {
-            ApiResponse<List<CartOptionResponse>> response = restClient.get()
-                    .uri("/api/v1/user/cart/options/{isbn}", isbn)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<ApiResponse<List<CartOptionResponse>>>() {});
-
-            model.addAttribute("options", response != null ? response.getData() : List.of());
-            model.addAttribute("isbn", isbn);
-            return "cart/options";
-        } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-            model.addAttribute("options", List.of());
-            model.addAttribute("isbn", isbn);
-            return "cart/options";
+    @GetMapping("/items")
+    public String getCartItemsByUser(@RequestParam Integer userId, Model model) {
+        if (userId == null || userId <= 0) {
+            model.addAttribute("apiError", "User ID must be greater than 0.");
+            model.addAttribute("cartItems", List.of());
+            return "cart/list";
         }
-    }
 
-    @GetMapping("/{userId}")
-    public String getCart(@PathVariable Integer userId, Model model) {
         try {
             ApiResponse<List<CartItemResponse>> response = restClient.get()
                     .uri("/api/v1/user/cart/{userId}", userId)
@@ -143,19 +111,11 @@ public class CartController {
             List<CartViewResponse> cartView = response != null ? response.getData() : List.of();
 
             Map<String, List<CartOptionResponse>> optionsByIsbn = new HashMap<>();
-
             for (CartViewResponse item : cartView) {
-                try {
-                    ApiResponse<List<CartOptionResponse>> optionResponse = restClient.get()
-                            .uri("/api/v1/user/cart/options/{isbn}", item.getIsbn())
-                            .retrieve()
-                            .body(new ParameterizedTypeReference<ApiResponse<List<CartOptionResponse>>>() {});
-
-                    optionsByIsbn.put(item.getIsbn(),
-                            optionResponse != null ? optionResponse.getData() : List.of());
-                } catch (HttpStatusCodeException ex) {
-                    optionsByIsbn.put(item.getIsbn(), List.of());
-                }
+                List<CartOptionResponse> options = item.getQualityOptions() != null
+                        ? item.getQualityOptions()
+                        : List.of();
+                optionsByIsbn.put(item.getIsbn(), options);
             }
 
             model.addAttribute("cartView", cartView);
@@ -201,27 +161,37 @@ public class CartController {
         }
     }
 
-    @PostMapping("/select")
-    public String selectQuality(@RequestParam Integer userId,
-                                @RequestParam String isbn,
-                                @RequestParam Integer rank,
-                                Model model) {
+    @PostMapping("/add-inline")
+    public String addToCartInline(@RequestParam Integer userId,
+                                  @RequestParam String isbn,
+                                  RedirectAttributes redirectAttributes) {
+        if (userId == null || userId <= 0) {
+            redirectAttributes.addFlashAttribute("apiError", "User ID must be greater than 0.");
+            return "redirect:/inventory-cart-dashboard";
+        }
+
+        if (isbn == null || isbn.isBlank()) {
+            redirectAttributes.addFlashAttribute("apiError", "ISBN is required.");
+            return "redirect:/inventory-cart-dashboard";
+        }
+
         try {
+            AddToCartRequest request = new AddToCartRequest();
+            request.setUserId(userId);
+            request.setIsbn(isbn);
+
             restClient.post()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/api/v1/user/cart/select")
-                            .queryParam("userId", userId)
-                            .queryParam("isbn", isbn)
-                            .queryParam("rank", rank)
-                            .build())
+                    .uri("/api/v1/user/cart/add")
+                    .body(request)
                     .retrieve()
                     .toBodilessEntity();
 
-            return "redirect:/user/cart/view/" + userId;
+            redirectAttributes.addFlashAttribute("successMessage", "Book added to cart successfully.");
         } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-            return getCartView(userId, model);
+            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
         }
+
+        return "redirect:/inventory-cart-dashboard";
     }
 
     @PostMapping("/remove")
@@ -245,18 +215,81 @@ public class CartController {
         }
     }
 
-    @PostMapping("/checkout")
-    public String checkoutAll(@RequestParam Integer userId, Model model) {
+    @PostMapping("/remove/run")
+    public String runRemove(@RequestParam Integer userId,
+                            @RequestParam String isbn,
+                            RedirectAttributes redirectAttributes) {
+        if (userId == null || userId <= 0) {
+            redirectAttributes.addFlashAttribute("apiError", "User ID must be greater than 0.");
+            return "redirect:/inventory-cart-dashboard";
+        }
+
+        if (isbn == null || isbn.isBlank()) {
+            redirectAttributes.addFlashAttribute("apiError", "ISBN is required.");
+            return "redirect:/inventory-cart-dashboard";
+        }
+
         try {
-            restClient.post()
+            restClient.delete()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/api/v1/user/cart/checkout")
+                            .path("/api/v1/user/cart/remove")
                             .queryParam("userId", userId)
+                            .queryParam("isbn", isbn)
                             .build())
                     .retrieve()
                     .toBodilessEntity();
 
-            model.addAttribute("checkoutMessage", "Checkout completed successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Cart item removed successfully.");
+        } catch (HttpStatusCodeException ex) {
+            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+        }
+
+        return "redirect:/inventory-cart-dashboard";
+    }
+
+    @PostMapping("/checkout")
+    public String checkoutFromView(@RequestParam Integer userId,
+                                   @RequestParam("isbn") List<String> isbns,
+                                   @RequestParam("rank") List<Integer> ranks,
+                                   Model model) {
+        if (userId == null || userId <= 0) {
+            model.addAttribute("apiError", "User ID must be greater than 0.");
+            return getCartView(userId, model);
+        }
+
+        if (isbns == null || ranks == null || isbns.isEmpty() || ranks.isEmpty()) {
+            model.addAttribute("apiError", "Cart items and rank selections are required.");
+            return getCartView(userId, model);
+        }
+
+        if (isbns.size() != ranks.size()) {
+            model.addAttribute("apiError", "Each cart item must have one selected rank.");
+            return getCartView(userId, model);
+        }
+
+        try {
+            CheckoutRequest request = new CheckoutRequest();
+            request.setUserId(userId);
+
+            List<CheckoutItemRequest> items = new ArrayList<>();
+            for (int i = 0; i < isbns.size(); i++) {
+                if (isbns.get(i) == null || isbns.get(i).isBlank() || ranks.get(i) == null) {
+                    model.addAttribute("apiError", "Each cart item must have ISBN and rank.");
+                    return getCartView(userId, model);
+                }
+                items.add(new CheckoutItemRequest(isbns.get(i), ranks.get(i)));
+            }
+            request.setItems(items);
+
+            ApiResponse<CheckoutResponse> response = restClient.post()
+                    .uri("/api/v1/user/cart/checkout")
+                    .body(request)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<ApiResponse<CheckoutResponse>>() {});
+
+            model.addAttribute("checkoutMessage",
+                    response != null ? response.getMessage() : "Checkout completed successfully.");
+
             return getCartView(userId, model);
         } catch (HttpStatusCodeException ex) {
             model.addAttribute("apiError", extractErrorMessage(ex));
@@ -264,27 +297,17 @@ public class CartController {
         }
     }
 
-    @PostMapping("/add-inline")
-    public String addToCartInline(@RequestParam Integer userId,
-                                  @RequestParam String isbn,
-                                  RedirectAttributes redirectAttributes) {
-        try {
-            AddToCartRequest request = new AddToCartRequest();
-            request.setUserId(userId);
-            request.setIsbn(isbn);
-
-            restClient.post()
-                    .uri("/api/v1/user/cart/add")
-                    .body(request)
-                    .retrieve()
-                    .toBodilessEntity();
-
-            redirectAttributes.addFlashAttribute("successMessage", "Book added to cart successfully.");
-        } catch (HttpStatusCodeException ex) {
-            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+    @PostMapping("/checkout/run")
+    public String runCheckout(@RequestParam Integer userId,
+                              RedirectAttributes redirectAttributes) {
+        if (userId == null || userId <= 0) {
+            redirectAttributes.addFlashAttribute("apiError", "User ID must be greater than 0.");
+            return "redirect:/inventory-cart-dashboard";
         }
 
-        return "redirect:/inventory-cart-dashboard";
+        redirectAttributes.addFlashAttribute("apiError",
+                "Use View Cart to select rank for each item before checkout.");
+        return "redirect:/user/cart/view/" + userId;
     }
 
     private String extractErrorMessage(HttpStatusCodeException ex) {
