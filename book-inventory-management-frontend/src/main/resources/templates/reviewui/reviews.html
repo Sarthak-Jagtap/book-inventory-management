@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Review Data</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 30px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .container {
+            width: 85%;
+            margin: auto;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #111827;
+            padding: 14px;
+            color: #9ca3af;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px;
+            border-top: 1px solid #334155;
+        }
+
+        tr:hover {
+            background: #273449;
+        }
+
+        /* MESSAGE BOX */
+        .message {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* BACK BUTTON */
+        a {
+            display: block;
+            width: fit-content;
+            margin: 30px auto 0;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            background: #6366f1;
+            color: white;
+            font-weight: 500;
+        }
+
+        a:hover {
+            opacity: 0.9;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<h2>📚 Book Review Data</h2>
+
+<div class="container">
+
+    <!-- ✅ STRING RESPONSE -->
+    <div th:if="${data instanceof T(java.lang.String)}" class="message">
+        <h3 th:text="${data}"></h3>
+    </div>
+
+    <!-- ✅ EMPTY LIST -->
+    <div th:if="${data != null and !(data instanceof T(java.lang.String)) and #lists.isEmpty(data)}" class="message">
+        <h3>No Reviews Found 😕</h3>
+    </div>
+
+    <!-- ✅ TABLE DATA -->
+    <table th:if="${data != null and !(data instanceof T(java.lang.String)) and !#lists.isEmpty(data)}">
+
+        <tr>
+            <th>ISBN</th>
+            <th>Reviewer ID</th>
+            <th>Rating</th>
+            <th>Comments</th>
+        </tr>
+
+        <tr th:each="r : ${data}">
+            <td th:text="${r.isbn}"></td>
+            <td th:text="${r.reviewerId}"></td>
+            <td th:text="${r.rating}"></td>
+            <td th:text="${r.comments}"></td>
+        </tr>
+
+    </table>
+
+</div>
+
+<a href="/ui/review-dashboard">⬅ Back to Dashboard</a>
+
+</body>
+</html>

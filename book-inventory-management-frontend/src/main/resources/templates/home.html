@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!--
+    HOME PAGE — Team Member Showcase
+    Save to: src/main/resources/templates/home.html
+    Served by: HomeController.java → GET /home
+-->
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <th:block th:replace="~{_layout :: head}"></th:block>
+    <title>Book Inventory Management &mdash; Team</title>
+</head>
+<body>
+
+    <!-- Shared navbar from _layout.html -->
+    <div th:replace="~{_layout :: navbar}"></div>
+
+    <!-- ══════════════════════════════════════════
+         HERO SECTION
+         ══════════════════════════════════════════ -->
+    <section class="page-hero">
+        <h1>Meet the Development Team</h1>
+        <p>
+            This project was built by 5 members as part of the Capgemini training program.
+            Click on any team member to explore the API endpoints they designed and built.
+        </p>
+        <div class="hero-divider"></div>
+    </section>
+
+    <!-- ══════════════════════════════════════════
+         TEAM GRID
+         The 'members' list comes from HomeController.java
+         Each member is a Map with keys:
+             name, role, photo, apiPageUrl, initials, avatarColor
+         ══════════════════════════════════════════ -->
+    <div class="team-grid">
+
+        <!--
+            th:each loops over every member in the list.
+            th:href links to their personal API page.
+        -->
+        <a class="member-card"
+           th:each="member : ${members}"
+           th:href="${member.apiPageUrl}">
+
+            <!-- Photo or Initials Avatar -->
+            <div class="member-avatar"
+                 th:style="'background:' + ${member.avatarBg} + '; border-color:' + ${member.avatarBorder}">
+
+                <!-- If the member has a real photo, show it -->
+                <img th:if="${member.photo != null and !member.photo.isEmpty()}"
+                     th:src="${member.photo}"
+                     th:alt="${member.name}"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+
+                <!-- Initials shown as fallback (or if no photo) -->
+                <span class="member-initials"
+                      th:style="'color:' + ${member.initialsColor}"
+                      th:text="${member.initials}">
+                </span>
+            </div>
+
+            <!-- Name -->
+            <div class="member-name" th:text="${member.name}">Member Name</div>
+
+            <!-- Role / What they built -->
+            <div class="member-role" th:text="${member.role}">Role Description</div>
+
+            <!-- Button -->
+            <span class="member-btn">View APIs &rarr;</span>
+
+        </a>
+
+    </div>
+
+    <!-- Shared footer -->
+    <div th:replace="~{_layout :: footer}"></div>
+
+</body>
+</html>

@@ -55,18 +55,18 @@ public class ReviewerController {
     }
 	
 	@GetMapping("/reviewer")
-	public List<Reviewer> getAllReviewer(){
+	public List<ReviewerDTO> getAllReviewer(){
 		return service.getAllReviewers();
 	}
 	
 	@PostMapping("/reviewer")
-	public Reviewer createReviewer(@RequestBody Reviewer reviewer) {
-		return service.createReviewer(reviewer);
+	public ReviewerDTO createReviewer(@RequestBody ReviewerDTO reviewerdto) {
+		return service.createReviewer(reviewerdto);
 	}
 	
 	@PutMapping("/reviewer")
-	public Reviewer updateReviewer(@RequestBody Reviewer reviewer) {
-		return service.createReviewer(reviewer);
+	public ReviewerDTO updateReviewer(@RequestBody ReviewerDTO reviewerdto) {
+		return service.updateReviewer(reviewerdto);
 	}
 	
 	@DeleteMapping("/reviewer/{reviewerID}")
