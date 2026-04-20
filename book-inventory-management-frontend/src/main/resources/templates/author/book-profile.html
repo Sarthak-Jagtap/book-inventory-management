@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Authors | Book Inventory System</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{ --bg:#f7f8fc;--surface:#fff;--surface2:#f0f2f8;--text:#1a1d2e;--text2:#6b7280;--text3:#9ca3af; --border:#e5e7eb;--border2:#d1d5db; --success-bg:#dcfce7;--success-text:#166534; --error-bg:#fee2e2;--error-text:#b91c1c; --accent:#6366f1;--accent-hover:#4f46e5; --danger:#ef4444;--danger-hover:#dc2626;}
+body.dark{ --bg:#0f1117;--surface:#1a1d2e;--surface2:#252840;--text:#e8eaf6;--text2:#9ca3af;--text3:#6b7280; --border:#2d3148;--border2:#3d4165; --success-bg:#052e16;--success-text:#4ade80; --error-bg:#3f0708;--error-text:#fca5a5; --accent:#818cf8;--accent-hover:#6366f1; }
+body{ background:var(--bg);color:var(--text); font-family:system-ui,-apple-system,sans-serif; padding:0 0 60px; }
+
+/* Topbar & Container */
+.topbar{ background:var(--surface);border-bottom:1px solid var(--border); padding:16px 32px;display:flex;align-items:center;justify-content:space-between; }
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-icon{ width:32px;height:32px;background:var(--accent);border-radius:8px; display:flex;align-items:center;justify-content:center; }
+.logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
+.logo-title{font-size:15px;font-weight:600;color:var(--text)}
+.container{max-width:900px;margin:40px auto;padding:0 32px;display:flex;flex-direction:column;gap:24px}
+
+/* Headers & Alerts */
+.page-header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px}
+.page-title h1{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
+.page-title p{font-size:14px;color:var(--text2);margin-top:4px;font-family:monospace;}
+.alert{padding:12px 16px;border-radius:8px;font-size:14px;font-weight:500;}
+.alert-success{background:var(--success-bg);color:var(--success-text);border:1px solid var(--success-text)}
+.alert-danger{background:var(--error-bg);color:var(--error-text);border:1px solid var(--error-text)}
+
+/* Buttons */
+.btn{ text-decoration:none;padding:10px 18px;border-radius:8px;font-size:14px;font-weight:500; cursor:pointer;display:inline-flex;align-items:center;gap:6px;border:none; }
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:transparent;border:1px solid var(--danger);color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+
+/* Table */
+.card{ background:var(--surface);border:1px solid var(--border); border-radius:12px;overflow:hidden; }
+table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}
+th{ background:var(--surface2);color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-size:11px;padding:14px 20px;border-bottom:1px solid var(--border); }
+td{padding:14px 20px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+
+.badge-primary{background:#fef08a;color:#92400e;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;}
+body.dark .badge-primary{background:#713f12;color:#fef08a;}
+.action-cell{display:flex;gap:8px;align-items:center;justify-content:flex-end;}
+</style>
+</head>
+<body class="dark">
+
+<div class="topbar">
+  <a href="/" class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+    <div class="logo-title">Book Inventory System</div>
+  </a>
+</div>
+
+<div class="container">
+  
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Assigned Authors</h1>
+      <p th:text="'ISBN: ' + ${isbn}">ISBN: 000-000</p>
+    </div>
+    <a th:href="@{/store-owner/book-authors/new(isbn=${isbn})}" class="btn btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      Assign Author
+    </a>
+  </div>
+
+  <div th:if="${param.success}" class="alert alert-success" th:text="${param.success}">Action successful</div>
+  <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}">An error occurred</div>
+
+  <div class="card">
+      <div style="overflow-x:auto;">
+        <table th:if="${bookAuthors != null and !#lists.isEmpty(bookAuthors)}">
+          <thead>
+            <tr>
+              <th>Author ID</th>
+              <th>Author Name</th>
+              <th>Role</th>
+              <th style="text-align:right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="mapping : ${bookAuthors}">
+              
+              <td style="font-family:monospace;font-weight:600" 
+                  th:text="'#' + ${mapping.get('authorId') ?: mapping.get('authorID') ?: 'N/A'}">
+              </td>
+              
+              <td>
+                <span th:if="${mapping.get('author') != null}" 
+                      th:text="${mapping.get('author').get('firstName') + ' ' + mapping.get('author').get('lastName')}" 
+                      style="font-weight:600;">
+                </span>
+                <span th:if="${mapping.get('author') == null}" style="color:var(--text3);font-style:italic;font-size:12px;">
+                  Name not provided by API
+                </span>
+              </td>
+              
+              <td>
+                <span th:if="${mapping.get('primaryAuthor') == 'Y'}" class="badge-primary">Primary Author</span>
+                <span th:if="${mapping.get('primaryAuthor') == 'N'}" style="color:var(--text3);font-size:12px;">Co-Author</span>
+              </td>
+              
+              <td>
+                <div class="action-cell">
+                  <a th:href="@{/store-owner/book-authors/{isbn}/{id}/edit(isbn=${isbn}, id=${mapping.get('authorId') ?: mapping.get('authorID')})}" class="btn btn-sm btn-outline">Edit Role</a>
+                  
+                  <form th:action="@{/store-owner/book-authors/{isbn}/{id}/delete(isbn=${isbn}, id=${mapping.get('authorId') ?: mapping.get('authorID')})}" method="post" style="display:inline;" onsubmit="return confirm('Remove this author from the book?');">
+                    <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                  </form>
+                </div>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+
+        <div th:if="${bookAuthors == null or #lists.isEmpty(bookAuthors)}" style="padding:40px;text-align:center;color:var(--text2)">
+          <p>No authors assigned to this book yet.</p>
+        </div>
+      </div>
+    </div>
+
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if(localStorage.getItem('theme') === 'light') document.body.classList.remove('dark');
+});
+</script>
+</body>
+</html>
