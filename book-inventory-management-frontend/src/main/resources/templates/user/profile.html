@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>My Profile — Book Inventory</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/team/user-module}">&#8592; Back</a>
+  <div>
+    <h1>My Profile</h1>
+    <div class="meta">GET /api/v1/user/profile</div>
+  </div>
+</div>
+<div class="page-wrapper-sm">
+  <div class="breadcrumb">
+    <a th:href="@{/home}">Home</a><span class="sep">&#8250;</span>
+    <a th:href="@{/team/user-module}">User Module</a><span class="sep">&#8250;</span>
+    <span>My Profile</span>
+  </div>
+  <div class="api-info">
+    <strong>What this API does</strong>
+    Retrieves the profile of the currently logged-in user.
+    Extracts userId from the JWT token in the Authorization header.
+    Returns firstName, lastName, userName, phoneNumber, and assigned role.
+    Each user can only see their own profile.
+  </div>
+  <div class="alert alert-error" th:if="${error!=null}">
+    <span>&#9888;</span><span th:text="${error}"></span>
+  </div>
+
+  <div th:if="${profile!=null}">
+    <div class="card" style="padding:0;margin-bottom:16px;">
+      <table class="data-table">
+        <thead><tr><th colspan="2">User Profile &#8212; API Response</th></tr></thead>
+        <tbody>
+          <tr><td style="width:180px;color:#6b7280;">User ID</td><td class="mono" th:text="${profile.userId}"></td></tr>
+          <tr><td style="color:#6b7280;">First Name</td><td th:text="${profile.firstName}"></td></tr>
+          <tr><td style="color:#6b7280;">Last Name</td><td th:text="${profile.lastName}"></td></tr>
+          <tr><td style="color:#6b7280;">Full Name</td><td th:text="${profile.fullName}"></td></tr>
+          <tr><td style="color:#6b7280;">Username</td><td class="mono" th:text="${profile.userName}"></td></tr>
+          <tr><td style="color:#6b7280;">Phone</td><td th:text="${profile.phoneNumber!=null?profile.phoneNumber:'Not provided'}"></td></tr>
+          <tr>
+            <td style="color:#6b7280;">Role</td>
+            <td>
+              <span class="role-pill" th:if="${profile.role!=null}"
+                th:classappend="${profile.role.permRole=='Admin'}?'role-admin':(${profile.role.permRole=='StoreOwner'}?'role-owner':(${profile.role.permRole=='RegisteredUser'}?'role-user':'role-guest'))"
+                th:text="${profile.role.permRole}">Role</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="btn btn-secondary btn-sm" th:href="@{/user/api/update-profile}">Update Profile</a>
+      <a class="btn btn-secondary btn-sm" th:href="@{/user/api/change-password}">Change Password</a>
+      <a class="btn btn-secondary btn-sm" th:href="@{/user/api/purchases}">My Purchases</a>
+      <a class="btn btn-secondary btn-sm" th:href="@{/user/api/dashboard}">Full Dashboard</a>
+    </div>
+  </div>
+</div>
+<div class="footer">Book Inventory Management &#8212; User Module</div>
+</body></html>

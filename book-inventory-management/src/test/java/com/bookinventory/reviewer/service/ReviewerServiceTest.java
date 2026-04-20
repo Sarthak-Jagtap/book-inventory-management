@@ -110,26 +110,48 @@ public class ReviewerServiceTest {
     @Test
     void testCreateReviewer() {
 
-        Reviewer reviewer = new Reviewer();
+        ReviewerDTO input = new ReviewerDTO();
+        input.setReviewerID(1);
+        input.setName("Test");
+        input.setEmployedBy("Company");
 
-        Mockito.when(repo.save(Mockito.any())).thenReturn(reviewer);
+        Reviewer entity = new Reviewer();
+        entity.setReviewerID(1);
+        entity.setName("Test");
+        entity.setEmployedBy("Company");
 
-        Reviewer result = service.createReviewer(reviewer);
+        // ✅ repo returns ENTITY
+        Mockito.when(repo.save(Mockito.any()))
+                .thenReturn(entity);
+
+        ReviewerDTO result = service.createReviewer(input);
 
         assertNotNull(result);
+        assertEquals(1, result.getReviewerID());
+        assertEquals("Test", result.getName());
     }
 
     // ✅ 5. UPDATE reviewer
     @Test
     void testUpdateReviewer() {
 
-        Reviewer reviewer = new Reviewer();
+        ReviewerDTO input = new ReviewerDTO();
+        input.setReviewerID(1);
+        input.setName("Updated");
+        input.setEmployedBy("Company");
 
-        Mockito.when(repo.save(Mockito.any())).thenReturn(reviewer);
+        Reviewer entity = new Reviewer();
+        entity.setReviewerID(1);
+        entity.setName("Updated");
+        entity.setEmployedBy("Company");
 
-        Reviewer result = service.updateReviewer(reviewer);
+        Mockito.when(repo.save(Mockito.any()))
+                .thenReturn(entity);
+
+        ReviewerDTO result = service.updateReviewer(input);
 
         assertNotNull(result);
+        assertEquals("Updated", result.getName());
     }
 
     // ✅ 6. DELETE reviewer
@@ -149,7 +171,7 @@ public class ReviewerServiceTest {
 
         Mockito.when(repo.findAll()).thenReturn(List.of(new Reviewer(), new Reviewer()));
 
-        List<Reviewer> result = service.getAllReviewers();
+        List<ReviewerDTO> result = service.getAllReviewers();
 
         assertEquals(2, result.size());
     }

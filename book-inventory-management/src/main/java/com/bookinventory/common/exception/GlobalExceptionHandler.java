@@ -1,6 +1,6 @@
 package com.bookinventory.common.exception;
 
-import com.bookinventory.user.response.ApiResponse;
+import com.bookinventory.user.common.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

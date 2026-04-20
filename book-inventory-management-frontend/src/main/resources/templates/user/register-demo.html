@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>Register API</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/team/user-module}">← Back</a>
+  <div><h1>Register API</h1><div class="meta">POST /api/v1/auth/register</div></div>
+</div>
+<div class="page-wrapper-sm">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="sep">›</span><span>Register</span></div>
+  <div class="api-info">
+    <strong>What this API does</strong>
+    Registers a new user. Validates: firstName (max 20), lastName (max 30), userName (unique, max 30),
+    password (4-30 chars), phone format (XXX) XXX-XXXX. Returns the created user profile.
+    Role defaults to RegisteredUser (role 2) unless specified.
+  </div>
+  <div class="card" style="padding:0;margin-bottom:16px;">
+    <table class="data-table">
+      <thead><tr><th>Field</th><th>Required</th><th>Validation Rules</th></tr></thead>
+      <tbody>
+        <tr><td>firstName</td><td>Yes</td><td>Max 20 characters</td></tr>
+        <tr><td>lastName</td><td>Yes</td><td>Max 30 characters</td></tr>
+        <tr><td>userName</td><td>Yes</td><td>Must be unique, max 30 characters</td></tr>
+        <tr><td>password</td><td>Yes</td><td>Between 4 and 30 characters</td></tr>
+        <tr><td>phoneNumber</td><td>No</td><td>Format: (XXX) XXX-XXXX</td></tr>
+        <tr><td>roleNumber</td><td>No</td><td>Defaults to 2 (RegisteredUser)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-info">
+    <span>i</span>
+    <span>To test this endpoint live, use the
+      <a th:href="@{/auth/register}" style="color:#1e40af;font-weight:600;">Register page →</a>
+    </span>
+  </div>
+</div>
+<div class="footer">Book Inventory Management — User Module</div>
+</body></html>

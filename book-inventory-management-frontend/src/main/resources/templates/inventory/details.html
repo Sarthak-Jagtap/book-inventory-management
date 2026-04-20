@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Inventory Details</title>
+  <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
+  <style>
+    .error-box{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:14px 16px;border-radius:10px;margin-bottom:16px;}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><div class="logo-title">Book Inventory API</div></div>
+</div>
+
+<div class="content">
+  <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
+
+  <div th:if="${inventory != null}" class="form-card">
+    <div class="form-title">Inventory Details</div>
+    <div class="form-subtitle">Fetched by inventory ID</div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <tbody>
+        <tr><th>ID</th><td th:text="${inventory.inventoryId}"></td></tr>
+        <tr><th>ISBN</th><td th:text="${inventory.isbn}"></td></tr>
+        <tr><th>Rank</th><td th:text="${inventory.rank}"></td></tr>
+        <tr><th>Purchased</th><td th:text="${inventory.purchased}"></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-actions" style="margin-top:16px;">
+      <a class="btn btn-secondary" th:href="@{/inventory-cart-dashboard}">Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

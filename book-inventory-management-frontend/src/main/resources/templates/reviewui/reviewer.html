@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+	<style>
+	body {
+	    font-family: 'Segoe UI';
+	    background: #0f172a;
+	    color: #e2e8f0;
+	    padding: 30px;
+	}
+
+	h2 {
+	    text-align: center;
+	    margin-bottom: 20px;
+	}
+
+	.table-box {
+	    max-width: 800px;
+	    margin: auto;
+	}
+
+	table {
+	    width: 100%;
+	    border-collapse: collapse;
+	    background: #1e293b;
+	    border-radius: 10px;
+	    overflow: hidden;
+	}
+
+	th {
+	    background: #111827;
+	    padding: 12px;
+	    color: #9ca3af;
+	}
+
+	td {
+	    padding: 12px;
+	    border-top: 1px solid #334155;
+	}
+
+	tr:hover {
+	    background: #273449;
+	}
+
+	.message {
+	    text-align: center;
+	    margin-top: 20px;
+	}
+
+	a {
+	    display: block;
+	    text-align: center;
+	    margin-top: 20px;
+	    color: #6366f1;
+	}
+	</style>
+	</head>
+<body>
+
+<h2>👤 Reviewer Data</h2>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Reviewer ID</th>
+        <th>Name</th>
+        <th>Company</th>
+    </tr>
+
+    <tr th:each="r : ${data}">
+        <td th:text="${r.reviewerID}"></td>
+        <td th:text="${r.name}"></td>
+        <td th:text="${r.employedBy}"></td>
+    </tr>
+</table>
+
+<br>
+
+<!-- Agar delete ya count string aaye toh -->
+<div th:if="${#strings.contains(data, 'Deleted') or #strings.contains(data, 'Total')}">
+    <h3 th:text="${data}"></h3>
+</div>
+
+<br>
+<a href="/ui/review-dashboard">⬅ Back to Dashboard</a>
+
+</body>
+</html>

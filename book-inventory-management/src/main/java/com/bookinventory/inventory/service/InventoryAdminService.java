@@ -24,7 +24,7 @@ public interface InventoryAdminService {
 
     InventoryResponse updateInventory(Integer inventoryId, UpdateInventoryRequest request);
 
-    InventoryResponse markAsPurchased(Integer inventoryId);
+    InventoryResponse updatePurchaseStatus(Integer inventoryId, UpdateInventoryRequest request);
 
     void deleteInventory(Integer inventoryId);
 }

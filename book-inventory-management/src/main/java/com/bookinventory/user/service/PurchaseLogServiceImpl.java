@@ -4,6 +4,8 @@ import com.bookinventory.common.exception.BadRequestException;
 import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.user.dto.PurchaseLogRequestDTO;
 import com.bookinventory.user.dto.PurchaseLogResponseDTO;
+import com.bookinventory.user.dto.PurchaseStatsDTO;
+import com.bookinventory.user.dto.TopBuyerDTO;
 import com.bookinventory.user.entity.PurchaseLog;
 import com.bookinventory.user.entity.PurchaseLogId;
 import com.bookinventory.user.entity.User;
@@ -138,6 +140,42 @@ public class PurchaseLogServiceImpl implements PurchaseLogService {
         List<PurchaseLogResponseDTO> result = new ArrayList<>();
         for (PurchaseLog p : purchaseLogRepository.findAll())
             result.add(convertToDTO(p));
+        return result;
+    }
+    
+    @Override
+    public PurchaseStatsDTO getPurchaseStats() {
+        long total       = purchaseLogRepository.count();
+        long buyers      = purchaseLogRepository.countDistinctBuyers();
+        long itemsSold   = purchaseLogRepository.countDistinctItemsSold();
+        return new PurchaseStatsDTO(total, buyers, itemsSold);
+    }
+    
+    @Override
+    public List<TopBuyerDTO> getTopBuyers(int limit) {
+
+        org.springframework.data.domain.Pageable pageable =
+            org.springframework.data.domain.PageRequest.of(0, limit);
+
+        List<Object[]> rows = purchaseLogRepository.findTopBuyers(pageable);
+        List<TopBuyerDTO> result = new ArrayList<>();
+
+        for (Object[] row : rows) {
+            Integer userId = (Integer) row[0];
+            long    count  = ((Number) row[1]).longValue();
+
+            // Fetch user details to get name
+            userRepository.findById(userId).ifPresent(user -> {
+                TopBuyerDTO dto = new TopBuyerDTO(
+                    user.getUserId(),
+                    user.getUserName(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    count
+                );
+                result.add(dto);
+            });
+        }
         return result;
     }
 }

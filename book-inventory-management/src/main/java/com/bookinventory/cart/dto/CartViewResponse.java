@@ -1,6 +1,7 @@
 package com.bookinventory.cart.dto;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CartViewResponse {
 
@@ -8,30 +9,18 @@ public class CartViewResponse {
     private String userName;
     private String isbn;
     private String bookTitle;
-    private boolean selected;
-    private Integer selectedRank;
-    private String selectedCondition;
-    private BigDecimal selectedPrice;
+    private List<CartOptionResponse> qualityOptions = new ArrayList<>();
 
     public CartViewResponse() {
     }
 
-    public CartViewResponse(Integer userId,
-                            String userName,
-                            String isbn,
-                            String bookTitle,
-                            boolean selected,
-                            Integer selectedRank,
-                            String selectedCondition,
-                            BigDecimal selectedPrice) {
+    public CartViewResponse(Integer userId, String userName, String isbn, String bookTitle,
+                            List<CartOptionResponse> qualityOptions) {
         this.userId = userId;
         this.userName = userName;
         this.isbn = isbn;
         this.bookTitle = bookTitle;
-        this.selected = selected;
-        this.selectedRank = selectedRank;
-        this.selectedCondition = selectedCondition;
-        this.selectedPrice = selectedPrice;
+        this.qualityOptions = qualityOptions;
     }
 
     public Integer getUserId() {
@@ -66,35 +55,11 @@ public class CartViewResponse {
         this.bookTitle = bookTitle;
     }
 
-    public boolean isSelected() {
-        return selected;
+    public List<CartOptionResponse> getQualityOptions() {
+        return qualityOptions;
     }
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public Integer getSelectedRank() {
-        return selectedRank;
-    }
-
-    public void setSelectedRank(Integer selectedRank) {
-        this.selectedRank = selectedRank;
-    }
-
-    public String getSelectedCondition() {
-        return selectedCondition;
-    }
-
-    public void setSelectedCondition(String selectedCondition) {
-        this.selectedCondition = selectedCondition;
-    }
-
-    public BigDecimal getSelectedPrice() {
-        return selectedPrice;
-    }
-
-    public void setSelectedPrice(BigDecimal selectedPrice) {
-        this.selectedPrice = selectedPrice;
+    public void setQualityOptions(List<CartOptionResponse> qualityOptions) {
+        this.qualityOptions = qualityOptions;
     }
 }

@@ -1,0 +1,26 @@
+package com.bookinventoryfrontend.cart.dto;
+
+public class CheckoutResponse {
+
+    private boolean success;
+    private String message;
+
+    public CheckoutResponse() {
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+}
