@@ -10,7 +10,6 @@ import com.bookinventory.cart.service.CartService;
 import com.bookinventory.user.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,75 +25,36 @@ public class CartController {
     }
 
     @GetMapping("/options/{isbn}")
-    public ResponseEntity<ApiResponse<List<CartOptionResponse>>> getOptions(@PathVariable String isbn) {
-        List<CartOptionResponse> options = service.getCartOptionsByIsbn(isbn);
-
-        return new ResponseEntity<>(
-                ApiResponse.success(HttpStatus.OK.value(), "Cart options fetched successfully", options),
-                HttpStatus.OK
-        );
-    }
-    
-    @PostMapping("/select")
-    public ResponseEntity<ApiResponse<CartItemResponse>> selectQuality(@RequestParam Integer userId,
-                                                                       @RequestParam String isbn,
-                                                                       @RequestParam Integer rank) {
-        CartItemResponse response = service.selectCartQuality(userId, isbn, rank);
-
-        return new ResponseEntity<>(
-                ApiResponse.success(HttpStatus.OK.value(), "Cart quality selected successfully", response),
-                HttpStatus.OK
-        );
-    }
-
-    @PostMapping("/add")
-    public ResponseEntity<ApiResponse<CartItemResponse>> add(@Valid @RequestBody AddToCartRequest request) {
-        CartItemResponse response = service.addToCart(request);
-
-        return new ResponseEntity<>(
-                ApiResponse.success(HttpStatus.OK.value(), "Item added to cart successfully", response),
-                HttpStatus.OK
-        );
+    public ApiResponse<List<CartOptionResponse>> getOptions(@PathVariable String isbn) {
+        return ApiResponse.success(200, "Cart options fetched successfully", service.getCartOptionsByIsbn(isbn));
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<List<CartItemResponse>>> getCart(@PathVariable Integer userId) {
-        List<CartItemResponse> cartItems = service.getCartByUser(userId);
-
-        return new ResponseEntity<>(
-                ApiResponse.success(HttpStatus.OK.value(), "Cart fetched successfully", cartItems),
-                HttpStatus.OK
-        );
+    public ApiResponse<List<CartItemResponse>> getCart(@PathVariable Integer userId) {
+        return ApiResponse.success(200, "Cart items fetched successfully", service.getCartByUser(userId));
     }
 
     @GetMapping("/view/{userId}")
-    public ResponseEntity<ApiResponse<List<CartViewResponse>>> getCartView(@PathVariable Integer userId) {
-        List<CartViewResponse> cartView = service.getCartViewByUser(userId);
+    public ApiResponse<List<CartViewResponse>> getCartView(@PathVariable Integer userId) {
+        return ApiResponse.success(200, "Cart view fetched successfully", service.getCartViewByUser(userId));
+    }
 
-        return new ResponseEntity<>(
-                ApiResponse.success(HttpStatus.OK.value(), "Cart view fetched successfully", cartView),
-                HttpStatus.OK
-        );
+    @PostMapping("/add")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<CartItemResponse> addToCart(@Valid @RequestBody AddToCartRequest request) {
+        return ApiResponse.success(201, "Book added to cart successfully", service.addToCart(request));
     }
 
     @DeleteMapping("/remove")
-    public ResponseEntity<ApiResponse<Object>> remove(@RequestParam Integer userId,
-                                                      @RequestParam String isbn) {
+    public ApiResponse<Void> removeFromCart(@RequestParam Integer userId,
+                                            @RequestParam String isbn) {
         service.removeFromCart(userId, isbn);
-
-        return new ResponseEntity<>(
-                ApiResponse.success(HttpStatus.OK.value(), "Removed from cart"),
-                HttpStatus.OK
-        );
+        return ApiResponse.success(200, "Cart item removed successfully");
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<ApiResponse<CheckoutResponse>> checkoutAll(@Valid @RequestBody CheckoutRequest request) {
+    public ApiResponse<CheckoutResponse> checkout(@Valid @RequestBody CheckoutRequest request) {
         CheckoutResponse response = service.checkoutAll(request);
-
-        return new ResponseEntity<>(
-                ApiResponse.success(HttpStatus.OK.value(), "Checkout processed successfully", response),
-                HttpStatus.OK
-        );
+        return ApiResponse.success(200, response.getMessage(), response);
     }
 }

@@ -1,15 +1,11 @@
-package com.bookinventory.cart.dto;
-
-import jakarta.validation.constraints.NotNull;
+package com.bookinventoryfrontend.cart.dto;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CheckoutRequest {
 
-    @NotNull(message = "User ID is required")
     private Integer userId;
-
     private List<CheckoutItemRequest> items = new ArrayList<>();
 
     public CheckoutRequest() {

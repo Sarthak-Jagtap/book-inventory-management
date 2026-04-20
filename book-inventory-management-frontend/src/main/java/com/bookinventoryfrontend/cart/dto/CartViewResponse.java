@@ -1,6 +1,8 @@
 package com.bookinventoryfrontend.cart.dto;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CartViewResponse {
 
@@ -9,6 +11,7 @@ public class CartViewResponse {
     private String bookTitle;
     private String selectedCondition;
     private BigDecimal selectedPrice;
+    private List<CartOptionResponse> qualityOptions = new ArrayList<>();
 
     public CartViewResponse() {
     }
@@ -51,5 +54,13 @@ public class CartViewResponse {
 
     public void setSelectedPrice(BigDecimal selectedPrice) {
         this.selectedPrice = selectedPrice;
+    }
+
+    public List<CartOptionResponse> getQualityOptions() {
+        return qualityOptions;
+    }
+
+    public void setQualityOptions(List<CartOptionResponse> qualityOptions) {
+        this.qualityOptions = qualityOptions;
     }
 }

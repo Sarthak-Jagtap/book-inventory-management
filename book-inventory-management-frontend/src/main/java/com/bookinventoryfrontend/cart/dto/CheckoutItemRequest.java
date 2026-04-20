@@ -1,17 +1,8 @@
-package com.bookinventory.cart.dto;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+package com.bookinventoryfrontend.cart.dto;
 
 public class CheckoutItemRequest {
 
-    @NotBlank(message = "ISBN is required")
-    @Pattern(regexp = "^[0-9\\-]{13}$", message = "Invalid ISBN format")
     private String isbn;
-
-    @NotNull(message = "Rank is required")
     private Integer rank;
 
     public CheckoutItemRequest() {
