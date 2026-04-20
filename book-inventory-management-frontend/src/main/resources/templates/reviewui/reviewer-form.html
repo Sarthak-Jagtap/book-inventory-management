@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<style>
+	    body {
+	        margin: 0;
+	        font-family: Arial, sans-serif;
+	        background: #f3f4f6;
+	    }
+
+	    .container {
+	        display: flex;
+	        justify-content: center;
+	        align-items: center;
+	        height: 100vh;
+	    }
+
+	    .form-box {
+	        width: 360px;
+	        background: #fff;
+	        padding: 25px;
+	        border-radius: 8px;
+	        border: 1px solid #ddd;
+	    }
+
+	    h2 {
+	        text-align: center;
+	        margin-bottom: 20px;
+	        font-weight: 600;
+	    }
+
+	    input {
+	        width: 100%;
+	        padding: 10px;
+	        margin-bottom: 12px;
+	        border: 1px solid #ccc;
+	        border-radius: 6px;
+	        font-size: 14px;
+	    }
+
+	    input:focus {
+	        outline: none;
+	        border-color: #4f46e5;
+	    }
+
+	    button {
+	        width: 100%;
+	        padding: 10px;
+	        background: #4f46e5;
+	        color: white;
+	        border: none;
+	        border-radius: 6px;
+	        cursor: pointer;
+	    }
+
+	    button:hover {
+	        background: #4338ca;
+	    }
+
+	    .back {
+	        text-align: center;
+	        margin-top: 10px;
+	    }
+
+	    .back a {
+	        text-decoration: none;
+	        font-size: 13px;
+	        color: #4f46e5;
+	    }
+	</style>
+<body>
+
+<h2>Create Reviewer</h2>
+
+<form action="/ui/reviewer/form" method="post" th:object="${reviewer}">
+	<input type="number" th:field="*{reviewerID}" placeholder="ReviewerID" required>
+    <input type="text" th:field="*{name}" placeholder="Name" required>
+    <input type="text" th:field="*{employedBy}" placeholder="EmployedBy" required>
+    <button type="submit">Submit</button>
+</form>
+
+<a href="/ui/review-dashboard">Back</a>
+
+</body>
+</html>

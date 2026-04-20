@@ -34,6 +34,7 @@ public class SecurityConfig {
             	        "/home",
             	        "/ui/**",
             	        "/reviewui/**",
+            	        "/api/v1/**",
             	        "/api-author-dashboard",
             	        "/api-author-result",
             	        "/css/**",
