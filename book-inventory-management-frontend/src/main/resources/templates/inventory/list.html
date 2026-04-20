@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Dashboard</title>
+  <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
+  <style>
+    .toolbar{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:end;
+      margin:18px 0;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:16px;
+    }
+    .toolbar-group{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:180px;
+    }
+    .toolbar-label{
+      font-size:12px;
+      color:var(--text3);
+      font-weight:600;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+    }
+    .toolbar-select{
+      background:var(--surface2);
+      border:1px solid var(--border2);
+      border-radius:8px;
+      color:var(--text);
+      font-size:14px;
+      padding:10px 12px;
+      outline:none;
+    }
+    .error-box{
+      background:#fef2f2;
+      color:#b91c1c;
+      border:1px solid #fecaca;
+      padding:14px 16px;
+      border-radius:10px;
+      margin-bottom:16px;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .mini-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .inline-form{
+      display:inline;
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    </div>
+    <div>
+      <div class="logo-title">Book Inventory API</div>
+      <div class="logo-sub">Inventory Module</div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-text">
+    <h1>Inventory Dashboard</h1>
+    <p>Browse inventory records and manage store-owner inventory operations.</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <a class="tab active" th:href="@{/store-owner/inventory}">Inventory List</a>
+  <a class="tab" th:href="@{/store-owner/inventory/add}">Add Inventory</a>
+  <a class="tab" th:href="@{/inventory-cart-dashboard}">Back</a>
+</div>
+
+<div class="content">
+
+  <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
+
+  <form class="toolbar" th:action="@{/store-owner/inventory}" method="get">
+    <div class="toolbar-group">
+      <label class="toolbar-label" for="sortBy">Sort By</label>
+      <select class="toolbar-select" id="sortBy" name="sortBy">
+        <option value="inventoryId" th:selected="${sortBy == 'inventoryId'}">ID</option>
+        <option value="isbn" th:selected="${sortBy == 'isbn'}">ISBN</option>
+        <option value="rank" th:selected="${sortBy == 'rank'}">Rank</option>
+        <option value="purchased" th:selected="${sortBy == 'purchased'}">Purchased</option>
+      </select>
+    </div>
+
+    <div class="toolbar-group">
+      <label class="toolbar-label" for="direction">Order</label>
+      <select class="toolbar-select" id="direction" name="direction">
+        <option value="asc" th:selected="${direction == 'asc'}">Ascending</option>
+        <option value="desc" th:selected="${direction == 'desc'}">Descending</option>
+      </select>
+    </div>
+
+    <div class="toolbar-group">
+      <button class="btn btn-primary" type="submit">Apply</button>
+    </div>
+  </form>
+
+  <div th:if="${inventoryList != null and !#lists.isEmpty(inventoryList)}" class="table-wrap">
+    <table class="data-table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>ISBN</th>
+        <th>Rank</th>
+        <th>Purchased</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="item : ${inventoryList}">
+        <td th:text="${item.inventoryId}">1</td>
+        <td th:text="${item.isbn}">978...</td>
+        <td th:text="${item.rank}">1</td>
+        <td>
+          <span th:if="${item.purchased}" class="pill pill-yes">TRUE</span>
+          <span th:unless="${item.purchased}" class="pill pill-no">FALSE</span>
+        </td>
+        <td>
+          <div class="mini-actions">
+            <a class="btn btn-warning" th:href="@{/store-owner/inventory/edit/{id}(id=${item.inventoryId})}">Edit</a>
+
+            <form class="inline-form" th:action="@{/store-owner/inventory/purchase/{id}(id=${item.inventoryId})}" method="post">
+              <button class="btn btn-primary" type="submit">Purchase</button>
+            </form>
+
+            <form class="inline-form" th:action="@{/store-owner/inventory/delete/{id}(id=${item.inventoryId})}" method="post">
+              <button class="btn btn-danger" type="submit">Delete</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div th:if="${inventoryList == null or #lists.isEmpty(inventoryList)}" class="empty-state">
+    No inventory records found.
+  </div>
+
+</div>
+</body>
+</html>

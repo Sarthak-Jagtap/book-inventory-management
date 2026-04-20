@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Inventory</title>
+  <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
+  <style>
+    .error-box{
+      background:#fef2f2;
+      color:#b91c1c;
+      border:1px solid #fecaca;
+      padding:14px 16px;
+      border-radius:10px;
+      margin-bottom:16px;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .field-error{
+      color:#b91c1c;
+      font-size:12px;
+      margin-top:4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    </div>
+    <div>
+      <div class="logo-title">Book Inventory API</div>
+      <div class="logo-sub">Update Inventory</div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-text">
+    <h1>Edit Inventory</h1>
+    <p>Update rank and purchased status for an existing inventory record.</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <a class="tab" th:href="@{/store-owner/inventory}">
+    <span class="tab-dot" style="background:#16a34a"></span>Inventory List
+  </a>
+  <a class="tab" th:href="@{/store-owner/inventory/add}">
+    <span class="tab-dot" style="background:#3b82f6"></span>Add Inventory
+  </a>
+  <a class="tab active" th:href="@{/store-owner/inventory/edit/{id}(id=${inventoryId})}">
+    <span class="tab-dot" style="background:#f59e0b"></span>Edit Inventory
+  </a>
+</div>
+
+<div class="content">
+  <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
+
+  <div class="section-desc">
+    <strong>Update operation</strong> — edit the selected inventory record.
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Edit Inventory Record</div>
+    <div class="form-subtitle">Inventory ID: <span th:text="${inventoryId}">0</span></div>
+
+    <form th:action="@{/store-owner/inventory/edit/{id}(id=${inventoryId})}"
+      th:object="${updateInventoryRequest}"
+      method="post">
+  <div class="form-grid">
+    <div class="form-group">
+      <label class="form-label" for="rank">Rank</label>
+      <input class="form-input"
+             id="rank"
+             type="number"
+             min="1"
+             max="6"
+             th:field="*{rank}"
+             placeholder="e.g. 3"
+             required>
+      <div class="field-error" th:if="${#fields.hasErrors('rank')}" th:errors="*{rank}"></div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn btn-primary" type="submit">Update Rank</button>
+    <a class="btn btn-secondary" th:href="@{/inventory-cart-dashboard}">Back</a>
+  </div>
+</form>
+  </div>
+</div>
+</body>
+</html>

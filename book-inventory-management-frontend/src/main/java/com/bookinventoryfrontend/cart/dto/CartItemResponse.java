@@ -1,17 +1,11 @@
-package com.bookinventory.cart.dto;
+package com.bookinventoryfrontend.cart.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+public class CartItemResponse {
 
-public class AddToCartRequest {
-
-    @NotNull(message = "User ID is required")
     private Integer userId;
-
-    @NotBlank(message = "ISBN is required")
     private String isbn;
 
-    public AddToCartRequest() {
+    public CartItemResponse() {
     }
 
     public Integer getUserId() {

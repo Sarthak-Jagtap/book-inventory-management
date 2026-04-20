@@ -44,6 +44,8 @@ public class SecurityConfig {
                 // GUEST — fully public, no token needed
                 // ══════════════════════════════════════════════════
 
+            	    .requestMatchers("/api/v1/store-owner/inventory/**").permitAll()
+            	    .requestMatchers("/api/v1/user/cart/**").permitAll()
                 // Auth
                 .requestMatchers(HttpMethod.POST,
                     "/api/v1/auth/register",
