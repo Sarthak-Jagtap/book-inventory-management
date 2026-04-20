@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Module APIs — Book Inventory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<!-- Member hero -->
+<div class="member-hero">
+  <div class="avatar av-1"
+       th:text="${#strings.substring(memberName,0,2).toUpperCase()}">YN</div>
+  <div class="info">
+    <div class="module-tag">User Module</div>
+    <h2 th:text="${memberName}">Your Name</h2>
+    <p>Authentication · User Management · Roles · Purchase Logging</p>
+  </div>
+  <div class="meta">
+    <div class="m"><div class="n">24</div><div class="l">Endpoints</div></div>
+    <div class="m"><div class="n">5</div><div class="l">Groups</div></div>
+    <div class="m"><div class="n">4</div><div class="l">Roles</div></div>
+  </div>
+</div>
+
+<div class="page-wrapper-sm">
+  <div class="breadcrumb">
+    <a th:href="@{/home}">Home</a>
+    <span class="sep">›</span>
+    <span>User Module</span>
+  </div>
+
+  <!-- Guest notice — only when NOT logged in -->
+  <th:block th:if="${session.JWT_TOKEN == null}">
+    <div class="alert alert-warning mb-2">
+      <span>&#128274;</span>
+      <span>You are not logged in. Protected endpoints are disabled.
+        <a th:href="@{/auth/login}" style="color:#92400e;font-weight:600;">Login to access all endpoints →</a>
+      </span>
+    </div>
+  </th:block>
+
+  <!-- ══ GROUP 1: Authentication ══ -->
+  <div class="section-title">Group 1 — Authentication <span class="tag">Public</span></div>
+  <div class="endpoint-list">
+
+    <a class="endpoint-row" th:href="@{/user/api/register-demo}">
+      <span class="method method-post">POST</span>
+      <span class="endpoint-url">/api/v1/auth/register</span>
+      <span class="endpoint-desc">Register a new user with name, username, password and phone</span>
+      <span class="access-tag access-public">Public</span>
+    </a>
+
+    <a class="endpoint-row" th:href="@{/user/api/login-demo}">
+      <span class="method method-post">POST</span>
+      <span class="endpoint-url">/api/v1/auth/login</span>
+      <span class="endpoint-desc">Authenticate and receive a JWT token with role and user info</span>
+      <span class="access-tag access-public">Public</span>
+    </a>
+
+    <a class="endpoint-row" th:href="@{/user/api/validate-token}">
+      <span class="method method-post">POST</span>
+      <span class="endpoint-url">/api/v1/auth/validate-token</span>
+      <span class="endpoint-desc">Check if a JWT token is valid — returns claims and expiry status</span>
+      <span class="access-tag access-public">Public</span>
+      <span class="new-tag">NEW</span>
+    </a>
+
+  </div>
+
+  <!-- ══ GROUP 2: Roles ══ -->
+  <div class="section-title">Group 2 — Roles <span class="tag">Public</span></div>
+  <div class="endpoint-list">
+
+    <a class="endpoint-row" th:href="@{/user/api/roles}">
+      <span class="method method-get">GET</span>
+      <span class="endpoint-url">/api/v1/roles</span>
+      <span class="endpoint-desc">List all roles: Guest, RegisteredUser, StoreOwner, Admin</span>
+      <span class="access-tag access-public">Public</span>
+    </a>
+
+    <a class="endpoint-row" th:href="@{/user/api/roles/1}">
+      <span class="method method-get">GET</span>
+      <span class="endpoint-url">/api/v1/roles/{roleNumber}</span>
+      <span class="endpoint-desc">Fetch a single role by its numeric ID</span>
+      <span class="access-tag access-public">Public</span>
+    </a>
+
+    <a class="endpoint-row" th:href="@{/user/api/roles/1/user-count}">
+      <span class="method method-get">GET</span>
+      <span class="endpoint-url">/api/v1/roles/{roleNumber}/user-count</span>
+      <span class="endpoint-desc">Count how many users belong to a specific role</span>
+      <span class="access-tag access-public">Public</span>
+      <span class="new-tag">NEW</span>
+    </a>
+
+  </div>
+
+  <!-- ══ GROUP 3: Logged-In User ══ -->
+  <div class="section-title">
+    Group 3 — Logged-In User (Self-Service)
+    <span class="tag">JWT Required</span>
+  </div>
+  <div class="endpoint-list">
+
+    <!-- Show actual endpoints ONLY when logged in with appropriate role -->
+    <th:block th:if="${session.ROLE_NAME == 'RegisteredUser'
+                      or session.ROLE_NAME == 'StoreOwner'
+                      or session.ROLE_NAME == 'Admin'}">
+
+      <a class="endpoint-row" th:href="@{/user/api/profile}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/user/profile</span>
+        <span class="endpoint-desc">View your own profile — name, username, phone, role</span>
+        <span class="access-tag access-auth">Registered+</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/update-profile}">
+        <span class="method method-patch">PATCH</span>
+        <span class="endpoint-url">/api/v1/user/profile</span>
+        <span class="endpoint-desc">Update your own profile fields (partial — only provided fields change)</span>
+        <span class="access-tag access-auth">Registered+</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/change-password}">
+        <span class="method method-patch">PATCH</span>
+        <span class="endpoint-url">/api/v1/user/change-password</span>
+        <span class="endpoint-desc">Change your password — validates current + new + confirm</span>
+        <span class="access-tag access-auth">Registered+</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/dashboard}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/user/dashboard</span>
+        <span class="endpoint-desc">Aggregated: profile + purchase count + inventory IDs in one API call</span>
+        <span class="access-tag access-auth">Registered+</span>
+        <span class="new-tag">NEW</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/purchases}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/user/purchases</span>
+        <span class="endpoint-desc">Your complete purchase history</span>
+        <span class="access-tag access-auth">Registered+</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/purchases/count}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/user/purchases/count</span>
+        <span class="endpoint-desc">Count of your total purchased inventory items</span>
+        <span class="access-tag access-auth">Registered+</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/purchase-check}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/user/purchases/check/{inventoryId}</span>
+        <span class="endpoint-desc">Check if you already purchased a specific inventory item</span>
+        <span class="access-tag access-auth">Registered+</span>
+      </a>
+
+    </th:block>
+
+    <!-- Show ONLY when NOT logged in -->
+    <th:block th:if="${session.JWT_TOKEN == null}">
+      <div class="endpoint-row locked">
+        <span class="method method-get">--</span>
+        <span class="endpoint-url">/api/v1/user/profile and 6 more endpoints</span>
+        <span class="access-tag access-auth">Login required</span>
+      </div>
+    </th:block>
+
+  </div>
+
+  <!-- ══ GROUP 4: Store Owner ══ -->
+  <div class="section-title">
+    Group 4 — Store Owner
+    <span class="tag">StoreOwner / Admin</span>
+  </div>
+  <div class="endpoint-list">
+
+    <th:block th:if="${session.ROLE_NAME == 'StoreOwner' or session.ROLE_NAME == 'Admin'}">
+
+      <a class="endpoint-row" th:href="@{/user/api/store-owner/purchases}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/store-owner/purchases</span>
+        <span class="endpoint-desc">All purchases across all users in the system</span>
+        <span class="access-tag access-owner">Owner+</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/store-owner/purchases/user}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/store-owner/purchases/user/{userId}</span>
+        <span class="endpoint-desc">All purchases made by a specific user</span>
+        <span class="access-tag access-owner">Owner+</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/store-owner/purchases/inventory}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/store-owner/purchases/inventory/{inventoryId}</span>
+        <span class="endpoint-desc">Which users purchased a specific inventory item</span>
+        <span class="access-tag access-owner">Owner+</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/store-owner/stats}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/store-owner/purchases/stats</span>
+        <span class="endpoint-desc">Total purchases, unique buyers, unique items sold</span>
+        <span class="access-tag access-owner">Owner+</span>
+        <span class="new-tag">NEW</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/store-owner/top-buyers}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/store-owner/purchases/top-buyers</span>
+        <span class="endpoint-desc">Top 5 users ranked by number of purchases</span>
+        <span class="access-tag access-owner">Owner+</span>
+        <span class="new-tag">NEW</span>
+      </a>
+
+    </th:block>
+
+    <th:block th:if="${session.ROLE_NAME != 'StoreOwner' and session.ROLE_NAME != 'Admin'}">
+      <div class="endpoint-row locked">
+        <span class="method method-get">--</span>
+        <span class="endpoint-url">/api/v1/store-owner/** (5 endpoints)</span>
+        <span class="access-tag access-owner">StoreOwner / Admin only</span>
+      </div>
+    </th:block>
+
+  </div>
+
+  <!-- ══ GROUP 5: Admin ══ -->
+  <div class="section-title">
+    Group 5 — Admin
+    <span class="tag">Admin Only</span>
+  </div>
+  <div class="endpoint-list">
+
+    <th:block th:if="${session.ROLE_NAME == 'Admin'}">
+
+      <a class="endpoint-row" th:href="@{/user/api/admin/users}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/admin/users</span>
+        <span class="endpoint-desc">All registered users with their role information</span>
+        <span class="access-tag access-admin">Admin</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/admin/users/1000019}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/admin/users/{userId}</span>
+        <span class="endpoint-desc">Fetch any user's full details by their userId</span>
+        <span class="access-tag access-admin">Admin</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/admin/update-role}">
+        <span class="method method-patch">PATCH</span>
+        <span class="endpoint-url">/api/v1/admin/users/{userId}/role</span>
+        <span class="endpoint-desc">Promote or demote any user's role</span>
+        <span class="access-tag access-admin">Admin</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/admin/search}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/admin/users/search?firstName=&amp;lastName=</span>
+        <span class="endpoint-desc">Search users by first name or last name (case-insensitive)</span>
+        <span class="access-tag access-admin">Admin</span>
+        <span class="new-tag">NEW</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/admin/users/by-role}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/admin/users/by-role/{roleNumber}</span>
+        <span class="endpoint-desc">All users belonging to a specific role</span>
+        <span class="access-tag access-admin">Admin</span>
+        <span class="new-tag">NEW</span>
+      </a>
+
+      <a class="endpoint-row" th:href="@{/user/api/admin/dashboard}">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-url">/api/v1/admin/dashboard</span>
+        <span class="endpoint-desc">Total users, per-role breakdown, total purchases — one call</span>
+        <span class="access-tag access-admin">Admin</span>
+        <span class="new-tag">NEW</span>
+      </a>
+
+    </th:block>
+
+    <th:block th:if="${session.ROLE_NAME != 'Admin'}">
+      <div class="endpoint-row locked">
+        <span class="method method-get">--</span>
+        <span class="endpoint-url">/api/v1/admin/** (6 endpoints)</span>
+        <span class="access-tag access-admin">Admin role only</span>
+      </div>
+    </th:block>
+
+  </div>
+
+</div>
+
+<div class="footer">Book Inventory Management — User Module</div>
+</body>
+</html>

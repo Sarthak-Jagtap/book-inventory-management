@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Cart Items</title>
+  <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
+  <style>
+    .error-box{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:14px 16px;border-radius:10px;margin-bottom:16px;}
+  </style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo"><div class="logo-title">Book Inventory API</div></div>
+</div>
+
+<div class="content">
+  <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
+
+  <div class="form-title">Cart Items</div>
+  <div class="form-subtitle">User ID: <span th:text="${userId}"></span></div>
+
+  <div th:if="${cartItems != null and !#lists.isEmpty(cartItems)}" class="table-wrap">
+    <table class="data-table">
+      <thead>
+      <tr>
+        <th>User ID</th>
+        <th>ISBN</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="item : ${cartItems}">
+        <td th:text="${item.userId}"></td>
+        <td th:text="${item.isbn}"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div th:if="${cartItems == null or #lists.isEmpty(cartItems)}" class="empty-state">
+    No cart items found.
+  </div>
+
+  <div class="form-actions" style="margin-top:16px;">
+    <a class="btn btn-secondary" th:href="@{/inventory-cart-dashboard}">Back to Dashboard</a>
+  </div>
+</div>
+</body>
+</html>

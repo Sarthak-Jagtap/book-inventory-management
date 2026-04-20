@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart View</title>
+  <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
+  <style>
+    .error-box{
+      background:#fef2f2;
+      color:#b91c1c;
+      border:1px solid #fecaca;
+      padding:14px 16px;
+      border-radius:10px;
+      margin-bottom:16px;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .success-box{
+      background:#ecfdf5;
+      color:#065f46;
+      border:1px solid #a7f3d0;
+      padding:14px 16px;
+      border-radius:10px;
+      margin-bottom:16px;
+    }
+    .cart-card{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:18px;
+      margin-bottom:16px;
+    }
+    .cart-title{
+      font-size:18px;
+      font-weight:700;
+      margin-bottom:6px;
+    }
+    .cart-meta{
+      color:var(--text2);
+      font-size:14px;
+      margin-bottom:14px;
+    }
+    .no-stock{
+      color:#b91c1c;
+      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .option-form,
+    .remove-form,
+    .checkout-form,
+    .search-form{
+      margin-top:12px;
+    }
+    .inline-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .rank-select{
+      min-width:220px;
+      background:var(--surface2);
+      border:1px solid var(--border2);
+      border-radius:8px;
+      color:var(--text);
+      padding:10px 12px;
+    }
+    .summary-box{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:16px;
+      margin-bottom:20px;
+    }
+    .muted{
+      color:var(--text2);
+      font-size:14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-11z"/><path d="M6 6L4 3H1"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+    </div>
+    <div>
+      <div class="logo-title">Book Inventory API</div>
+      <div class="logo-sub">Cart View</div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-text">
+    <h1>View Cart</h1>
+    <p>Search a user cart, select rank during checkout flow, remove unavailable items, and complete checkout.</p>
+  </div>
+</div>
+
+<div class="tabs">
+  <a class="tab" th:href="@{/user/cart/add}">Add To Cart</a>
+  <a class="tab active" th:href="@{/user/cart/view}">View Cart</a>
+  <a class="tab" th:href="@{/inventory-cart-dashboard}">Back</a>
+</div>
+
+<div class="content">
+
+  <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
+  <div th:if="${successMessage != null}" class="success-box" th:text="${successMessage}"></div>
+  <div th:if="${checkoutMessage != null}" class="success-box" th:text="${checkoutMessage}"></div>
+
+  <div class="endpoint-card get">
+    <div class="ep-header">
+      <span class="method-badge">GET</span>
+      <span class="ep-path">/user/cart/view/{userId}</span>
+      <span class="ep-desc-inline">Display cart items for a user</span>
+    </div>
+    <div class="ep-body">
+      <form class="search-form" th:action="@{/user/cart/view}" method="get">
+        <div class="inline-row">
+          <input type="number" name="userId" placeholder="Enter user ID" th:value="${searchedUserId}">
+          <button class="btn btn-primary" type="submit">Load Cart</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div th:if="${userId != null}" class="summary-box">
+    <div><strong>User ID:</strong> <span th:text="${userId}"></span></div>
+    <div class="muted">Quality is selected here at checkout time.</div>
+
+    <form class="checkout-form" th:action="@{/user/cart/checkout}" method="post" th:if="${cartView != null and !#lists.isEmpty(cartView)}">
+      <input type="hidden" name="userId" th:value="${userId}">
+      <button class="btn btn-primary" type="submit">Proceed To Checkout</button>
+    </form>
+  </div>
+
+  <div th:if="${cartView != null and !#lists.isEmpty(cartView)}">
+    <div th:each="item : ${cartView}" class="cart-card">
+      <div class="cart-title" th:text="${item.bookTitle}">Book Title</div>
+      <div class="cart-meta">
+        <div><strong>ISBN:</strong> <span th:text="${item.isbn}"></span></div>
+        <div th:if="${item.userName != null and !#strings.isEmpty(item.userName)}">
+          <strong>User:</strong> <span th:text="${item.userName}"></span>
+        </div>
+      </div>
+
+      <div th:if="${optionsByIsbn[item.isbn] != null and !#lists.isEmpty(optionsByIsbn[item.isbn])}">
+        <form class="option-form" th:action="@{/user/cart/select}" method="post">
+          <input type="hidden" name="userId" th:value="${userId}">
+          <input type="hidden" name="isbn" th:value="${item.isbn}">
+
+          <div class="inline-row">
+            <select class="rank-select" name="rank" required>
+              <option value="">Choose quality</option>
+              <option th:each="opt : ${optionsByIsbn[item.isbn]}"
+                      th:value="${opt.rank}"
+                      th:text="'Rank ' + ${opt.rank} + ' - ₹' + ${opt.price}">
+              </option>
+            </select>
+            <button class="btn btn-primary" type="submit">Save Selection</button>
+          </div>
+        </form>
+      </div>
+
+      <div th:if="${optionsByIsbn[item.isbn] == null or #lists.isEmpty(optionsByIsbn[item.isbn])}">
+        <div class="no-stock">✖ No copies available</div>
+      </div>
+
+      <form class="remove-form" th:action="@{/user/cart/remove}" method="post">
+        <input type="hidden" name="userId" th:value="${userId}">
+        <input type="hidden" name="isbn" th:value="${item.isbn}">
+        <button class="btn btn-danger" type="submit">Remove</button>
+      </form>
+    </div>
+  </div>
+
+  <div th:if="${searchedUserId != null and (cartView == null or #lists.isEmpty(cartView))}" class="empty-state">
+    No cart items found.
+  </div>
+
+</div>
+</body>
+</html>

@@ -10,54 +10,18 @@ public class CartOptionResponse {
     private BigDecimal price;
     private Long availableCount;
 
-    public CartOptionResponse() {
-    }
+    public String getIsbn() { return isbn; }
+    public void setIsbn(String isbn) { this.isbn = isbn; }
 
-    public CartOptionResponse(String isbn, Integer rank, String condition, BigDecimal price, Long availableCount) {
-        this.isbn = isbn;
-        this.rank = rank;
-        this.condition = condition;
-        this.price = price;
-        this.availableCount = availableCount;
-    }
+    public Integer getRank() { return rank; }
+    public void setRank(Integer rank) { this.rank = rank; }
 
-    public String getIsbn() {
-        return isbn;
-    }
+    public String getCondition() { return condition; }
+    public void setCondition(String condition) { this.condition = condition; }
 
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
 
-    public Integer getRank() {
-        return rank;
-    }
-
-    public void setRank(Integer rank) {
-        this.rank = rank;
-    }
-
-    public String getCondition() {
-        return condition;
-    }
-
-    public void setCondition(String condition) {
-        this.condition = condition;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public Long getAvailableCount() {
-        return availableCount;
-    }
-
-    public void setAvailableCount(Long availableCount) {
-        this.availableCount = availableCount;
-    }
+    public Long getAvailableCount() { return availableCount; }
+    public void setAvailableCount(Long availableCount) { this.availableCount = availableCount; }
 }
