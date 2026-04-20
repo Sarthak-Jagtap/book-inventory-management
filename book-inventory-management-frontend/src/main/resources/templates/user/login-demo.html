@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>Login API</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/team/user-module}">← Back</a>
+  <div><h1>Login API</h1><div class="meta">POST /api/v1/auth/login</div></div>
+</div>
+<div class="page-wrapper-sm">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="sep">›</span><span>Login</span></div>
+  <div class="api-info">
+    <strong>What this API does</strong>
+    Authenticates the user with username and password. Returns a signed JWT token (HS256)
+    containing userId, username, and roleName as claims. Token expiry is configurable.
+    Include this token as: Authorization: Bearer &lt;token&gt; in all subsequent protected requests.
+  </div>
+  <div class="card" style="padding:0;margin-bottom:16px;">
+    <table class="data-table">
+      <thead><tr><th>Response Field</th><th>Type</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>token</td><td class="mono">String</td><td>JWT Bearer token</td></tr>
+        <tr><td>tokenType</td><td class="mono">String</td><td>Always "Bearer"</td></tr>
+        <tr><td>userId</td><td class="mono">Integer</td><td>Logged-in user's ID</td></tr>
+        <tr><td>userName</td><td class="mono">String</td><td>Username</td></tr>
+        <tr><td>firstName</td><td class="mono">String</td><td>First name</td></tr>
+        <tr><td>lastName</td><td class="mono">String</td><td>Last name</td></tr>
+        <tr><td>roleName</td><td class="mono">String</td><td>Assigned role</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert alert-info">
+    <span>i</span>
+    <span>To test this endpoint live, use the
+      <a th:href="@{/auth/login}" style="color:#1e40af;font-weight:600;">Login page →</a>
+    </span>
+  </div>
+</div>
+<div class="footer">Book Inventory Management — User Module</div>
+</body></html>

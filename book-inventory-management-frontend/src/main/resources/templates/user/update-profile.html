@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>Update Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/user/api/profile}">← Back to Profile</a>
+  <div><h1>Update Profile</h1><div class="meta" th:text="${apiEndpoint}"></div></div>
+</div>
+<div class="page-wrapper-sm">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="sep">›</span><a th:href="@{/user/api/profile}">Profile</a><span class="sep">›</span><span>Update</span></div>
+  <div class="api-info"><strong>What this API does</strong><span th:text="${apiDescription}"></span></div>
+  <div class="alert alert-error" th:if="${error!=null}"><span>⚠</span><span th:text="${error}"></span></div>
+  <div th:if="${success!=null}" class="alert alert-success"><span>✓</span><span th:text="${success}"></span></div>
+
+  <!-- Current profile display -->
+  <div th:if="${profile!=null}" class="card" style="padding:0;margin-bottom:16px;">
+    <div class="card-header" style="padding:12px 16px;">Current Profile Values</div>
+    <table class="data-table">
+      <tr><td style="width:160px;color:#6b7280;padding:10px 16px;">First Name</td><td th:text="${profile.firstName}"></td></tr>
+      <tr><td style="color:#6b7280;padding:10px 16px;">Last Name</td><td th:text="${profile.lastName}"></td></tr>
+      <tr><td style="color:#6b7280;padding:10px 16px;">Username</td><td class="mono" th:text="${profile.userName}"></td></tr>
+      <tr><td style="color:#6b7280;padding:10px 16px;">Phone</td><td th:text="${profile.phoneNumber!=null?profile.phoneNumber:'Not set'}"></td></tr>
+    </table>
+  </div>
+
+  <!-- Update Form -->
+  <div class="card">
+    <div class="card-header">Update Profile — PATCH /api/v1/user/profile</div>
+    <form th:action="@{/user/api/do-update-profile}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <div class="alert alert-info" style="margin-bottom:16px;">
+        <span>ℹ</span>
+        <span>Only fill in the fields you want to update. Leave empty to keep current value.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">First Name <span class="text-muted">(optional)</span></label>
+        <input class="form-control" type="text" name="firstName"
+               th:value="${profile!=null?profile.firstName:''}" placeholder="New first name" maxlength="20"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name <span class="text-muted">(optional)</span></label>
+        <input class="form-control" type="text" name="lastName"
+               th:value="${profile!=null?profile.lastName:''}" placeholder="New last name" maxlength="30"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Username <span class="text-muted">(optional)</span></label>
+        <input class="form-control" type="text" name="userName"
+               th:value="${profile!=null?profile.userName:''}" placeholder="New username" maxlength="30"/>
+        <div class="form-hint">Username must be unique across all users</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number <span class="text-muted">(optional)</span></label>
+        <input class="form-control" type="tel" name="phoneNumber"
+               th:value="${profile!=null?profile.phoneNumber:''}" placeholder="(XXX) XXX-XXXX"/>
+      </div>
+      <div class="mt-2">
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+        <a class="btn btn-secondary" style="margin-left:8px;" th:href="@{/user/api/profile}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="footer">Book Inventory Management — User Module</div>
+</body></html>

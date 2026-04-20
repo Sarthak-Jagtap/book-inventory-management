@@ -94,12 +94,15 @@ public class InventoryAdminController {
         );
     }
 
-    @PutMapping("/purchase/{inventoryId}")
-    public ResponseEntity<ApiResponse<InventoryResponse>> markAsPurchased(@PathVariable Integer inventoryId) {
-        InventoryResponse response = inventoryAdminService.markAsPurchased(inventoryId);
+    @PatchMapping("/purchase/{inventoryId}")
+    public ResponseEntity<ApiResponse<InventoryResponse>> updatePurchaseStatus(
+            @PathVariable Integer inventoryId,
+            @RequestBody UpdateInventoryRequest request) {
+
+        InventoryResponse response = inventoryAdminService.updatePurchaseStatus(inventoryId, request);
 
         return new ResponseEntity<>(
-        		ApiResponse.success(HttpStatus.OK.value(), "Inventory item marked as purchased successfully", response),
+                ApiResponse.success(HttpStatus.OK.value(), "Inventory purchase status updated successfully", response),
                 HttpStatus.OK
         );
     }

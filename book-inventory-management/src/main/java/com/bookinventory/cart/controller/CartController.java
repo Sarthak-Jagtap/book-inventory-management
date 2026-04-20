@@ -4,6 +4,7 @@ import com.bookinventory.cart.dto.AddToCartRequest;
 import com.bookinventory.cart.dto.CartItemResponse;
 import com.bookinventory.cart.dto.CartOptionResponse;
 import com.bookinventory.cart.dto.CartViewResponse;
+import com.bookinventory.cart.dto.CheckoutRequest;
 import com.bookinventory.cart.dto.CheckoutResponse;
 import com.bookinventory.cart.service.CartService;
 import com.bookinventory.user.common.response.ApiResponse;
@@ -29,7 +30,7 @@ public class CartController {
         List<CartOptionResponse> options = service.getCartOptionsByIsbn(isbn);
 
         return new ResponseEntity<>(
-        		ApiResponse.success(HttpStatus.OK.value(), "Cart options fetched successfully", options),
+                ApiResponse.success(HttpStatus.OK.value(), "Cart options fetched successfully", options),
                 HttpStatus.OK
         );
     }
@@ -39,7 +40,7 @@ public class CartController {
         CartItemResponse response = service.addToCart(request);
 
         return new ResponseEntity<>(
-        		ApiResponse.success(HttpStatus.OK.value(), "Item added to cart successfully", response),
+                ApiResponse.success(HttpStatus.OK.value(), "Item added to cart successfully", response),
                 HttpStatus.OK
         );
     }
@@ -49,7 +50,7 @@ public class CartController {
         List<CartItemResponse> cartItems = service.getCartByUser(userId);
 
         return new ResponseEntity<>(
-        		ApiResponse.success(HttpStatus.OK.value(), "Cart fetched successfully", cartItems),
+                ApiResponse.success(HttpStatus.OK.value(), "Cart fetched successfully", cartItems),
                 HttpStatus.OK
         );
     }
@@ -59,7 +60,7 @@ public class CartController {
         List<CartViewResponse> cartView = service.getCartViewByUser(userId);
 
         return new ResponseEntity<>(
-        		ApiResponse.success(HttpStatus.OK.value(), "Cart view fetched successfully", cartView),
+                ApiResponse.success(HttpStatus.OK.value(), "Cart view fetched successfully", cartView),
                 HttpStatus.OK
         );
     }
@@ -70,17 +71,17 @@ public class CartController {
         service.removeFromCart(userId, isbn);
 
         return new ResponseEntity<>(
-        		ApiResponse.success(HttpStatus.OK.value(), "Removed from cart"),
+                ApiResponse.success(HttpStatus.OK.value(), "Removed from cart"),
                 HttpStatus.OK
         );
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<ApiResponse<CheckoutResponse>> checkoutAll(@RequestParam Integer userId) {
-        CheckoutResponse response = service.checkoutAll(userId);
+    public ResponseEntity<ApiResponse<CheckoutResponse>> checkoutAll(@Valid @RequestBody CheckoutRequest request) {
+        CheckoutResponse response = service.checkoutAll(request);
 
         return new ResponseEntity<>(
-        		ApiResponse.success(HttpStatus.OK.value(), "Checkout processed successfully", response),
+                ApiResponse.success(HttpStatus.OK.value(), "Checkout processed successfully", response),
                 HttpStatus.OK
         );
     }
