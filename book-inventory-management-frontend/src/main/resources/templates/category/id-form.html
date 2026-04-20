@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Find Category</title>
+</head>
+
+<body>
+
+	<h2>Search Category by ID</h2>
+
+	<form action="/categories/details" method="get">
+		<label>Category ID:</label>
+		<input type="number" name="categoryId" required>
+		<button type="submit">Search</button>
+	</form>
+
+</body>
+
+</html>

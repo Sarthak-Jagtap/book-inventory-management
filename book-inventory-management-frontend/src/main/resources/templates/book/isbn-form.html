@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Find Book</title>
+</head>
+
+<body>
+
+	<h2>Search Book by ISBN</h2>
+
+	<form action="/books/details" method="get">
+		<label>Enter ISBN:</label>
+		<input type="text" name="isbn" required>
+		<button type="submit">Search</button>
+	</form>
+
+</body>
+
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Books by Category</title>
+</head>
+
+<body>
+
+	<h2>Books by Category</h2>
+
+	<!-- Search Form -->
+	<form action="/books/category" method="get">
+		<label>Category ID:</label>
+		<input type="number" name="categoryId" required>
+
+		<label>Page:</label>
+		<input type="number" name="page" value="0">
+
+		<label>Size:</label>
+		<input type="number" name="size" value="5">
+
+		<button type="submit">Load</button>
+	</form>
+
+	<hr>
+
+	<!-- Results -->
+	<div th:if="${books != null}">
+
+		<table border="1">
+			<tr>
+				<th>ISBN</th>
+				<th>Title</th>
+				<th>Edition</th>
+			</tr>
+
+			<tr th:each="book : ${books}">
+				<td th:text="${book.isbn}"></td>
+				<td th:text="${book.title}"></td>
+				<td th:text="${book.description}"></td>
+				<td th:text="${book.edition}"></td>
+
+				<td th:text="${categoryMap[book.categoryId]}"></td>
+				<td th:text="${publisherMap[book.publisherId]}"></td>
+			</tr>
+		</table>
+
+		<br>
+
+		<!-- Pagination -->
+		<div>
+			<span th:text="'Page ' + ${currentPage} + ' of ' + ${totalPages}"></span>
+		</div>
+
+		<div>
+			<a th:if="${currentPage > 0}"
+				th:href="@{/books/category(categoryId=${categoryId}, page=${currentPage-1}, size=5)}">
+				Previous
+			</a>
+
+			<a th:if="${currentPage < totalPages - 1}"
+				th:href="@{/books/category(categoryId=${categoryId}, page=${currentPage+1}, size=5)}">
+				Next
+			</a>
+		</div>
+
+	</div>
+
+</body>
+
+</html>

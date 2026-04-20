@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Find State</title>
+</head>
+
+<body>
+
+	<h2>Search State by Code</h2>
+
+	<form action="/states/details" method="get">
+		<label>State Code:</label>
+		<input type="text" name="stateCode" required>
+		<button type="submit">Search</button>
+	</form>
+
+</body>
+
+</html>
