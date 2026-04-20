@@ -5,88 +5,107 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Controller
 public class HomeController {
 
-	/**
-	 * Root URL — redirect to /home
-	 */
-	@GetMapping("/")
-	public String root() {
-		return "redirect:/home";
-	}
+    @GetMapping("/")
+    public String root() {
+        return "redirect:/home";
+    }
 
-	/**
-	 * GET /home Shows the team member grid page.
-	 *
-	 * IMPORTANT: Update the 5 names below with your actual team member names. The
-	 * first entry is YOUR name (User Module). The rest are your teammates' names.
-	 */
-	@GetMapping("/home")
-	public String home(Model model) {
+    @GetMapping("/home")
+    public String home(Model model) {
+        model.addAttribute("activePage", "home");
 
-		// ── UPDATE THESE NAMES WITH YOUR ACTUAL TEAM ──────────────
-		List<TeamMember> members = Arrays.asList(new TeamMember("Krishna Varma", // ← CHANGE THIS to your name
-				"User Module", "user-module", "Auth · Users · Roles · Purchases"),
-				new TeamMember("Sarthak Jagtap", // ← CHANGE THIS
-						"Book Module", "book-module", "Books · Authors · Categories · Publishers"),
-				new TeamMember("Yashomati", // ← CHANGE THIS
-						"Inventory Module", "inventory-module", "Inventory · BookCondition · Stock"),
-				new TeamMember("Prajwal", // ← CHANGE THIS
-						"Review Module", "review-module", "BookReviews · Ratings · Reviewers"),
-				new TeamMember("Sudhanshu", // ← CHANGE THIS
-						"Cart Module", "cart-module", "ShoppingCart · Checkout · State"));
-		// ──────────────────────────────────────────────────────────
+        List<TeamMember> members = List.of(
+                new TeamMember(
+                        "Krishna",
+                        "User Module",
+                        "user-module",
+                        "Auth · Users · Roles · Purchases"
+                ),
+                new TeamMember(
+                        "Member 2",
+                        "Book Module",
+                        "book-module",
+                        "Books · Categories · Publishers · States"
+                ),
+                new TeamMember(
+                        "Yashomati",
+                        "Inventory & Cart Module",
+                        "inventory-module",
+                        "Inventory · Cart · Book Conditions"
+                ),
+                new TeamMember(
+                        "Member 4",
+                        "Review Module",
+                        "review-module",
+                        "Reviews · Reviewer UI"
+                ),
+                new TeamMember(
+                        "Member 5",
+                        "Author Module",
+                        "author-module",
+                        "Authors · Book Authors"
+                )
+        );
 
-		model.addAttribute("members", members);
-		model.addAttribute("activePage", "home");
-		return "home"; // → templates/home.html
-	}
+        model.addAttribute("members", members);
+        model.addAttribute("teamMembers", members);
 
-	/**
-	 * GET /team/user-module YOUR endpoint showcase page. Shows all 24 of your API
-	 * endpoints organized by group.
-	 */
-	@GetMapping("/team/user-module")
-	public String userModulePage(Model model) {
-		model.addAttribute("memberName", "Krishna Varma"); // ← CHANGE to your name
-		model.addAttribute("activePage", "user-module");
-		return "team/user-module"; // → templates/team/user-module.html
-	}
+        return "home";
+    }
 
-	/**
-	 * GET /access-denied Shown when a user tries to access a page their role
-	 * doesn't allow.
-	 */
-	@GetMapping("/access-denied")
-	public String accessDenied() {
-		return "access-denied"; // → templates/access-denied.html
-	}
+    @GetMapping("/access-denied")
+    public String accessDenied(Model model) {
+        model.addAttribute("activePage", "access-denied");
+        return "access-denied";
+    }
 
-	// ── Placeholder pages for other team members ────────────────
-	// Your teammates will replace these with their own implementations
+    @GetMapping("/team/user-module")
+    public String userModule(Model model) {
+        model.addAttribute("activePage", "user-module");
+        model.addAttribute("memberName", "Krishna");
+        model.addAttribute("endpointCount", 24);
+        model.addAttribute("groupCount", 5);
+        return "team/user-module";
+    }
 
-	@GetMapping("/team/book-module")
-	public String bookModule(Model model) {
-		model.addAttribute("message", "Book Module — Coming Soon");
-		return "redirect:/home"; // Replace with actual page when teammate builds it
-	}
+    @GetMapping("/team/book-module")
+    public String bookModule(Model model) {
+        model.addAttribute("activePage", "book-module");
+        model.addAttribute("memberName", "Member 2");
+        model.addAttribute("endpointCount", 20);
+        model.addAttribute("groupCount", 4);
+        return "team/book-module";
+    }
 
-	@GetMapping("/team/inventory-module")
-	public String inventoryModule() {
-		return "redirect:/home";
-	}
+    @GetMapping("/team/inventory-module")
+    public String inventoryModule(Model model) {
+        model.addAttribute("activePage", "inventory-module");
+        model.addAttribute("memberName", "Yashomati");
+        model.addAttribute("endpointCount", 17);
+        model.addAttribute("groupCount", 3);
+        return "team/inventory-module";
+    }
 
-	@GetMapping("/team/review-module")
-	public String reviewModule() {
-		return "/reviewui/review-dashboard";
-	}
+    @GetMapping("/team/review-module")
+    public String reviewModule(Model model) {
+        model.addAttribute("activePage", "review-module");
+        model.addAttribute("memberName", "Member 4");
+        model.addAttribute("endpointCount", 15);
+        model.addAttribute("groupCount", 3);
+        return "team/review-module";
+    }
 
-	@GetMapping("/team/cart-module")
-	public String cartModule() {
-		return "redirect:/home";
-	}
+    @GetMapping("/team/author-module")
+    public String authorModule(Model model) {
+        model.addAttribute("activePage", "author-module");
+        model.addAttribute("memberName", "Member 5");
+        model.addAttribute("endpointCount", 15);
+        model.addAttribute("groupCount", 3);
+        return "author/api-author-dashboard";
+    }
 }

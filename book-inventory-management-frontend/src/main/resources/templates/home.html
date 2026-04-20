@@ -56,44 +56,44 @@
   </div>
 
   <div class="team-grid">
-    <!-- Member 1 — YOUR card -->
-    <a class="team-card" th:href="@{/team/user-module}">
+    <!-- Member 1 — Krishna -->
+    <a class="team-card" th:href="@{'/team/' + ${members[0].slug}}">
       <div class="avatar av-1"
-           th:text="${members[0] != null ? #strings.substring(members[0].name,0,2).toUpperCase() : 'YN'}">YN</div>
-      <div class="name" th:text="${members[0] != null ? members[0].name : 'Your Name'}">Your Name</div>
-      <div class="module">User Module</div>
+           th:text="${members[0].initials}">KR</div>
+      <div class="name" th:text="${members[0].name}">Krishna</div>
+      <div class="module" th:text="${members[0].module}">User Module</div>
       <div class="api-count"><strong>24</strong> endpoints</div>
     </a>
     <!-- Member 2 -->
-    <a class="team-card" th:href="@{/team/book-module}">
+    <a class="team-card" th:href="@{'/team/' + ${members[1].slug}}">
       <div class="avatar av-2"
-           th:text="${members[1] != null ? #strings.substring(members[1].name,0,2).toUpperCase() : 'M2'}">M2</div>
-      <div class="name" th:text="${members[1] != null ? members[1].name : 'Team Member 2'}">Team Member 2</div>
-      <div class="module">Book Module</div>
+           th:text="${members[1].initials}">M2</div>
+      <div class="name" th:text="${members[1].name}">Member 2</div>
+      <div class="module" th:text="${members[1].module}">Book Module</div>
       <div class="api-count"><strong>20+</strong> endpoints</div>
     </a>
-    <!-- Member 3 -->
-    <a class="team-card" th:href="@{/team/inventory-module}">
+    <!-- Member 3 — Yashomati -->
+    <a class="team-card" th:href="@{'/team/' + ${members[2].slug}}">
       <div class="avatar av-3"
-           th:text="${members[2] != null ? #strings.substring(members[2].name,0,2).toUpperCase() : 'M3'}">M3</div>
-      <div class="name" th:text="${members[2] != null ? members[2].name : 'Team Member 3'}">Team Member 3</div>
-      <div class="module">Inventory Module</div>
-      <div class="api-count"><strong>20+</strong> endpoints</div>
+           th:text="${members[2].initials}">YA</div>
+      <div class="name" th:text="${members[2].name}">Yashomati</div>
+      <div class="module" th:text="${members[2].module}">Inventory Module</div>
+      <div class="api-count"><strong>17</strong> endpoints</div>
     </a>
     <!-- Member 4 -->
-    <a class="team-card" th:href="@{/team/review-module}">
+    <a class="team-card" th:href="@{'/team/' + ${members[3].slug}}">
       <div class="avatar av-4"
-           th:text="${members[3] != null ? #strings.substring(members[3].name,0,2).toUpperCase() : 'M4'}">M4</div>
-      <div class="name" th:text="${members[3] != null ? members[3].name : 'Team Member 4'}">Team Member 4</div>
-      <div class="module">Review Module</div>
+           th:text="${members[3].initials}">M4</div>
+      <div class="name" th:text="${members[3].name}">Member 4</div>
+      <div class="module" th:text="${members[3].module}">Review Module</div>
       <div class="api-count"><strong>15+</strong> endpoints</div>
     </a>
     <!-- Member 5 -->
-    <a class="team-card" th:href="@{/team/cart-module}">
+    <a class="team-card" th:href="@{'/team/' + ${members[4].slug}}">
       <div class="avatar av-5"
-           th:text="${members[4] != null ? #strings.substring(members[4].name,0,2).toUpperCase() : 'M5'}">M5</div>
-      <div class="name" th:text="${members[4] != null ? members[4].name : 'Team Member 5'}">Team Member 5</div>
-      <div class="module">Cart Module</div>
+           th:text="${members[4].initials}">M5</div>
+      <div class="name" th:text="${members[4].name}">Member 5</div>
+      <div class="module" th:text="${members[4].module}">Author Module</div>
       <div class="api-count"><strong>15+</strong> endpoints</div>
     </a>
   </div>

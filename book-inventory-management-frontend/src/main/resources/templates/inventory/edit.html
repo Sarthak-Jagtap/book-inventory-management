@@ -3,24 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Inventory</title>
+  <title>Edit Inventory Record</title>
   <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
   <style>
-    .error-box{
-      background:#fef2f2;
-      color:#b91c1c;
-      border:1px solid #fecaca;
-      padding:14px 16px;
-      border-radius:10px;
-      margin-bottom:16px;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    .field-error{
-      color:#b91c1c;
-      font-size:12px;
-      margin-top:4px;
-    }
+    .error-box{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:14px 16px;border-radius:10px;margin-bottom:16px;white-space:pre-wrap;word-break:break-word;}
+    .field-error{color:#b91c1c;font-size:12px;margin-top:4px;}
+    .footer-actions {margin-top: 30px;padding-top: 20px;border-top: 1px solid var(--border);display: flex;justify-content: center;}
   </style>
 </head>
 <body>
@@ -32,64 +20,51 @@
     </div>
     <div>
       <div class="logo-title">Book Inventory API</div>
-      <div class="logo-sub">Update Inventory</div>
+      <div class="logo-sub">Store Owner Panel</div>
     </div>
   </div>
 </div>
 
 <div class="hero">
   <div class="hero-text">
-    <h1>Edit Inventory</h1>
-    <p>Update rank and purchased status for an existing inventory record.</p>
+    <h1>Modify Record</h1>
+    <p>Update the quality rank for an existing inventory item in the system.</p>
   </div>
-</div>
-
-<div class="tabs">
-  <a class="tab" th:href="@{/store-owner/inventory}">
-    <span class="tab-dot" style="background:#16a34a"></span>Inventory List
-  </a>
-  <a class="tab" th:href="@{/store-owner/inventory/add}">
-    <span class="tab-dot" style="background:#3b82f6"></span>Add Inventory
-  </a>
-  <a class="tab active" th:href="@{/store-owner/inventory/edit/{id}(id=${inventoryId})}">
-    <span class="tab-dot" style="background:#f59e0b"></span>Edit Inventory
-  </a>
 </div>
 
 <div class="content">
   <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
 
-  <div class="section-desc">
-    <strong>Update operation</strong> — edit the selected inventory record.
-  </div>
-
   <div class="form-card">
     <div class="form-title">Edit Inventory Record</div>
-    <div class="form-subtitle">Inventory ID: <span th:text="${inventoryId}">0</span></div>
+    <div class="form-subtitle">Updating Record ID: <strong th:text="${inventoryId}">0</strong></div>
 
-    <form th:action="@{/store-owner/inventory/edit/{id}(id=${inventoryId})}"
-      th:object="${updateInventoryRequest}"
-      method="post">
-  <div class="form-grid">
-    <div class="form-group">
-      <label class="form-label" for="rank">Rank</label>
-      <input class="form-input"
-             id="rank"
-             type="number"
-             min="1"
-             max="6"
-             th:field="*{rank}"
-             placeholder="e.g. 3"
-             required>
-      <div class="field-error" th:if="${#fields.hasErrors('rank')}" th:errors="*{rank}"></div>
-    </div>
+    <form th:action="@{/store-owner/inventory/edit/{id}(id=${inventoryId})}" th:object="${updateInventoryRequest}" method="post">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label class="form-label" for="rank">Quality Rank (1-6)</label>
+          <input class="form-input"
+                 id="rank"
+                 type="number"
+                 min="1"
+                 max="6"
+                 th:field="*{rank}"
+                 placeholder="e.g. 3"
+                 required>
+          <div class="field-error" th:if="${#fields.hasErrors('rank')}" th:errors="*{rank}"></div>
+          <small class="form-hint">Refer to Group 1 for rank descriptions.</small>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Apply Changes</button>
+        <a class="btn btn-secondary" th:href="@{/store-owner/inventory}">Cancel</a>
+      </div>
+    </form>
   </div>
 
-  <div class="form-actions">
-    <button class="btn btn-primary" type="submit">Update Rank</button>
-    <a class="btn btn-secondary" th:href="@{/inventory-cart-dashboard}">Back</a>
-  </div>
-</form>
+  <div class="footer-actions">
+    <a class="btn btn-secondary" th:href="@{/team/inventory-module}">Back to Dashboard</a>
   </div>
 </div>
 </body>

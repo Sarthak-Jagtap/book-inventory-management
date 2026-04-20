@@ -30,26 +30,15 @@ public class InventoryController {
 
     private String extractErrorMessage(HttpStatusCodeException ex) {
         String body = ex.getResponseBodyAsString();
-        if (body == null || body.isBlank()) {
-            return "Something went wrong.";
-        }
-
+        if (body == null || body.isBlank()) return "Something went wrong.";
         try {
             int messageIndex = body.indexOf("\"message\"");
-            if (messageIndex == -1) {
-                return body;
-            }
-
+            if (messageIndex == -1) return body;
             int colonIndex = body.indexOf(':', messageIndex);
             int firstQuote = body.indexOf('"', colonIndex + 1);
             int secondQuote = body.indexOf('"', firstQuote + 1);
-
-            if (firstQuote != -1 && secondQuote != -1) {
-                return body.substring(firstQuote + 1, secondQuote);
-            }
-        } catch (Exception ignored) {
-        }
-
+            if (firstQuote != -1 && secondQuote != -1) return body.substring(firstQuote + 1, secondQuote);
+        } catch (Exception ignored) {}
         return body;
     }
 
@@ -85,13 +74,20 @@ public class InventoryController {
 
     @PostMapping("/purchase/run")
     public String runPurchase(@RequestParam Integer inventoryId,
-                              RedirectAttributes redirectAttributes) {
-        if (inventoryId == null || inventoryId <= 0) {
-            redirectAttributes.addFlashAttribute("apiError", "Inventory ID must be greater than 0.");
-            return "redirect:/inventory-cart-dashboard";
+                               RedirectAttributes redirectAttributes) {
+        if (inventoryId == null || inventoryId < 1000000) {
+            redirectAttributes.addFlashAttribute("apiError", "Invalid Inventory ID. Must be >= 1000000.");
+            return "redirect:/team/inventory-module";
         }
 
         try {
+            // Check existence first
+            restClient.get()
+                    .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
+                    .retrieve()
+                    .toBodilessEntity();
+
+            // Perform toggle
             restClient.patch()
                     .uri("/api/v1/store-owner/inventory/purchase/{inventoryId}", inventoryId)
                     .retrieve()
@@ -99,33 +95,47 @@ public class InventoryController {
 
             redirectAttributes.addFlashAttribute("successMessage", "Purchase status updated successfully.");
         } catch (HttpStatusCodeException ex) {
-            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            if (ex.getStatusCode().value() == 404) {
+                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
+            } else {
+                redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            }
         }
 
-        return "redirect:/inventory-cart-dashboard";
+        return "redirect:/team/inventory-module";
     }
 
     @PostMapping("/delete/run")
     public String runDelete(@RequestParam Integer inventoryId,
                             RedirectAttributes redirectAttributes) {
-        if (inventoryId == null || inventoryId <= 0) {
-            redirectAttributes.addFlashAttribute("apiError", "Inventory ID must be greater than 0.");
-            return "redirect:/inventory-cart-dashboard";
+        if (inventoryId == null || inventoryId < 1000000) {
+            redirectAttributes.addFlashAttribute("apiError", "Invalid Inventory ID. Must be >= 1000000.");
+            return "redirect:/team/inventory-module";
         }
 
         try {
+            // Check existence first
+            restClient.get()
+                    .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
+                    .retrieve()
+                    .toBodilessEntity();
+
+            // Perform delete
             restClient.delete()
                     .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
                     .retrieve()
                     .toBodilessEntity();
 
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Inventory record found and deleted successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Inventory record deleted successfully.");
         } catch (HttpStatusCodeException ex) {
-            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            if (ex.getStatusCode().value() == 404) {
+                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
+            } else {
+                redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            }
         }
 
-        return "redirect:/inventory-cart-dashboard";
+        return "redirect:/team/inventory-module";
     }
 
     @GetMapping
@@ -134,26 +144,28 @@ public class InventoryController {
             @RequestParam(defaultValue = "asc") String direction,
             Model model) {
 
-        ApiResponse<List<InventoryResponse>> response = restClient.get()
-                .uri("/api/v1/store-owner/inventory")
-                .retrieve()
-                .body(new ParameterizedTypeReference<ApiResponse<List<InventoryResponse>>>() {});
+        try {
+            ApiResponse<List<InventoryResponse>> response = restClient.get()
+                    .uri("/api/v1/store-owner/inventory")
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<ApiResponse<List<InventoryResponse>>>() {});
 
-        List<InventoryResponse> inventoryList = response != null ? response.getData() : List.of();
+            List<InventoryResponse> inventoryList = response != null ? response.getData() : List.of();
+            inventoryList = sortInventory(inventoryList, sortBy, direction);
 
-        inventoryList = sortInventory(inventoryList, sortBy, direction);
-
-        model.addAttribute("inventoryList", inventoryList);
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("direction", direction);
+            model.addAttribute("inventoryList", inventoryList);
+            model.addAttribute("sortBy", sortBy);
+            model.addAttribute("direction", direction);
+        } catch (HttpStatusCodeException ex) {
+            model.addAttribute("apiError", extractErrorMessage(ex));
+        }
         return "inventory/list";
     }
 
     @GetMapping("/{inventoryId}")
     public String getInventoryById(@PathVariable Integer inventoryId, Model model) {
-        if (inventoryId == null || inventoryId <= 0) {
-            model.addAttribute("apiError", "Inventory ID must be greater than 0.");
-            model.addAttribute("inventory", null);
+        if (inventoryId == null || inventoryId < 1000000) {
+            model.addAttribute("apiError", "Invalid Inventory ID. Must be >= 1000000.");
             return "inventory/details";
         }
 
@@ -163,17 +175,29 @@ public class InventoryController {
                     .retrieve()
                     .body(new ParameterizedTypeReference<ApiResponse<InventoryResponse>>() {});
 
-            model.addAttribute("inventory", response != null ? response.getData() : null);
+            InventoryResponse data = response != null ? response.getData() : null;
+            if (data == null) {
+                model.addAttribute("apiError", "Inventory item doesn't exist.");
+                return "inventory/details";
+            }
+            model.addAttribute("inventory", data);
             return "inventory/details";
         } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-            model.addAttribute("inventory", null);
+            if (ex.getStatusCode().value() == 404) {
+                model.addAttribute("apiError", "Inventory item doesn't exist.");
+            } else {
+                model.addAttribute("apiError", extractErrorMessage(ex));
+            }
             return "inventory/details";
         }
     }
 
     @GetMapping("/book/{isbn}")
     public String getInventoryByIsbn(@PathVariable String isbn, Model model) {
+        if (isbn == null || isbn.isBlank()) {
+            model.addAttribute("apiError", "ISBN is required.");
+            return "inventory/list";
+        }
         try {
             ApiResponse<List<InventoryResponse>> response = restClient.get()
                     .uri("/api/v1/store-owner/inventory/book/{isbn}", isbn)
@@ -185,8 +209,6 @@ public class InventoryController {
             return "inventory/list";
         } catch (HttpStatusCodeException ex) {
             model.addAttribute("apiError", extractErrorMessage(ex));
-            model.addAttribute("inventoryList", List.of());
-            model.addAttribute("isbn", isbn);
             return "inventory/list";
         }
     }
@@ -204,8 +226,6 @@ public class InventoryController {
             return "inventory/available-list";
         } catch (HttpStatusCodeException ex) {
             model.addAttribute("apiError", extractErrorMessage(ex));
-            model.addAttribute("inventoryList", List.of());
-            model.addAttribute("isbn", isbn);
             return "inventory/available-list";
         }
     }
@@ -223,8 +243,6 @@ public class InventoryController {
             return "inventory/summary";
         } catch (HttpStatusCodeException ex) {
             model.addAttribute("apiError", extractErrorMessage(ex));
-            model.addAttribute("summaryList", List.of());
-            model.addAttribute("isbn", isbn);
             return "inventory/summary";
         }
     }
@@ -242,9 +260,23 @@ public class InventoryController {
             return "inventory/list";
         } catch (HttpStatusCodeException ex) {
             model.addAttribute("apiError", extractErrorMessage(ex));
-            model.addAttribute("inventoryList", List.of());
-            model.addAttribute("rank", rank);
             return "inventory/list";
+        }
+    }
+
+    @GetMapping("/book-conditions")
+    public String getAllBookConditions(Model model) {
+        try {
+            ApiResponse<List<com.bookinventoryfrontend.inventory.dto.BookConditionResponse>> response = restClient.get()
+                    .uri("/api/v1/store-owner/book-conditions")
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<ApiResponse<List<com.bookinventoryfrontend.inventory.dto.BookConditionResponse>>>() {});
+
+            model.addAttribute("conditions", response != null ? response.getData() : List.of());
+            return "inventory/condition-list";
+        } catch (HttpStatusCodeException ex) {
+            model.addAttribute("apiError", extractErrorMessage(ex));
+            return "inventory/condition-list";
         }
     }
 
@@ -271,7 +303,9 @@ public class InventoryController {
                     .retrieve()
                     .toBodilessEntity();
 
-            return "redirect:/store-owner/inventory";
+            model.addAttribute("successMessage", "Inventory item added successfully!");
+            model.addAttribute("inventoryRequest", new InventoryRequest());
+            return "inventory/add";
         } catch (HttpStatusCodeException ex) {
             model.addAttribute("apiError", extractErrorMessage(ex));
             return "inventory/add";
@@ -280,10 +314,8 @@ public class InventoryController {
 
     @GetMapping("/edit/{inventoryId}")
     public String showEditForm(@PathVariable Integer inventoryId, Model model) {
-        if (inventoryId == null || inventoryId <= 0) {
-            model.addAttribute("apiError", "Inventory ID must be greater than 0.");
-            model.addAttribute("inventoryId", inventoryId);
-            model.addAttribute("updateInventoryRequest", new UpdateInventoryRequest());
+        if (inventoryId == null || inventoryId < 1000000) {
+            model.addAttribute("apiError", "Invalid Inventory ID. Must be >= 1000000.");
             return "inventory/edit";
         }
 
@@ -294,19 +326,23 @@ public class InventoryController {
                     .body(new ParameterizedTypeReference<ApiResponse<InventoryResponse>>() {});
 
             InventoryResponse inventory = response != null ? response.getData() : null;
+            if (inventory == null) {
+                model.addAttribute("apiError", "Inventory item doesn't exist.");
+                return "inventory/edit";
+            }
 
             UpdateInventoryRequest updateRequest = new UpdateInventoryRequest();
-            if (inventory != null) {
-                updateRequest.setRank(inventory.getRank());
-            }
+            updateRequest.setRank(inventory.getRank());
 
             model.addAttribute("inventoryId", inventoryId);
             model.addAttribute("updateInventoryRequest", updateRequest);
             return "inventory/edit";
         } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-            model.addAttribute("inventoryId", inventoryId);
-            model.addAttribute("updateInventoryRequest", new UpdateInventoryRequest());
+            if (ex.getStatusCode().value() == 404) {
+                model.addAttribute("apiError", "Inventory item doesn't exist.");
+            } else {
+                model.addAttribute("apiError", extractErrorMessage(ex));
+            }
             return "inventory/edit";
         }
     }
@@ -336,84 +372,30 @@ public class InventoryController {
         }
     }
 
-    @PostMapping("/purchase/{inventoryId}")
-    public String markAsPurchased(@PathVariable Integer inventoryId, Model model) {
-        try {
-            restClient.patch()
-                    .uri("/api/v1/store-owner/inventory/purchase/{inventoryId}", inventoryId)
-                    .retrieve()
-                    .toBodilessEntity();
-
-            return "redirect:/store-owner/inventory";
-        } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-
-            ApiResponse<List<InventoryResponse>> response = restClient.get()
-                    .uri("/api/v1/store-owner/inventory")
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<ApiResponse<List<InventoryResponse>>>() {});
-
-            model.addAttribute("inventoryList", response != null ? response.getData() : List.of());
-            return "inventory/list";
-        }
-    }
-
     @PostMapping("/delete/{inventoryId}")
-    public String deleteInventory(@PathVariable Integer inventoryId, Model model) {
+    public String deleteInventory(@PathVariable Integer inventoryId, RedirectAttributes redirectAttributes) {
         try {
             restClient.delete()
                     .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
                     .retrieve()
                     .toBodilessEntity();
 
-            return "redirect:/store-owner/inventory";
+            redirectAttributes.addFlashAttribute("successMessage", "Item deleted successfully.");
         } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-
-            ApiResponse<List<InventoryResponse>> response = restClient.get()
-                    .uri("/api/v1/store-owner/inventory")
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<ApiResponse<List<InventoryResponse>>>() {});
-
-            model.addAttribute("inventoryList", response != null ? response.getData() : List.of());
-            return "inventory/list";
+            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
         }
+        return "redirect:/store-owner/inventory";
     }
 
-    private List<InventoryResponse> sortInventory(List<InventoryResponse> list,
-                                                  String sortBy,
-                                                  String direction) {
-        Comparator<InventoryResponse> comparator;
-
+    private List<InventoryResponse> sortInventory(List<InventoryResponse> list, String sortBy, String direction) {
+        Comparator<InventoryResponse> comp;
         switch (sortBy) {
-            case "isbn":
-                comparator = Comparator.comparing(
-                        item -> item.getIsbn() == null ? "" : item.getIsbn(),
-                        String.CASE_INSENSITIVE_ORDER
-                );
-                break;
-            case "rank":
-                comparator = Comparator.comparing(
-                        item -> item.getRank() == null ? Integer.MIN_VALUE : item.getRank()
-                );
-                break;
-            case "purchased":
-                comparator = Comparator.comparing(
-                        item -> item.getPurchased() != null && item.getPurchased()
-                );
-                break;
-            case "inventoryId":
-            default:
-                comparator = Comparator.comparing(
-                        item -> item.getInventoryId() == null ? Integer.MIN_VALUE : item.getInventoryId()
-                );
-                break;
+            case "isbn": comp = Comparator.comparing(i -> i.getIsbn() != null ? i.getIsbn() : ""); break;
+            case "rank": comp = Comparator.comparing(i -> i.getRank() != null ? i.getRank() : 0); break;
+            case "purchased": comp = Comparator.comparing(i -> i.getPurchased() != null && i.getPurchased()); break;
+            default: comp = Comparator.comparing(i -> i.getInventoryId() != null ? i.getInventoryId() : 0); break;
         }
-
-        if ("desc".equalsIgnoreCase(direction)) {
-            comparator = comparator.reversed();
-        }
-
-        return list.stream().sorted(comparator).toList();
+        if ("desc".equalsIgnoreCase(direction)) comp = comp.reversed();
+        return list.stream().sorted(comp).toList();
     }
-}
+}

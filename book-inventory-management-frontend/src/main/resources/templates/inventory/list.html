@@ -3,60 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory Dashboard</title>
+  <title>Inventory List</title>
   <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
   <style>
-    .toolbar{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      align-items:end;
-      margin:18px 0;
-      background:var(--surface);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:16px;
-    }
-    .toolbar-group{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      min-width:180px;
-    }
-    .toolbar-label{
-      font-size:12px;
-      color:var(--text3);
-      font-weight:600;
-      text-transform:uppercase;
-      letter-spacing:.4px;
-    }
-    .toolbar-select{
-      background:var(--surface2);
-      border:1px solid var(--border2);
-      border-radius:8px;
-      color:var(--text);
-      font-size:14px;
-      padding:10px 12px;
-      outline:none;
-    }
-    .error-box{
-      background:#fef2f2;
-      color:#b91c1c;
-      border:1px solid #fecaca;
-      padding:14px 16px;
-      border-radius:10px;
-      margin-bottom:16px;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    .mini-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-    .inline-form{
-      display:inline;
-    }
+    .error-box{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:14px 16px;border-radius:10px;margin-bottom:16px;white-space:pre-wrap;word-break:break-word;}
+    .success-box{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;padding:14px 16px;border-radius:10px;margin-bottom:16px;}
+    .footer-actions {margin-top: 30px;padding-top: 20px;border-top: 1px solid var(--border);display: flex;justify-content: center;}
+    .sort-icon { cursor: pointer; margin-left: 5px; opacity: 0.6; }
+    .sort-icon:hover { opacity: 1; }
   </style>
 </head>
 <body>
@@ -68,81 +22,49 @@
     </div>
     <div>
       <div class="logo-title">Book Inventory API</div>
-      <div class="logo-sub">Inventory Module</div>
+      <div class="logo-sub">Inventory Management</div>
     </div>
   </div>
 </div>
 
 <div class="hero">
   <div class="hero-text">
-    <h1>Inventory Dashboard</h1>
-    <p>Browse inventory records and manage store-owner inventory operations.</p>
+    <h1>Inventory Catalog</h1>
+    <p>View and manage all physical book copies in the system.</p>
   </div>
 </div>
 
-<div class="tabs">
-  <a class="tab active" th:href="@{/store-owner/inventory}">Inventory List</a>
-  <a class="tab" th:href="@{/store-owner/inventory/add}">Add Inventory</a>
-  <a class="tab" th:href="@{/inventory-cart-dashboard}">Back</a>
-</div>
-
 <div class="content">
-
   <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
+  <div th:if="${successMessage != null}" class="success-box" th:text="${successMessage}"></div>
 
-  <form class="toolbar" th:action="@{/store-owner/inventory}" method="get">
-    <div class="toolbar-group">
-      <label class="toolbar-label" for="sortBy">Sort By</label>
-      <select class="toolbar-select" id="sortBy" name="sortBy">
-        <option value="inventoryId" th:selected="${sortBy == 'inventoryId'}">ID</option>
-        <option value="isbn" th:selected="${sortBy == 'isbn'}">ISBN</option>
-        <option value="rank" th:selected="${sortBy == 'rank'}">Rank</option>
-        <option value="purchased" th:selected="${sortBy == 'purchased'}">Purchased</option>
-      </select>
-    </div>
-
-    <div class="toolbar-group">
-      <label class="toolbar-label" for="direction">Order</label>
-      <select class="toolbar-select" id="direction" name="direction">
-        <option value="asc" th:selected="${direction == 'asc'}">Ascending</option>
-        <option value="desc" th:selected="${direction == 'desc'}">Descending</option>
-      </select>
-    </div>
-
-    <div class="toolbar-group">
-      <button class="btn btn-primary" type="submit">Apply</button>
-    </div>
-  </form>
-
-  <div th:if="${inventoryList != null and !#lists.isEmpty(inventoryList)}" class="table-wrap">
-    <table class="data-table">
+  <div class="table-wrap">
+    <table class="data-table" id="inventoryTable">
       <thead>
       <tr>
-        <th>ID</th>
-        <th>ISBN</th>
-        <th>Rank</th>
-        <th>Purchased</th>
+        <th onclick="sortTable(0)">Inventory ID <span class="sort-icon">↕</span></th>
+        <th onclick="sortTable(1)">ISBN <span class="sort-icon">↕</span></th>
+        <th onclick="sortTable(2)">Rank <span class="sort-icon">↕</span></th>
+        <th onclick="sortTable(3)">Status <span class="sort-icon">↕</span></th>
         <th>Actions</th>
       </tr>
       </thead>
       <tbody>
       <tr th:each="item : ${inventoryList}">
-        <td th:text="${item.inventoryId}">1</td>
-        <td th:text="${item.isbn}">978...</td>
-        <td th:text="${item.rank}">1</td>
+        <td th:text="${item.inventoryId}"></td>
+        <td th:text="${item.isbn}"></td>
+        <td th:text="${item.rank}"></td>
         <td>
-          <span th:if="${item.purchased}" class="pill pill-yes">TRUE</span>
-          <span th:unless="${item.purchased}" class="pill pill-no">FALSE</span>
+          <span th:if="${item.purchased}" class="pill pill-no">SOLD</span>
+          <span th:unless="${item.purchased}" class="pill pill-yes">AVAILABLE</span>
         </td>
         <td>
           <div class="mini-actions">
-            <a class="btn btn-warning" th:href="@{/store-owner/inventory/edit/{id}(id=${item.inventoryId})}">Edit</a>
-
-            <form class="inline-form" th:action="@{/store-owner/inventory/purchase/{id}(id=${item.inventoryId})}" method="post">
-              <button class="btn btn-primary" type="submit">Purchase</button>
-            </form>
-
-            <form class="inline-form" th:action="@{/store-owner/inventory/delete/{id}(id=${item.inventoryId})}" method="post">
+            <a class="btn btn-primary" th:href="@{/store-owner/inventory/edit/{id}(id=${item.inventoryId})}">Edit</a>
+            <form th:action="@{/store-owner/inventory/delete/{id}(id=${item.inventoryId})}"
+                  method="post"
+                  onsubmit="return confirm('Permanently remove this item from inventory?');"
+                  style="display:inline;">
               <button class="btn btn-danger" type="submit">Delete</button>
             </form>
           </div>
@@ -153,9 +75,52 @@
   </div>
 
   <div th:if="${inventoryList == null or #lists.isEmpty(inventoryList)}" class="empty-state">
-    No inventory records found.
+    No inventory items found.
   </div>
 
+  <div class="footer-actions">
+    <a class="btn btn-secondary" th:href="@{/team/inventory-module}">Back to Dashboard</a>
+  </div>
 </div>
+
+<script>
+function sortTable(n) {
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("inventoryTable");
+  switching = true;
+  dir = "asc";
+  while (switching) {
+    switching = false;
+    rows = table.rows;
+    for (i = 1; i < (rows.length - 1); i++) {
+      shouldSwitch = false;
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      if (dir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        }
+      } else if (dir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          shouldSwitch = true;
+          break;
+        }
+      }
+    }
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      switchcount ++;
+    } else {
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+</script>
+
 </body>
 </html>

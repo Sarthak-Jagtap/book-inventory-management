@@ -9,8 +9,8 @@ import org.springframework.web.client.RestClient;
 public class RestClientConfig {
 
     // Spring reads this value from application.properties
-    // backend.api.base-url=http://localhost:8080
-    @Value("${backend.api.base-url}")
+    // backend.base-url=http://localhost:8080
+    @Value("${backend.base-url}")
     private String backendBaseUrl;
 
     @Bean

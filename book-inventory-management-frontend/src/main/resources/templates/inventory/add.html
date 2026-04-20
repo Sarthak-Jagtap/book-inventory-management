@@ -3,24 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Inventory</title>
+  <title>Add Inventory Item</title>
   <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
   <style>
-    .error-box{
-      background:#fef2f2;
-      color:#b91c1c;
-      border:1px solid #fecaca;
-      padding:14px 16px;
-      border-radius:10px;
-      margin-bottom:16px;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    .field-error{
-      color:#b91c1c;
-      font-size:12px;
-      margin-top:4px;
-    }
+    .error-box{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:14px 16px;border-radius:10px;margin-bottom:16px;white-space:pre-wrap;word-break:break-word;}
+    .success-box{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;padding:14px 16px;border-radius:10px;margin-bottom:16px;}
+    .field-error{color:#b91c1c;font-size:12px;margin-top:4px;}
   </style>
 </head>
 <body>
@@ -32,85 +20,82 @@
     </div>
     <div>
       <div class="logo-title">Book Inventory API</div>
-      <div class="logo-sub">Create Inventory</div>
+      <div class="logo-sub">Store Owner Panel</div>
     </div>
   </div>
 </div>
 
 <div class="hero">
   <div class="hero-text">
-    <h1>Add Inventory</h1>
-    <p>Create a new inventory record using the same dashboard visual language as the author module.</p>
+    <h1>Create Inventory Record</h1>
+    <p>Add a new physical copy of a book to your store's inventory database.</p>
   </div>
-</div>
-
-<div class="tabs">
-  <a class="tab" th:href="@{/store-owner/inventory}">
-    <span class="tab-dot" style="background:#16a34a"></span>Inventory List
-  </a>
-  <a class="tab active" th:href="@{/store-owner/inventory/add}">
-    <span class="tab-dot" style="background:#3b82f6"></span>Add Inventory
-  </a>
-  <a class="tab" th:href="@{/user/cart/add}">
-    <span class="tab-dot" style="background:#f59e0b"></span>Cart
-  </a>
 </div>
 
 <div class="content">
   <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
-
-  <div class="section-desc">
-    <strong>Create operation</strong> — submit a new inventory item through the frontend controller.
-  </div>
+  <div th:if="${successMessage != null}" class="success-box" th:text="${successMessage}"></div>
 
   <div class="form-card">
-    <div class="form-title">New Inventory Record</div>
-    <div class="form-subtitle">Fill in the fields below and save.</div>
+    <div class="form-title">Inventory Details</div>
+    <div class="form-subtitle">Enter ISBN and quality rank for the new item.</div>
 
     <form th:action="@{/store-owner/inventory/add}" th:object="${inventoryRequest}" method="post">
       <div class="form-grid">
         <div class="form-group full">
-          <label class="form-label" for="isbn">ISBN</label>
-		  <input class="form-input"
-		         id="isbn"
-		         type="text"
-		         th:field="*{isbn}"
-		         placeholder="e.g. 1-295-84547-1"
-		         pattern="^[0-9\\-]{10,17}$"
-		         title="Use numbers and dashes only, e.g. 1-295-84547-1"
-		         required>
+          <label class="form-label" for="isbn">ISBN (Format: x-xxx-xxxxx-x)</label>
+          <input class="form-input"
+                 id="isbn"
+                 type="text"
+                 th:field="*{isbn}"
+                 placeholder="e.g. 0-123-45678-9"
+                 pattern="[0-9]-[0-9]{3}-[0-9]{5}-[0-9]"
+                 title="Must follow format: x-xxx-xxxxx-x (e.g. 0-123-45678-9)"
+                 required>
           <div class="field-error" th:if="${#fields.hasErrors('isbn')}" th:errors="*{isbn}"></div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="rank">Rank</label>
-		  <input class="form-input"
-		  		         id="rank"
-		  		         type="number"
-		  		         min="1"
-		  		         max="6"
-		  		         th:field="*{rank}"
-		  		         placeholder="e.g. 3"
-		  		         required>
+          <label class="form-label" for="rank">Quality Rank (1-6)</label>
+          <input class="form-input"
+                 id="rank"
+                 type="number"
+                 min="1"
+                 max="6"
+                 th:field="*{rank}"
+                 placeholder="e.g. 3"
+                 required>
           <div class="field-error" th:if="${#fields.hasErrors('rank')}" th:errors="*{rank}"></div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="purchased">Purchased</label>
+          <label class="form-label" for="purchased">Initial Status</label>
           <select class="form-select" id="purchased" th:field="*{purchased}">
-            <option th:value="false">No</option>
-            <option th:value="true">Yes</option>
+            <option th:value="false">Available for Sale</option>
+            <option th:value="true">Already Purchased</option>
           </select>
           <div class="field-error" th:if="${#fields.hasErrors('purchased')}" th:errors="*{purchased}"></div>
         </div>
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary" type="submit">Save</button>
-        <a class="btn btn-secondary" th:href="@{/store-owner/inventory}">Back</a>
+        <button class="btn btn-primary" type="submit">Create Item</button>
+        <a class="btn btn-secondary" th:href="@{/team/inventory-module}">Back to Dashboard</a>
       </div>
     </form>
   </div>
 </div>
+
+<script>
+  // Simple ISBN validation: strip dashes and check length
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const isbnInput = document.getElementById('isbn');
+    const isbn = isbnInput.value.replace(/-/g, '');
+    if (isbn.length < 10 || isbn.length > 13) {
+      // Just a hint, the backend will do strict check
+    }
+  });
+</script>
+
 </body>
 </html>
