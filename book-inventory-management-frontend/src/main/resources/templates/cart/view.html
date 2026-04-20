@@ -33,12 +33,12 @@
   <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
   <div th:if="${checkoutMessage != null}" class="success-box" th:text="${checkoutMessage}"></div>
 
-  <form th:if="${userId != null and cartView != null and !#lists.isEmpty(cartView)}"
-        th:action="@{/user/cart/checkout}"
-        method="post">
-
+  <!-- Main Checkout Form (Empty, used for association) -->
+  <form id="checkoutForm" th:action="@{/user/cart/checkout}" method="post">
     <input type="hidden" name="userId" th:value="${userId}">
+  </form>
 
+  <div th:if="${userId != null and cartView != null and !#lists.isEmpty(cartView)}">
     <div class="table-wrap">
       <table class="data-table">
         <thead>
@@ -54,13 +54,13 @@
           <td th:text="${item.isbn}"></td>
           <td th:text="${item.bookTitle}"></td>
           <td>
-            <input type="hidden" name="isbn" th:value="${item.isbn}"/>
             <div th:if="${optionsByIsbn[item.isbn] != null and !#lists.isEmpty(optionsByIsbn[item.isbn])}">
-              <select class="form-select" name="rank" required>
+              <input type="hidden" name="isbn" th:value="${item.isbn}" form="checkoutForm"/>
+              <select class="form-select" name="rank" required form="checkoutForm">
                 <option value="">Choose quality...</option>
                 <option th:each="opt : ${optionsByIsbn[item.isbn]}"
                         th:value="${opt.rank}"
-                        th:text="${opt.condition + ' - $' + opt.price + ' (' + opt.availableCount + ' available)'}">
+                        th:text="${opt.condition + ' - $' + opt.price}">
                 </option>
               </select>
             </div>
@@ -89,10 +89,10 @@
         <p th:text="${#lists.size(cartView)} + ' items in your cart.'"></p>
       </div>
       <div class="summary-actions">
-        <button class="btn btn-success" type="submit">Proceed to Checkout</button>
+        <button class="btn btn-success" type="submit" form="checkoutForm">Proceed to Checkout</button>
       </div>
     </div>
-  </form>
+  </div>
 
   <div th:if="${userId != null and (cartView == null or #lists.isEmpty(cartView))}" class="empty-state">
     <div class="empty-icon">🛒</div>

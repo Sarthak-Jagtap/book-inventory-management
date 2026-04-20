@@ -50,7 +50,6 @@
     <table class="data-table">
       <thead>
       <tr>
-        <th>Add to Cart</th>
         <th>Condition Rank</th>
         <th>Price ($)</th>
         <th>Availability</th>
@@ -58,18 +57,12 @@
       </thead>
       <tbody>
       <tr th:each="opt : ${options}">
-        <td>
-           <form th:action="@{/user/cart/add}" method="post">
-            <input type="hidden" name="isbn" th:value="${isbn}"/>
-            <button class="btn btn-primary" type="submit">Add</button>
-          </form>
-        </td>
         <td th:text="${opt.rank}"></td>
         <td>
           <span class="pill pill-yes" th:text="'$' + ${opt.price}">$0.00</span>
         </td>
         <td>
-          <span th:if="${opt.availableCount > 0}" class="pill pill-yes" th:text="${opt.availableCount} + ' In Stock'"></span>
+          <span th:if="${opt.availableCount > 0}" class="pill pill-yes">In Stock</span>
           <span th:unless="${opt.availableCount > 0}" class="pill pill-no">Out of Stock</span>
         </td>
       </tr>

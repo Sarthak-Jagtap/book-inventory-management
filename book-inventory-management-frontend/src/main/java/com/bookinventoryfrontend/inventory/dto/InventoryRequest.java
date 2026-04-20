@@ -20,7 +20,8 @@ public class InventoryRequest {
     @Max(value = 6, message = "Rank must be at most 6")
     private Integer rank;
 
-    private Boolean purchased;
+    // New items default to 'available' (not purchased)
+    private Boolean purchased = false;
 
     public InventoryRequest() {}
 

@@ -72,71 +72,7 @@ public class InventoryController {
         return "redirect:/store-owner/inventory/edit/" + inventoryId;
     }
 
-    @PostMapping("/purchase/run")
-    public String runPurchase(@RequestParam Integer inventoryId,
-                               RedirectAttributes redirectAttributes) {
-        if (inventoryId == null || inventoryId < 1000000) {
-            redirectAttributes.addFlashAttribute("apiError", "Invalid Inventory ID. Must be >= 1000000.");
-            return "redirect:/team/inventory-module";
-        }
 
-        try {
-            // Check existence first
-            restClient.get()
-                    .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
-                    .retrieve()
-                    .toBodilessEntity();
-
-            // Perform toggle
-            restClient.patch()
-                    .uri("/api/v1/store-owner/inventory/purchase/{inventoryId}", inventoryId)
-                    .retrieve()
-                    .toBodilessEntity();
-
-            redirectAttributes.addFlashAttribute("successMessage", "Purchase status updated successfully.");
-        } catch (HttpStatusCodeException ex) {
-            if (ex.getStatusCode().value() == 404) {
-                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
-            } else {
-                redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
-            }
-        }
-
-        return "redirect:/team/inventory-module";
-    }
-
-    @PostMapping("/delete/run")
-    public String runDelete(@RequestParam Integer inventoryId,
-                            RedirectAttributes redirectAttributes) {
-        if (inventoryId == null || inventoryId < 1000000) {
-            redirectAttributes.addFlashAttribute("apiError", "Invalid Inventory ID. Must be >= 1000000.");
-            return "redirect:/team/inventory-module";
-        }
-
-        try {
-            // Check existence first
-            restClient.get()
-                    .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
-                    .retrieve()
-                    .toBodilessEntity();
-
-            // Perform delete
-            restClient.delete()
-                    .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
-                    .retrieve()
-                    .toBodilessEntity();
-
-            redirectAttributes.addFlashAttribute("successMessage", "Inventory record deleted successfully.");
-        } catch (HttpStatusCodeException ex) {
-            if (ex.getStatusCode().value() == 404) {
-                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
-            } else {
-                redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
-            }
-        }
-
-        return "redirect:/team/inventory-module";
-    }
 
     @GetMapping
     public String getAllInventory(
@@ -313,10 +249,10 @@ public class InventoryController {
     }
 
     @GetMapping("/edit/{inventoryId}")
-    public String showEditForm(@PathVariable Integer inventoryId, Model model) {
+    public String showEditForm(@PathVariable Integer inventoryId, Model model, RedirectAttributes redirectAttributes) {
         if (inventoryId == null || inventoryId < 1000000) {
-            model.addAttribute("apiError", "Invalid Inventory ID. Must be >= 1000000.");
-            return "inventory/edit";
+            redirectAttributes.addFlashAttribute("apiError", "Invalid Inventory ID. Must be >= 1000000.");
+            return "redirect:/store-owner/inventory";
         }
 
         try {
@@ -327,8 +263,8 @@ public class InventoryController {
 
             InventoryResponse inventory = response != null ? response.getData() : null;
             if (inventory == null) {
-                model.addAttribute("apiError", "Inventory item doesn't exist.");
-                return "inventory/edit";
+                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
+                return "redirect:/store-owner/inventory";
             }
 
             UpdateInventoryRequest updateRequest = new UpdateInventoryRequest();
@@ -339,11 +275,11 @@ public class InventoryController {
             return "inventory/edit";
         } catch (HttpStatusCodeException ex) {
             if (ex.getStatusCode().value() == 404) {
-                model.addAttribute("apiError", "Inventory item doesn't exist.");
+                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
             } else {
-                model.addAttribute("apiError", extractErrorMessage(ex));
+                redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
             }
-            return "inventory/edit";
+            return "redirect:/store-owner/inventory";
         }
     }
 
@@ -372,9 +308,52 @@ public class InventoryController {
         }
     }
 
-    @PostMapping("/delete/{inventoryId}")
-    public String deleteInventory(@PathVariable Integer inventoryId, RedirectAttributes redirectAttributes) {
+    @PostMapping("/purchase/run")
+    public String togglePurchaseStatus(@RequestParam Integer inventoryId, RedirectAttributes redirectAttributes) {
         try {
+            // 1. Fetch current status
+            ApiResponse<InventoryResponse> getResponse = restClient.get()
+                    .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<ApiResponse<InventoryResponse>>() {});
+
+            InventoryResponse inventory = getResponse != null ? getResponse.getData() : null;
+            if (inventory == null) {
+                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
+                return "redirect:/team/inventory-module";
+            }
+
+            // 2. Toggle status
+            boolean newStatus = !Boolean.TRUE.equals(inventory.getPurchased());
+
+            UpdateInventoryRequest patchRequest = new UpdateInventoryRequest();
+            patchRequest.setPurchased(newStatus);
+            // Rank is technically not required by backend for toggle, but DTO might have @NotNull
+            // Check UpdateInventoryRequest.java - backend doesn't have @NotNull on rank.
+            
+            // 3. Send PATCH
+            restClient.patch()
+                    .uri("/api/v1/store-owner/inventory/purchase/{inventoryId}", inventoryId)
+                    .body(patchRequest)
+                    .retrieve()
+                    .toBodilessEntity();
+
+            redirectAttributes.addFlashAttribute("successMessage", "Status toggled to: " + (newStatus ? "Purchased" : "Available"));
+        } catch (HttpStatusCodeException ex) {
+            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+        }
+        return "redirect:/team/inventory-module";
+    }
+
+    @PostMapping("/delete/run")
+    public String deleteInventory(@RequestParam Integer inventoryId, RedirectAttributes redirectAttributes) {
+        try {
+            // Check if exists first for better feedback
+            restClient.get()
+                    .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
+                    .retrieve()
+                    .toBodilessEntity();
+
             restClient.delete()
                     .uri("/api/v1/store-owner/inventory/{inventoryId}", inventoryId)
                     .retrieve()
@@ -382,9 +361,13 @@ public class InventoryController {
 
             redirectAttributes.addFlashAttribute("successMessage", "Item deleted successfully.");
         } catch (HttpStatusCodeException ex) {
-            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            if (ex.getStatusCode().value() == 404) {
+                redirectAttributes.addFlashAttribute("apiError", "Item doesn't exist.");
+            } else {
+                redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            }
         }
-        return "redirect:/store-owner/inventory";
+        return "redirect:/team/inventory-module";
     }
 
     private List<InventoryResponse> sortInventory(List<InventoryResponse> list, String sortBy, String direction) {

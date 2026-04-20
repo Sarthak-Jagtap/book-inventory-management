@@ -68,14 +68,7 @@
           <div class="field-error" th:if="${#fields.hasErrors('rank')}" th:errors="*{rank}"></div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label" for="purchased">Initial Status</label>
-          <select class="form-select" id="purchased" th:field="*{purchased}">
-            <option th:value="false">Available for Sale</option>
-            <option th:value="true">Already Purchased</option>
-          </select>
-          <div class="field-error" th:if="${#fields.hasErrors('purchased')}" th:errors="*{purchased}"></div>
-        </div>
+        <!-- Status is automatically set to Available in the DTO -->
       </div>
 
       <div class="form-actions">

@@ -202,24 +202,31 @@ public class CartController {
                                    @RequestParam("isbn") List<String> isbns,
                                    @RequestParam("rank") List<Integer> ranks,
                                    HttpSession session,
-                                   Model model) {
+                                   RedirectAttributes redirectAttributes) {
         Integer loggedId = getLoggedUserId(session);
         if (loggedId == null || !loggedId.equals(userId)) {
-            model.addAttribute("apiError", "Access denied.");
-            return "cart/view";
+            redirectAttributes.addFlashAttribute("apiError", "Access denied. Session mismatch.");
+            return "redirect:/team/inventory-module";
+        }
+
+        if (!isUserAccessOnly(session)) {
+            redirectAttributes.addFlashAttribute("apiError", "Shop owners cannot perform checkout.");
+            return "redirect:/team/inventory-module";
         }
 
         if (isbns == null || ranks == null || isbns.isEmpty() || ranks.isEmpty()) {
-            model.addAttribute("apiError", "Cart items and rank selections are required.");
-            return getCartView(userId, session, model);
+            redirectAttributes.addFlashAttribute("apiError", "No items selected for checkout.");
+            return "redirect:/user/cart/view/" + userId;
         }
 
         try {
             CheckoutRequest request = new CheckoutRequest();
             request.setUserId(userId);
-
             List<CheckoutItemRequest> items = new ArrayList<>();
-            for (int i = 0; i < isbns.size(); i++) {
+
+            // Safely pair items up to the minimum list size
+            int count = Math.min(isbns.size(), ranks.size());
+            for (int i = 0; i < count; i++) {
                 items.add(new CheckoutItemRequest(isbns.get(i), ranks.get(i)));
             }
             request.setItems(items);
@@ -230,13 +237,13 @@ public class CartController {
                     .retrieve()
                     .body(new ParameterizedTypeReference<ApiResponse<CheckoutResponse>>() {});
 
-            model.addAttribute("checkoutMessage",
+            redirectAttributes.addFlashAttribute("successMessage",
                     response != null ? response.getMessage() : "Checkout completed successfully.");
 
-            return getCartView(userId, session, model);
+            return "redirect:/user/cart/view/" + userId;
         } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-            return getCartView(userId, session, model);
+            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            return "redirect:/user/cart/view/" + userId;
         }
     }
 
@@ -244,6 +251,11 @@ public class CartController {
     public String initiateCheckout(HttpSession session, RedirectAttributes redirectAttributes) {
         Integer userId = getLoggedUserId(session);
         if (userId == null) return "redirect:/home";
+
+        if (!isUserAccessOnly(session)) {
+            redirectAttributes.addFlashAttribute("apiError", "Shop owners cannot access cart operations.");
+            return "redirect:/team/inventory-module";
+        }
 
         try {
             ApiResponse<List<CartViewResponse>> response = restClient.get()
