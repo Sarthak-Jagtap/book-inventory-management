@@ -34,6 +34,18 @@ public class CartController {
                 HttpStatus.OK
         );
     }
+    
+    @PostMapping("/select")
+    public ResponseEntity<ApiResponse<CartItemResponse>> selectQuality(@RequestParam Integer userId,
+                                                                       @RequestParam String isbn,
+                                                                       @RequestParam Integer rank) {
+        CartItemResponse response = service.selectCartQuality(userId, isbn, rank);
+
+        return new ResponseEntity<>(
+                ApiResponse.success(HttpStatus.OK.value(), "Cart quality selected successfully", response),
+                HttpStatus.OK
+        );
+    }
 
     @PostMapping("/add")
     public ResponseEntity<ApiResponse<CartItemResponse>> add(@Valid @RequestBody AddToCartRequest request) {

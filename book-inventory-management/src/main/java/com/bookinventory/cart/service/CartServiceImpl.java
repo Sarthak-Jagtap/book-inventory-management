@@ -105,19 +105,54 @@ public class CartServiceImpl implements CartService {
         bookRepository.findById(request.getIsbn())
                 .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", request.getIsbn()));
 
-        ShoppingCartId id = new ShoppingCartId(request.getUserId(), request.getIsbn());
+        ShoppingCartId cartId = new ShoppingCartId(request.getUserId(), request.getIsbn());
 
-        if (cartRepository.existsById(id)) {
-            throw new BadRequestException("Item already in cart");
+        if (cartRepository.existsById(cartId)) {
+            throw new BadRequestException("Book already exists in cart for this user");
         }
 
         ShoppingCart cart = new ShoppingCart();
         cart.setUserId(request.getUserId());
         cart.setIsbn(request.getIsbn());
+        cart = cartRepository.save(cart);
 
-        cartRepository.save(cart);
+        selectedItems.remove(buildSelectionKey(request.getUserId(), request.getIsbn()));
 
-        return new CartItemResponse(request.getUserId(), request.getIsbn());
+        return mapToCartItemResponse(cart);
+    }
+
+    @Override
+    public CartItemResponse selectCartQuality(Integer userId, String isbn, Integer rank) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+        bookRepository.findById(isbn)
+                .orElseThrow(() -> new ResourceNotFoundException("Book", "isbn", isbn));
+
+        ShoppingCartId cartId = new ShoppingCartId(userId, isbn);
+        ShoppingCart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException("CartItem", "userId/isbn", userId + "/" + isbn));
+
+        Inventory selectedInventory = inventoryRepository
+                .getFirstAvailableInventoryByIsbnAndRank(isbn, rank)
+                .orElseThrow(() -> new BadRequestException(
+                        "Selected quality/rank is not available for isbn: " + isbn
+                ));
+
+        BookCondition condition = bookConditionRepository.getConditionByRank(rank)
+                .orElseThrow(() -> new BadRequestException("Condition not found for rank: " + rank));
+
+        SelectedCartItem selectedCartItem = new SelectedCartItem(
+                userId,
+                isbn,
+                selectedInventory.getInventoryId(),
+                rank,
+                condition.getPrice()
+        );
+
+        selectedItems.put(buildSelectionKey(userId, isbn), selectedCartItem);
+
+        return new CartItemResponse(cart.getUserId(), cart.getIsbn());
     }
 
     @Override

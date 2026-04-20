@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory & Cart API Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
+    <style>
+        .module-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .module-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .module-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+        }
+
+        .module-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .module-subtitle {
+            font-size: 13px;
+            color: var(--text2);
+            margin-top: 4px;
+        }
+
+        .api-table-wrap {
+            overflow-x: auto;
+        }
+
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+        }
+
+        .api-table th,
+        .api-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .api-table th {
+            background: var(--surface2);
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .api-table td {
+            color: var(--text2);
+        }
+
+        .api-table code {
+            font-size: 12px;
+            color: var(--accent);
+            background: var(--tag-bg);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .method-pill {
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .4px;
+        }
+
+        .method-get { background: var(--get-bg); color: var(--get-text); }
+        .method-post { background: var(--post-bg); color: var(--post-text); }
+        .method-put { background: var(--put-bg); color: var(--put-text); }
+        .method-patch { background: var(--patch-bg); color: var(--patch-text); }
+        .method-delete { background: var(--delete-bg); color: var(--delete-text); }
+
+        .action-cell {
+            min-width: 170px;
+        }
+
+        .action-stack {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .inline-form {
+            display: inline;
+        }
+
+        .alert-box{
+            padding:14px 16px;
+            border-radius:10px;
+            margin-bottom:16px;
+        }
+
+        .alert-error{
+            background:#fef2f2;
+            color:#b91c1c;
+            border:1px solid #fecaca;
+        }
+
+        .alert-success{
+            background:#ecfdf5;
+            color:#065f46;
+            border:1px solid #a7f3d0;
+        }
+
+        @media (max-width: 1100px) {
+            .module-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo">
+        <div class="logo-title">Book Inventory API</div>
+    </div>
+</div>
+
+<div class="hero">
+    <div class="hero-text">
+        <h1>Inventory & Cart Dashboard</h1>
+    </div>
+</div>
+
+<div class="content">
+
+    <div th:if="${apiError != null}" class="alert-box alert-error" th:text="${apiError}"></div>
+    <div th:if="${successMessage != null}" class="alert-box alert-success" th:text="${successMessage}"></div>
+
+    <div class="module-grid">
+
+        <div class="module-card">
+            <div class="module-header">
+                <div class="module-title">Inventory</div>
+                <div class="module-subtitle">Store-owner inventory operations</div>
+            </div>
+
+            <div class="api-table-wrap">
+                <table class="api-table">
+                    <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Frontend Route</th>
+                        <th>Description</th>
+                        <th class="action-cell">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><span class="method-pill method-get">GET</span></td>
+                        <td><code>/store-owner/inventory</code></td>
+                        <td>View all inventory records</td>
+                        <td class="action-cell">
+                            <div class="action-stack">
+                                <a class="btn btn-primary" th:href="@{/store-owner/inventory}">Open</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-post">POST</span></td>
+                        <td><code>/store-owner/inventory/add</code></td>
+                        <td>Add new inventory record</td>
+                        <td class="action-cell">
+                            <div class="action-stack">
+                                <a class="btn btn-primary" th:href="@{/store-owner/inventory/add}">Open</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-get">GET</span></td>
+                        <td><code>/store-owner/inventory/{id}</code></td>
+                        <td>Find inventory by ID</td>
+                        <td class="action-cell">
+                            <form class="inline-form" th:action="@{/store-owner/inventory/find-by-id}" method="get">
+                                <div class="action-stack">
+                                    <input type="number" name="inventoryId" placeholder="Inventory ID" required>
+                                    <button class="btn btn-primary" type="submit">Open</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-get">GET</span></td>
+                        <td><code>/store-owner/inventory/book/{isbn}</code></td>
+                        <td>Find inventory by ISBN</td>
+                        <td class="action-cell">
+                            <form class="inline-form" th:action="@{/store-owner/inventory/find-by-isbn}" method="get">
+                                <div class="action-stack">
+                                    <input type="text" name="isbn" placeholder="ISBN" required>
+                                    <button class="btn btn-primary" type="submit">Open</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-get">GET</span></td>
+                        <td><code>/store-owner/inventory/available/{isbn}</code></td>
+                        <td>Find available inventory by ISBN</td>
+                        <td class="action-cell">
+                            <form class="inline-form" th:action="@{/store-owner/inventory/find-available}" method="get">
+                                <div class="action-stack">
+                                    <input type="text" name="isbn" placeholder="ISBN" required>
+                                    <button class="btn btn-primary" type="submit">Open</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-get">GET</span></td>
+                        <td><code>/store-owner/inventory/summary/{isbn}</code></td>
+                        <td>Inventory summary by ISBN</td>
+                        <td class="action-cell">
+                            <form class="inline-form" th:action="@{/store-owner/inventory/find-summary}" method="get">
+                                <div class="action-stack">
+                                    <input type="text" name="isbn" placeholder="ISBN" required>
+                                    <button class="btn btn-primary" type="submit">Open</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-get">GET</span></td>
+                        <td><code>/store-owner/inventory/rank/{rank}</code></td>
+                        <td>Find inventory by rank</td>
+                        <td class="action-cell">
+                            <form class="inline-form" th:action="@{/store-owner/inventory/find-by-rank}" method="get">
+                                <div class="action-stack">
+                                    <input type="number" name="rank" placeholder="Rank" required>
+                                    <button class="btn btn-primary" type="submit">Open</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-patch">PATCH</span></td>
+                        <td><code>/store-owner/inventory/purchase/{inventoryId}</code></td>
+                        <td>Mark inventory as purchased</td>
+                        <td class="action-cell">
+                            <form class="inline-form" th:action="@{/store-owner/inventory/purchase/run}" method="post">
+                                <div class="action-stack">
+                                    <input type="number" name="inventoryId" placeholder="Inventory ID" required>
+                                    <button class="btn btn-primary" type="submit">Run</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-delete">DELETE</span></td>
+                        <td><code>/store-owner/inventory/{inventoryId}</code></td>
+                        <td>Delete inventory record</td>
+                        <td class="action-cell">
+                            <form class="inline-form" th:action="@{/store-owner/inventory/delete/run}" method="post">
+                                <div class="action-stack">
+                                    <input type="number" name="inventoryId" placeholder="Inventory ID" required>
+                                    <button class="btn btn-danger" type="submit">Delete</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="module-card">
+            <div class="module-header">
+                <div class="module-title">Cart</div>
+                <div class="module-subtitle">User cart operations</div>
+            </div>
+
+            <div class="api-table-wrap">
+                <table class="api-table">
+                    <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Frontend Route</th>
+                        <th>Description</th>
+                        <th class="action-cell">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><span class="method-pill method-post">POST</span></td>
+                        <td><code>/user/cart/add</code></td>
+                        <td>Add book to cart</td>
+                        <td class="action-cell">
+                            <div class="action-stack">
+                                <a class="btn btn-primary" th:href="@{/user/cart/add}">Open</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-get">GET</span></td>
+                        <td><code>/user/cart/view/{userId}</code></td>
+                        <td>View cart for a user</td>
+                        <td class="action-cell">
+                            <form class="inline-form" th:action="@{/user/cart/view}" method="get">
+                                <div class="action-stack">
+                                    <input type="number" name="userId" placeholder="User ID" required>
+                                    <button class="btn btn-primary" type="submit">Open</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><span class="method-pill method-get">GET</span></td>
+                        <td><code>/user/cart/options/{isbn}</code></td>
+                        <td>View available quality options</td>
+                        <td class="action-cell">
+                            <form class="inline-form" th:action="@{/user/cart/options}" method="get">
+                                <div class="action-stack">
+                                    <input type="text" name="isbn" placeholder="ISBN" required>
+                                    <button class="btn btn-primary" type="submit">Open</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
