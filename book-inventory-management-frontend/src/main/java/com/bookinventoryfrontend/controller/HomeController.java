@@ -29,15 +29,15 @@ public class HomeController {
 	public String home(Model model) {
 
 		// ── UPDATE THESE NAMES WITH YOUR ACTUAL TEAM ──────────────
-		List<TeamMember> members = Arrays.asList(new TeamMember("Your Full Name", // ← CHANGE THIS to your name
+		List<TeamMember> members = Arrays.asList(new TeamMember("Krishna Varma", // ← CHANGE THIS to your name
 				"User Module", "user-module", "Auth · Users · Roles · Purchases"),
-				new TeamMember("Teammate Two Name", // ← CHANGE THIS
+				new TeamMember("Sarthak Jagtap", // ← CHANGE THIS
 						"Book Module", "book-module", "Books · Authors · Categories · Publishers"),
-				new TeamMember("Teammate Three Name", // ← CHANGE THIS
+				new TeamMember("Yashomati", // ← CHANGE THIS
 						"Inventory Module", "inventory-module", "Inventory · BookCondition · Stock"),
-				new TeamMember("Teammate Four Name", // ← CHANGE THIS
+				new TeamMember("Prajwal", // ← CHANGE THIS
 						"Review Module", "review-module", "BookReviews · Ratings · Reviewers"),
-				new TeamMember("Teammate Five Name", // ← CHANGE THIS
+				new TeamMember("Sudhanshu", // ← CHANGE THIS
 						"Cart Module", "cart-module", "ShoppingCart · Checkout · State"));
 		// ──────────────────────────────────────────────────────────
 
@@ -52,7 +52,7 @@ public class HomeController {
 	 */
 	@GetMapping("/team/user-module")
 	public String userModulePage(Model model) {
-		model.addAttribute("memberName", "Your Full Name"); // ← CHANGE to your name
+		model.addAttribute("memberName", "Krishna Varma"); // ← CHANGE to your name
 		model.addAttribute("activePage", "user-module");
 		return "team/user-module"; // → templates/team/user-module.html
 	}

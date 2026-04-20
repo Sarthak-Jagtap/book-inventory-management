@@ -1,36 +1,48 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head><meta charset="UTF-8"/><title>Role Detail</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" th:href="@{/css/style.css}"/>
-</head>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
-<div class="page-header">
-  <a class="page-header-back" th:href="@{/user/api/roles}">←</a>
-  <div><h1>Role Detail</h1>
-    <p><code style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted-d);" th:text="${apiEndpoint}"></code></p>
-  </div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/user/api/roles}">← Back to Roles</a>
+  <div><h1>Role Detail</h1><div class="meta" th:text="${apiEndpoint}"></div></div>
 </div>
-<div class="section-sm" style="max-width:700px;">
-  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="breadcrumb-sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="breadcrumb-sep">›</span><a th:href="@{/user/api/roles}">Roles</a><span class="breadcrumb-sep">›</span><span>Detail</span></div>
-  <div class="result-description animate-in" th:text="${apiDescription}"></div>
-  <div class="alert alert-error" th:if="${error != null}"><span>⚠️</span><span th:text="${error}"></span></div>
-  <div th:if="${role != null}" class="animate-in delay-1">
-    <div class="stat-card" style="text-align:center;padding:32px;">
-      <div style="font-size:48px;margin-bottom:12px;" th:text="${role.permRole == 'Admin'} ? '🔑' : (${role.permRole == 'StoreOwner'} ? '🏪' : (${role.permRole == 'RegisteredUser'} ? '📖' : '👤'))">🎭</div>
-      <div style="font-size:28px;font-weight:700;color:var(--text-dark);font-family:'Playfair Display',serif;" th:text="${role.permRole}">Role</div>
-      <div style="font-size:13px;color:var(--text-muted-d);margin-top:6px;">Role Number: <strong th:text="${role.roleNumber}">1</strong></div>
-      <div style="margin-top:16px;">
-        <span class="role-pill"
-              th:classappend="${role.permRole == 'Admin'} ? 'role-admin' : (${role.permRole == 'StoreOwner'} ? 'role-owner' : (${role.permRole == 'RegisteredUser'} ? 'role-user-r' : 'role-guest'))"
+<div class="page-wrapper-sm">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="sep">›</span><a th:href="@{/user/api/roles}">Roles</a><span class="sep">›</span><span>Detail</span></div>
+  <div class="api-info"><strong>What this API does</strong><span th:text="${apiDescription}"></span></div>
+  <div class="alert alert-error" th:if="${error!=null}"><span>⚠</span><span th:text="${error}"></span></div>
+  <div th:if="${role!=null}" class="card" style="padding:0;">
+    <table class="data-table">
+      <thead><tr><th colspan="2">Role — API Response</th></tr></thead>
+      <tbody>
+        <tr>
+          <td style="width:180px;color:#6b7280;">Role Number</td>
+          <td class="mono" th:text="${role.roleNumber}"></td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;">Role Name</td>
+          <td>
+            <span class="role-pill"
+              th:classappend="${role.permRole=='Admin'}?'role-admin':(${role.permRole=='StoreOwner'}?'role-owner':(${role.permRole=='RegisteredUser'}?'role-user':'role-guest'))"
               th:text="${role.permRole}">Role</span>
-      </div>
-      <a class="btn btn-outline-dark btn-sm" style="margin-top:16px;" th:href="@{/user/api/roles/{n}/user-count(n=${role.roleNumber})}">How many users have this role? →</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;">Access Level</td>
+          <td class="text-muted"
+            th:text="${role.permRole=='Admin'}?'Full system access — can do everything':(${role.permRole=='StoreOwner'}?'Inventory and purchase management':(${role.permRole=='RegisteredUser'}?'Profile, cart, and purchase access':'Public read-only API access'))">
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="padding:14px 16px;border-top:1px solid #f3f4f6;">
+      <a class="btn btn-secondary btn-sm" th:href="@{/user/api/roles/{n}/user-count(n=${role.roleNumber})}">
+        How many users have this role? →
+      </a>
     </div>
   </div>
 </div>
-<footer class="footer"><p>Book Inventory · <a th:href="@{/team/user-module}">← Back to endpoints</a></p></footer>
-</body>
-</html>
+<div class="footer">Book Inventory Management — User Module</div>
+</body></html>

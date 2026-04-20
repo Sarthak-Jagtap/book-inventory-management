@@ -2,7 +2,7 @@ package com.bookinventory.user.controller;
 
 import com.bookinventory.user.dto.PurchaseLogRequestDTO;
 import com.bookinventory.user.dto.PurchaseLogResponseDTO;
-import com.bookinventory.user.response.ApiResponse;
+import com.bookinventory.user.common.response.ApiResponse;
 import com.bookinventory.user.service.PurchaseLogService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

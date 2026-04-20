@@ -45,10 +45,11 @@ public class SecurityConfig {
                 // ══════════════════════════════════════════════════
 
                 // Auth
-                .requestMatchers(HttpMethod.POST,
-                    "/api/v1/auth/register",
-                    "/api/v1/auth/login")
-                    .permitAll()
+            	.requestMatchers(HttpMethod.POST,
+            	    "/api/v1/auth/register",
+            	    "/api/v1/auth/login",
+            	    "/api/v1/auth/validate-token")   // ← add this line
+            	    .permitAll()
 
                 // Roles (public read)
                 .requestMatchers(HttpMethod.GET,

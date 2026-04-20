@@ -5,7 +5,7 @@ import com.bookinventory.user.dto.LoginResponseDTO;
 import com.bookinventory.user.dto.TokenValidationResponseDTO;
 import com.bookinventory.user.dto.UserRequestDTO;
 import com.bookinventory.user.dto.UserResponseDTO;
-import com.bookinventory.user.response.ApiResponse;
+import com.bookinventory.user.common.response.ApiResponse;
 import com.bookinventory.user.service.UserService;
 import com.bookinventory.user.util.JwtUtil;
 

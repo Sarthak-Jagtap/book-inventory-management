@@ -3,7 +3,7 @@ package com.bookinventory.user.controller;
 import com.bookinventory.user.dto.PurchaseLogResponseDTO;
 import com.bookinventory.user.dto.PurchaseStatsDTO;
 import com.bookinventory.user.dto.TopBuyerDTO;
-import com.bookinventory.user.response.ApiResponse;
+import com.bookinventory.user.common.response.ApiResponse;
 import com.bookinventory.user.service.PurchaseLogService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

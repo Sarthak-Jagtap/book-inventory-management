@@ -1,44 +1,64 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head><meta charset="UTF-8"/><title>User Detail</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" th:href="@{/css/style.css}"/>
-</head>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
-<div class="page-header">
-  <a class="page-header-back" th:href="@{/user/api/admin/users}">←</a>
-  <div><h1>User Detail</h1>
-    <p><code style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted-d);" th:text="${apiEndpoint}"></code></p>
-  </div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/user/api/admin/users}">← All Users</a>
+  <div><h1>User Detail</h1><div class="meta" th:text="${apiEndpoint}"></div></div>
 </div>
-<div class="section-sm" style="max-width:700px;">
-  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="breadcrumb-sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="breadcrumb-sep">›</span><a th:href="@{/user/api/admin/users}">All Users</a><span class="breadcrumb-sep">›</span><span>Detail</span></div>
-  <div class="result-description animate-in" th:text="${apiDescription}"></div>
-  <div class="alert alert-error" th:if="${error != null}"><span>⚠️</span><span th:text="${error}"></span></div>
-  <div th:if="${user != null}" class="animate-in delay-1">
-    <div class="profile-card">
-      <div class="profile-card-top">
-        <div class="profile-avatar-lg" th:text="${user.initials}">AB</div>
-        <div>
-          <div class="profile-name" th:text="${user.fullName}">Name</div>
-          <div class="profile-uname">@<span th:text="${user.userName}">username</span></div>
-          <div style="margin-top:8px;">
-            <span class="role-pill" th:if="${user.role != null}"
-                  th:classappend="${user.role.permRole == 'Admin'} ? 'role-admin' : (${user.role.permRole == 'StoreOwner'} ? 'role-owner' : (${user.role.permRole == 'RegisteredUser'} ? 'role-user-r' : 'role-guest'))"
-                  th:text="${user.role.permRole}">Role</span>
-          </div>
-        </div>
+<div class="page-wrapper-sm">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="sep">›</span><a th:href="@{/user/api/admin/users}">All Users</a><span class="sep">›</span><span>Detail</span></div>
+  <div class="api-info"><strong>What this API does</strong><span th:text="${apiDescription}"></span></div>
+
+  <!-- Lookup form — enter any userId -->
+  <div class="card mb-2">
+    <div class="card-header">Look Up User by ID</div>
+    <form th:action="@{/user/api/admin/users/lookup}" method="get" style="display:flex;gap:10px;align-items:flex-end;">
+      <div class="form-group" style="margin:0;flex:1;">
+        <label class="form-label">User ID</label>
+        <input class="form-control" type="number" name="userId" th:value="${userId}" placeholder="Enter user ID (e.g. 1000019)" min="1"/>
       </div>
-      <div class="profile-card-body">
-        <div class="profile-field"><span class="profile-field-icon">🆔</span><div><div class="profile-field-label">User ID</div><div class="profile-field-value" th:text="${user.userId}"></div></div></div>
-        <div class="profile-field"><span class="profile-field-icon">📞</span><div><div class="profile-field-label">Phone</div><div class="profile-field-value" th:text="${user.phoneNumber != null ? user.phoneNumber : 'Not provided'}"></div></div></div>
-        <div class="profile-field"><span class="profile-field-icon">🎭</span><div><div class="profile-field-label">Role ID</div><div class="profile-field-value" th:text="${user.role != null ? user.role.roleNumber : 'Unknown'}"></div></div></div>
-      </div>
+      <button type="submit" class="btn btn-primary">Fetch User</button>
+    </form>
+    <div class="form-hint mt-1">Tip: See the correct user IDs in the All Users table</div>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="alert alert-error" th:if="${error!=null}">
+    <span>&#9888;</span>
+    <div>
+      <strong>Not Found</strong><br/>
+      <span th:text="${error}"></span>
+      <br/>
+      <a th:href="@{/user/api/admin/users}" style="font-weight:600;">← View All Users to get a valid ID</a>
     </div>
   </div>
+
+  <!-- User data -->
+  <div th:if="${user!=null}" class="card" style="padding:0;">
+    <table class="data-table">
+      <thead><tr><th colspan="2">User Profile — API Response</th></tr></thead>
+      <tbody>
+        <tr><td style="width:180px;color:#6b7280;">User ID</td><td class="mono" th:text="${user.userId}"></td></tr>
+        <tr><td style="color:#6b7280;">First Name</td><td th:text="${user.firstName}"></td></tr>
+        <tr><td style="color:#6b7280;">Last Name</td><td th:text="${user.lastName}"></td></tr>
+        <tr><td style="color:#6b7280;">Full Name</td><td th:text="${user.fullName}"></td></tr>
+        <tr><td style="color:#6b7280;">Username</td><td class="mono" th:text="${user.userName}"></td></tr>
+        <tr><td style="color:#6b7280;">Phone</td><td th:text="${user.phoneNumber!=null?user.phoneNumber:'Not provided'}"></td></tr>
+        <tr>
+          <td style="color:#6b7280;">Role</td>
+          <td><span class="role-pill" th:if="${user.role!=null}"
+            th:classappend="${user.role.permRole=='Admin'}?'role-admin':(${user.role.permRole=='StoreOwner'}?'role-owner':(${user.role.permRole=='RegisteredUser'}?'role-user':'role-guest'))"
+            th:text="${user.role.permRole}">Role</span>
+          </td>
+        </tr>
+        <tr><td style="color:#6b7280;">Role Number</td><td class="mono" th:text="${user.role!=null?user.role.roleNumber:'—'}"></td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
-<footer class="footer"><p>Book Inventory · <a th:href="@{/team/user-module}">← Back to endpoints</a></p></footer>
-</body>
-</html>
+<div class="footer">Book Inventory Management — User Module</div>
+</body></html>

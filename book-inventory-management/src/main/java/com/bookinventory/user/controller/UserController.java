@@ -1,8 +1,8 @@
 package com.bookinventory.user.controller;
 
 import com.bookinventory.common.exception.ForbiddenException;
+import com.bookinventory.user.common.response.ApiResponse;
 import com.bookinventory.user.dto.*;
-import com.bookinventory.user.response.ApiResponse;
 import com.bookinventory.user.service.PurchaseLogService;
 import com.bookinventory.user.service.UserService;
 import com.bookinventory.user.util.JwtUtil;

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><title>Update User Role</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div class="page-head">
+  <a class="back-link" th:href="@{/user/api/admin/users}">← Back to Users</a>
+  <div><h1>Update User Role</h1><div class="meta" th:text="${apiEndpoint}"></div></div>
+</div>
+<div class="page-wrapper-sm">
+  <div class="breadcrumb"><a th:href="@{/home}">Home</a><span class="sep">›</span><a th:href="@{/team/user-module}">User Module</a><span class="sep">›</span><a th:href="@{/user/api/admin/users}">All Users</a><span class="sep">›</span><span>Update Role</span></div>
+  <div class="api-info"><strong>What this API does</strong><span th:text="${apiDescription}"></span></div>
+  <div class="alert alert-error" th:if="${error!=null}"><span>⚠</span><span th:text="${error}"></span></div>
+  <div th:if="${success!=null}" class="alert alert-success"><span>✓</span><span th:text="${success}"></span></div>
+
+  <!-- Role Update Form -->
+  <div class="card">
+    <div class="card-header">Change Role — PATCH /api/v1/admin/users/{userId}/role</div>
+    <form th:action="@{/user/api/admin/do-update-role}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <div class="form-group">
+        <label class="form-label">Select User</label>
+        <select class="form-control" name="userId">
+          <option value="">-- Select a user --</option>
+          <option th:each="u : ${allUsers}"
+                  th:value="${u.userId}"
+                  th:text="${u.fullName + ' (@' + u.userName + ') — ' + (u.role!=null?u.role.permRole:'No Role')}">User</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Role</label>
+        <select class="form-control" name="roleNumber">
+          <option value="">-- Select new role --</option>
+          <option th:each="r : ${allRoles}" th:value="${r.roleNumber}" th:text="${r.permRole}">Role</option>
+        </select>
+      </div>
+      <div class="mt-2">
+        <button type="submit" class="btn btn-primary">Update Role</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Role reference table -->
+  <div class="card" style="margin-top:16px;padding:0;">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Role Number</th><th>Role Name</th><th>Access Level</th></tr></thead>
+        <tbody>
+          <tr th:each="r : ${allRoles}">
+            <td class="mono" th:text="${r.roleNumber}"></td>
+            <td><span class="role-pill"
+              th:classappend="${r.permRole=='Admin'}?'role-admin':(${r.permRole=='StoreOwner'}?'role-owner':(${r.permRole=='RegisteredUser'}?'role-user':'role-guest'))"
+              th:text="${r.permRole}">Role</span></td>
+            <td class="text-muted" th:text="${r.permRole=='Admin'}?'Full system access':(${r.permRole=='StoreOwner'}?'Inventory + purchase management':(${r.permRole=='RegisteredUser'}?'Profile, cart, purchases':'Public read-only APIs'))"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="footer">Book Inventory Management — User Module</div>
+</body></html>

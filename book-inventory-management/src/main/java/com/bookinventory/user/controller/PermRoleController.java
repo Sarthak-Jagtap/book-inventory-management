@@ -2,7 +2,7 @@ package com.bookinventory.user.controller;
 
 import com.bookinventory.user.dto.PermRoleResponseDTO;
 import com.bookinventory.user.repository.UserRepository;
-import com.bookinventory.user.response.ApiResponse;
+import com.bookinventory.user.common.response.ApiResponse;
 import com.bookinventory.user.service.PermRoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
