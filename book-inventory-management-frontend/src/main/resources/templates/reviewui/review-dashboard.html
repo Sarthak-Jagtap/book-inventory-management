@@ -1,229 +1,300 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>API Dashboard</title>
-
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
-            padding: 30px;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #1e293b;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        th {
-            background: #111827;
-            padding: 14px;
-            text-align: left;
-            font-size: 14px;
-            color: #9ca3af;
-        }
-
-        td {
-            padding: 12px;
-            border-top: 1px solid #334155;
-        }
-
-        tr:hover {
-            background: #273449;
-        }
-
-        input {
-            padding: 6px;
-            border-radius: 6px;
-            border: none;
-            background: #334155;
-            color: white;
-            margin-right: 5px;
-        }
-
-        button {
-            padding: 7px 12px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            background: #6366f1;
-            color: white;
-            font-weight: 500;
-        }
-
-        button:hover {
-            opacity: 0.9;
-        }
-
-        .danger {
-            background: #ef4444;
-        }
-
-        .small {
-            width: 120px;
-        }
-
-    </style>
+    <title>Review API Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
-
 <body>
 
-<h1>🚀 API Dashboard</h1>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<table>
+<!-- ── Toast Popup ───────────────────────────────────────── -->
+<div id="toast" role="alert" aria-live="assertive">
+    <span class="toast-icon" id="toastIcon"></span>
+    <div class="toast-body">
+        <div class="toast-title" id="toastTitle"></div>
+        <div class="toast-msg"   id="toastMsg"></div>
+    </div>
+    <button class="toast-close" onclick="closeToast()" aria-label="Close">&times;</button>
+</div>
 
-    <tr>
-        <th>Description</th>
-        <th>Endpoint</th>
-        <th>Required Input</th>
-        <th>Action</th>
-    </tr>
+<!-- Thymeleaf injects flash-attribute values into these hidden spans -->
+<span id="flashSuccess" th:text="${successMsg}" style="display:none"></span>
+<span id="flashError"   th:text="${errorMsg}"   style="display:none"></span>
 
-    <!-- ================= REVIEWER ================= -->
+<!-- ── Member Hero ───────────────────────────────────────── -->
+<div class="member-hero">
+    <div class="avatar">YN</div>
+    <div class="info">
+        <div class="module-tag">Review Module</div>
+        <h2>Prajwal Sabale</h2>
+        <p>Reviews &middot; Reviewers &middot; Book Reviews API</p>
+    </div>
+    <div class="meta">
+        <div class="m"><div class="n">16</div><div class="l">Endpoints</div></div>
+        <div class="m"><div class="n">2</div><div class="l">Groups</div></div>
+        <div class="m"><div class="n">4</div><div class="l">Methods</div></div>
+    </div>
+</div>
 
-    <tr>
-        <td>Get Reviewer By ID</td>
-        <td>/api/v1/reviewer/{id}</td>
-        <td><input id="r1" class="small" placeholder="ID"></td>
-        <td><button onclick="go('/ui/reviewer/' + val('r1'))">GET</button></td>
-    </tr>
+<!-- ── Main Content ──────────────────────────────────────── -->
+<div class="page-wrapper">
 
-    <tr>
-        <td>Get Reviewer By Name</td>
-        <td>/api/v1/reviewer?name=</td>
-        <td><input id="r2" placeholder="Name"></td>
-        <td><button onclick="go('/ui/reviewer?name=' + val('r2'))">GET</button></td>
-    </tr>
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="/ui/home">Home</a>
+        <span class="sep">&rsaquo;</span>
+        <span>Review Module</span>
+    </div>
 
-    <tr>
-        <td>Get Reviewer By Company</td>
-        <td>/api/v1/reviewer?employedBy=</td>
-        <td><input id="r3" placeholder="Company"></td>
-        <td><button onclick="go('/ui/reviewer?employedBy=' + val('r3'))">GET</button></td>
-    </tr>
+    <!-- Login Warning -->
+    <div class="alert alert-warning">
+        <span>&#128274;</span>
+        <span>You are not logged in. Protected endpoints are disabled.
+              <strong>Login to access all endpoints &rarr;</strong></span>
+    </div>
 
-    <tr>
-        <td>Get All Reviewers</td>
-        <td>/api/v1/reviewer</td>
-        <td>-</td>
-        <td><button onclick="go('/ui/reviewers')">GET</button></td>
-    </tr>
+    <!-- ═══════════════ GROUP 1 — REVIEWERS ═══════════════ -->
+    <div class="group-label">
+        Group 1 &mdash; Reviewers
+        <span class="access-tag access-public">PUBLIC</span>
+    </div>
 
-    <tr>
-        <td>Create Reviewer</td>
-        <td>/api/v1/reviewer</td>
-        <td>-</td>
-        <td><button onclick="go('/ui/reviewer/form')">POST</button></td>
-    </tr>
+    <div class="endpoint-list">
 
-    <tr>
-        <td>Update Reviewer</td>
-        <td>/api/v1/reviewer</td>
-        <td>-</td>
-        <td><button onclick="go('/ui/reviewer/update-form')">PUT</button></td>
-    </tr>
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviewer/{id}</span>
+            <span class="endpoint-desc">Fetch a single reviewer by their numeric ID</span>
+            <div class="endpoint-inputs">
+                <input id="r1" placeholder="ID">
+            </div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviewer/' + val('r1'))">GET</button>
+        </div>
 
-    <tr>
-        <td>Delete Reviewer</td>
-        <td>/api/v1/reviewer/{id}</td>
-        <td><input id="r4" class="small" placeholder="ID"></td>
-        <td><button class="danger" onclick="go('/ui/reviewer/delete/' + val('r4'))">DELETE</button></td>
-    </tr>
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviewer?name=</span>
+            <span class="endpoint-desc">Search for a reviewer by their full name</span>
+            <div class="endpoint-inputs">
+                <input id="r2" placeholder="Name">
+            </div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviewer?name=' + val('r2'))">GET</button>
+        </div>
 
-    <!-- ================= REVIEWS ================= -->
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviewer?employedBy=</span>
+            <span class="endpoint-desc">Find reviewers by employer name</span>
+            <div class="endpoint-inputs">
+                <input id="r3" placeholder="Employed By">
+            </div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviewer?employedBy=' + val('r3'))">GET</button>
+        </div>
 
-    <tr>
-        <td>Get Reviews By ISBN</td>
-        <td>/api/v1/reviews/book/{isbn}</td>
-        <td><input id="b1" placeholder="ISBN"></td>
-        <td><button onclick="go('/ui/reviews/book/' + val('b1'))">GET</button></td>
-    </tr>
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviewer</span>
+            <span class="endpoint-desc">List every reviewer in the system</span>
+            <div class="endpoint-inputs"></div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviewers')">GET</button>
+        </div>
 
-    <tr>
-        <td>Get Review Count By ISBN</td>
-        <td>/api/v1/reviews/book/{isbn}/count</td>
-        <td><input id="b2" placeholder="ISBN"></td>
-        <td><button onclick="go('/ui/reviews/book/' + val('b2') + '/count')">GET</button></td>
-    </tr>
+        <div class="endpoint-card">
+            <span class="method method-post">POST</span>
+            <span class="endpoint-url">/api/v1/reviewer</span>
+            <span class="endpoint-desc">Create a new reviewer record via form</span>
+            <div class="endpoint-inputs"></div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviewer/form')">POST</button>
+        </div>
 
-    <tr>
-        <td>Get Reviews By Reviewer</td>
-        <td>/api/v1/reviews/reviewer/{id}</td>
-        <td><input id="b3" class="small" placeholder="ID"></td>
-        <td><button onclick="go('/ui/reviews/reviewer/' + val('b3'))">GET</button></td>
-    </tr>
+        <div class="endpoint-card">
+            <span class="method method-put">PUT</span>
+            <span class="endpoint-url">/api/v1/reviewer</span>
+            <span class="endpoint-desc">Update an existing reviewer's details</span>
+            <div class="endpoint-inputs"></div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviewer/update-form')">PUT</button>
+        </div>
 
-    <tr>
-        <td>Get Review Count By Reviewer</td>
-        <td>/api/v1/reviews/reviewer/{id}/count</td>
-        <td><input id="b4" class="small" placeholder="ID"></td>
-        <td><button onclick="go('/ui/reviews/reviewer/' + val('b4') + '/count')">GET</button></td>
-    </tr>
+        <div class="endpoint-card">
+            <span class="method method-delete">DEL</span>
+            <span class="endpoint-url">/api/v1/reviewer/{id}</span>
+            <span class="endpoint-desc">Permanently remove a reviewer by ID</span>
+            <div class="endpoint-inputs">
+                <input id="r4" placeholder="ID">
+            </div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn red" onclick="go('/ui/reviewer/delete/' + val('r4'))">DELETE</button>
+        </div>
 
-    <tr>
-        <td>Get Specific Review</td>
-        <td>/api/v1/reviews/{id}/book/{isbn}</td>
-        <td>
-            <input id="b5" class="small" placeholder="ID">
-            <input id="b6" placeholder="ISBN">
-        </td>
-        <td><button onclick="go('/ui/reviews/' + val('b5') + '/book/' + val('b6'))">GET</button></td>
-    </tr>
+    </div>
 
-    <tr>
-        <td>Get All Reviews</td>
-        <td>/api/v1/reviews/book</td>
-        <td>-</td>
-        <td><button onclick="go('/ui/reviews')">GET</button></td>
-    </tr>
+    <!-- ═══════════════ GROUP 2 — REVIEWS ═══════════════ -->
+    <div class="group-label">
+        Group 2 &mdash; Reviews
+        <span class="access-tag access-public">PUBLIC</span>
+    </div>
 
-    <tr>
-        <td>Create Review</td>
-        <td>/api/v1/reviews/book</td>
-        <td>-</td>
-        <td><button onclick="go('/ui/reviews/form')">POST</button></td>
-    </tr>
+    <div class="endpoint-list">
 
-    <tr>
-        <td>Update Review</td>
-        <td>/api/v1/reviews/book</td>
-        <td>-</td>
-        <td><button onclick="go('/ui/reviews/update-form')">PUT</button></td>
-    </tr>
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviews/book/{isbn}</span>
+            <span class="endpoint-desc">Get all reviews for a book by ISBN</span>
+            <div class="endpoint-inputs">
+                <input id="b1" placeholder="ISBN">
+            </div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviews/book/' + val('b1'))">GET</button>
+        </div>
 
-    <tr>
-        <td>Delete Review</td>
-        <td>/api/v1/reviews/book/{isbn}/{id}</td>
-        <td>
-            <input id="b7" placeholder="ISBN">
-            <input id="b8" class="small" placeholder="ID">
-        </td>
-        <td><button class="danger" onclick="go('/ui/reviews/delete/' + val('b7') + '/' + val('b8'))">DELETE</button></td>
-    </tr>
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviews/book/{isbn}/count</span>
+            <span class="endpoint-desc">Count the total number of reviews for a given ISBN</span>
+            <div class="endpoint-inputs">
+                <input id="b2" placeholder="ISBN">
+            </div>
+            <span class="pub-tag">Public</span>
+            <span class="new-tag">NEW</span>
+            <button class="action-btn blue" onclick="go('/ui/reviews/book/' + val('b2') + '/count')">GET</button>
+        </div>
 
-</table>
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviews/reviewer/{id}</span>
+            <span class="endpoint-desc">List all reviews written by a specific reviewer</span>
+            <div class="endpoint-inputs">
+                <input id="b3" placeholder="ID">
+            </div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviews/reviewer/' + val('b3'))">GET</button>
+        </div>
+
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviews/reviewer/{id}/count</span>
+            <span class="endpoint-desc">Count reviews submitted by a specific reviewer</span>
+            <div class="endpoint-inputs">
+                <input id="b4" placeholder="ID">
+            </div>
+            <span class="pub-tag">Public</span>
+            <span class="new-tag">NEW</span>
+            <button class="action-btn blue" onclick="go('/ui/reviews/reviewer/' + val('b4') + '/count')">GET</button>
+        </div>
+
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviews/{id}/book/{isbn}</span>
+            <span class="endpoint-desc">Fetch one specific review by reviewer ID and book ISBN</span>
+            <div class="endpoint-inputs">
+                <input id="b5" placeholder="ID">
+                <input id="b6" placeholder="ISBN">
+            </div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviews/' + val('b5') + '/book/' + val('b6'))">GET</button>
+        </div>
+
+        <div class="endpoint-card">
+            <span class="method method-get">GET</span>
+            <span class="endpoint-url">/api/v1/reviews/book</span>
+            <span class="endpoint-desc">List every review across all books in the system</span>
+            <div class="endpoint-inputs"></div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviews')">GET</button>
+        </div>
+
+        <div class="endpoint-card">
+            <span class="method method-post">POST</span>
+            <span class="endpoint-url">/api/v1/reviews/book</span>
+            <span class="endpoint-desc">Submit a new review for a book via form</span>
+            <div class="endpoint-inputs"></div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviews/form')">POST</button>
+        </div>
+
+        <div class="endpoint-card">
+            <span class="method method-put">PUT</span>
+            <span class="endpoint-url">/api/v1/reviews/book</span>
+            <span class="endpoint-desc">Update the content of an existing review</span>
+            <div class="endpoint-inputs"></div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn blue" onclick="go('/ui/reviews/update-form')">PUT</button>
+        </div>
+
+        <div class="endpoint-card">
+            <span class="method method-delete">DEL</span>
+            <span class="endpoint-url">/api/v1/reviews/{id}/book/{isbn}</span>
+            <span class="endpoint-desc">Delete a review identified by ISBN and reviewer ID</span>
+            <div class="endpoint-inputs">
+                <input id="b7" placeholder="ISBN">
+                <input id="b8" placeholder="ID">
+            </div>
+            <span class="pub-tag">Public</span>
+            <button class="action-btn red" onclick="go('/ui/reviews/' + val('b8') + '/delete/' + val('b7'))">DELETE</button>
+        </div>
+
+    </div>
+
+</div><!-- end page-wrapper -->
 
 <script>
-    function go(url) {
-        if (url.includes("undefined") || url.endsWith("/")) {
-            alert("Fill required fields!");
-            return;
-        }
-        window.location.href = url;
+/* ── Navigation helper ─────────────────────────────────── */
+function go(url) {
+    if (url.includes("undefined") || url.endsWith("/")) {
+        alert("Fill required fields!");
+        return;
     }
+    window.location.href = url;
+}
+function val(id) {
+    return document.getElementById(id).value;
+}
 
-    function val(id) {
-        return document.getElementById(id).value;
+/* ── Toast helpers ─────────────────────────────────────── */
+let toastTimer = null;
+
+function showToast(type, title, message) {
+    const toast = document.getElementById('toast');
+    const icon  = document.getElementById('toastIcon');
+    const ttl   = document.getElementById('toastTitle');
+    const msg   = document.getElementById('toastMsg');
+
+    toast.classList.remove('toast-success', 'toast-error', 'show');
+    icon.textContent = (type === 'success') ? '✅' : '❌';
+    ttl.textContent  = title;
+    msg.textContent  = message;
+    toast.classList.add(type === 'success' ? 'toast-success' : 'toast-error');
+
+    void toast.offsetWidth; // force reflow so transition re-fires
+    toast.classList.add('show');
+
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(closeToast, 4000);
+}
+
+function closeToast() {
+    document.getElementById('toast').classList.remove('show');
+    if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+}
+
+/* ── Read Thymeleaf flash attributes on page load ──────── */
+document.addEventListener('DOMContentLoaded', function () {
+    const successMsg = document.getElementById('flashSuccess').textContent.trim();
+    const errorMsg   = document.getElementById('flashError').textContent.trim();
+
+    if (successMsg) {
+        showToast('success', 'Success', successMsg);
+    } else if (errorMsg) {
+        showToast('error', 'Error', errorMsg);
     }
+});
 </script>
 
 </body>
