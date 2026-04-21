@@ -21,15 +21,16 @@ public class BookService {
 		this.restClient = restClient;
 	}
 
-	// To add Pagination
-	public List<BookDTO> getAllBooks() {
+	public PageResponseDTO<BookDTO> getAllBooks(int page, int size) {
+
+	    String uri = "/api/v1/books?page=" + page + "&size=" + size;
 
 	    ApiResponseDTO<PageResponseDTO<BookDTO>> response = restClient.get()
-	            .uri("/api/v1/books")
+	            .uri(uri)
 	            .retrieve()
 	            .body(new ParameterizedTypeReference<ApiResponseDTO<PageResponseDTO<BookDTO>>>() {});
 
-	    return response.getData().getContent();
+	    return response.getData();
 	}
 	
 	public BookDetailsDTO getBookByIsbn(String isbn) {
@@ -81,4 +82,34 @@ public class BookService {
 
 	    return response.getData();
 	}
+	
+	public BookDTO addBook(BookDTO dto) {
+
+	    ApiResponseDTO<BookDTO> response = restClient.post()
+	            .uri("/api/v1/store-owner/books")
+	            .body(dto)
+	            .retrieve()
+	            .body(new ParameterizedTypeReference<ApiResponseDTO<BookDTO>>() {});
+
+	    return response.getData();
+	}
+	
+	public BookDTO updateBook(String isbn, BookDTO dto) {
+
+	    ApiResponseDTO<BookDTO> response = restClient.put()
+	            .uri("/api/v1/store-owner/books/" + isbn)
+	            .body(dto)
+	            .retrieve()
+	            .body(new ParameterizedTypeReference<ApiResponseDTO<BookDTO>>() {});
+
+	    return response.getData();
+	}
+	
+	public void deleteBook(String isbn) {
+
+        restClient.delete()
+                .uri("/api/v1/store-owner/books/" + isbn)
+                .retrieve()
+                .toBodilessEntity();
+    }
 }

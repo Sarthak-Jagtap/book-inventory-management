@@ -1,27 +1,49 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
+	<meta charset="UTF-8">
 	<title>Category Summary</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div class="page-wrapper">
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">Inventory Summary</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">Book counts per category</div>
+			</div>
 
-	<h2>Category Summary</h2>
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
 
-	<table border="1">
-		<tr>
-			<th>Category</th>
-			<th>Book Count</th>
-		</tr>
+				<a class="btn btn-secondary btn-sm" th:href="@{/categories/list}">← Back to List</a>
+			</div>
+		</div>
 
-		<tr th:each="s : ${summaryList}">
-			<td th:text="${s.category}"></td>
-			<td th:text="${s.bookCount}"></td>
-		</tr>
-
-	</table>
-
+		<div class="card">
+			<table class="table" style="width:100%; border-collapse:collapse;">
+				<thead style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+					<tr>
+						<th
+							style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Category</th>
+						<th
+							style="padding: 12px 16px; text-align: right; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Book Count</th>
+					</tr>
+				</thead>
+				<tbody style="font-size: 14px; color: #374151;">
+					<tr th:each="s : ${summaryList}" style="border-bottom: 1px solid #f3f4f6;">
+						<td style="padding: 12px 16px; font-weight: 600;" th:text="${s.category}"></td>
+						<td style="padding: 12px 16px; text-align: right;" th:text="${s.bookCount}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
 </body>
 
 </html>

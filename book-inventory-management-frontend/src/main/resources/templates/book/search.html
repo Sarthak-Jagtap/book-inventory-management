@@ -1,55 +1,103 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
+	<meta charset="UTF-8">
 	<title>Search Books</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div class="page-wrapper">
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">Global Search</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">Search books by title, category, or publisher
+				</div>
+			</div>
 
-	<h2>Search Books</h2>
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
 
-	<form action="/books/search" method="get">
+				<a class="btn btn-secondary btn-sm" th:href="@{/books}">← Full List</a>
+			</div>
+		</div>
 
-		<label>Title:</label>
-		<input type="text" name="title">
+		<div class="card" style="padding: 24px; margin-bottom: 24px;">
+			<form th:action="@{/books/search}" method="get">
+				<div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+					<div>
+						<label
+							style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">Title
+							Keywords</label>
+						<input type="text" name="title" class="form-control" placeholder="Search by title..."
+							style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+					</div>
+					<div>
+						<label
+							style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">Category</label>
+						<select name="categoryId" class="form-control"
+							style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+							<option value="">Any Category</option>
+							<option th:each="cat : ${categories}" th:value="${cat.categoryId}"
+								th:text="${cat.categoryDescription}"></option>
+						</select>
+					</div>
+					<div>
+						<label
+							style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">Publisher</label>
+						<select name="publisherId" class="form-control"
+							style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+							<option value="">Any Publisher</option>
+							<option th:each="pub : ${publishers}" th:value="${pub.publisherId}" th:text="${pub.name}">
+							</option>
+						</select>
+					</div>
+				</div>
+				<button type="submit" class="btn btn-primary">Search Inventory</button>
+			</form>
+		</div>
 
-		<label>Category ID:</label>
-		<input type="number" name="categoryId">
-
-		<label>Publisher ID:</label>
-		<input type="number" name="publisherId">
-
-		<button type="submit">Search</button>
-	</form>
-
-	<hr>
-
-	<!-- Show results only if present -->
-	<div th:if="${books != null}">
-
-		<h3>Results:</h3>
-
-		<table border="1">
-			<tr>
-				<th>ISBN</th>
-				<th>Title</th>
-				<th>Edition</th>
-			</tr>
-
-			<tr th:each="book : ${books}">
-				<td th:text="${book.isbn}"></td>
-				<td th:text="${book.title}"></td>
-				<td th:text="${book.description}"></td>
-				<td th:text="${book.edition}"></td>
-
-				<td th:text="${categoryMap[book.categoryId]}"></td>
-				<td th:text="${publisherMap[book.publisherId]}"></td>
-			</tr>
-		</table>
-
+		<!-- Results Table -->
+		<div class="card" th:if="${books != null}">
+			<div style="padding: 16px; border-bottom: 1px solid #e5e7eb; background-color: #f9fafb;">
+				<span style="font-size: 13px; font-weight: 600; color: #374151;">Search Results</span>
+			</div>
+			<table class="table" style="width:100%; border-collapse:collapse;">
+				<thead style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+					<tr>
+						<th
+							style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							ISBN</th>
+						<th
+							style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Title</th>
+						<th
+							style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Category</th>
+						<th
+							style="padding: 12px 16px; text-align: right; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Action</th>
+					</tr>
+				</thead>
+				<tbody style="font-size: 14px; color: #374151;">
+					<tr th:each="book : ${books}" style="border-bottom: 1px solid #f3f4f6;">
+						<td style="padding: 12px 16px; font-weight: 600;" th:text="${book.isbn}"></td>
+						<td style="padding: 12px 16px;" th:text="${book.title}"></td>
+						<td style="padding: 12px 16px;" th:text="${categoryMap[book.categoryId]}"></td>
+						<td style="padding: 12px 16px; text-align: right;">
+							<a th:href="@{/books/details(isbn=${book.isbn})}"
+								class="btn btn-secondary btn-sm">Details</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<div th:if="${#lists.isEmpty(books)}" style="padding: 40px; text-align: center; color: #9ca3af;">
+				No matching books found. Try broading your search criteria.
+			</div>
+		</div>
 	</div>
-
 </body>
 
 </html>

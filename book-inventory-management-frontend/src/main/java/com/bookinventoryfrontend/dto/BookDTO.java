@@ -1,5 +1,9 @@
 package com.bookinventoryfrontend.dto;
 
+import java.util.List;
+
+import com.bookinventoryfrontend.author.dto.AuthorDTO;
+
 public class BookDTO {
 
     private String isbn;
@@ -8,6 +12,7 @@ public class BookDTO {
     private Integer categoryId;
     private Integer publisherId;
     private String edition;
+    private List<AuthorDTO> authors;
 
     public BookDTO() {}
 
@@ -67,5 +72,13 @@ public class BookDTO {
 
     public void setEdition(String edition) {
         this.edition = edition;
+    }
+    
+    public List<AuthorDTO> getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(List<AuthorDTO> authors) {
+        this.authors = authors;
     }
 }

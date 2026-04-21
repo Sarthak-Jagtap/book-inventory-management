@@ -1,18 +1,67 @@
-<h2>Add Publisher</h2>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
-<form action="/publishers/add" method="post">
+<head>
+	<meta charset="UTF-8">
+	<title>Add Publisher</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
 
-	<label>Publisher ID:</label>
-	<input type="number" name="publisherId" required>
+<body>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div class="page-wrapper">
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">New Publisher</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">Register a new publishing entity</div>
+			</div>
 
-	<label>Name:</label>
-	<input type="text" name="name" required>
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
 
-	<label>City:</label>
-	<input type="text" name="city">
+				<a class="btn btn-secondary btn-sm" th:href="@{/publishers}">← Cancel</a>
+			</div>
+		</div>
 
-	<label>State Code:</label>
-	<input type="text" name="stateCode" required>
+		<div class="card" style="padding: 24px; max-width: 500px;">
+			<form th:action="@{/publishers/add}" method="post">
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-	<button type="submit">Create</button>
-</form>
+				<div style="margin-bottom: 12px;">
+					<label
+						style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">Publisher
+						ID</label>
+					<input type="number" name="publisherId" required class="form-control"
+						style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+				</div>
+
+				<div style="margin-bottom: 12px;">
+					<label
+						style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">Name</label>
+					<input type="text" name="name" required class="form-control"
+						style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+				</div>
+
+				<div style="margin-bottom: 12px;">
+					<label
+						style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">City</label>
+					<input type="text" name="city" class="form-control"
+						style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+				</div>
+
+				<div style="margin-bottom: 24px;">
+					<label
+						style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 4px;">State
+						Code</label>
+					<input type="text" name="stateCode" required class="form-control"
+						style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;"
+						placeholder="e.g. NY">
+				</div>
+
+				<button type="submit" class="btn btn-primary">Create Publisher</button>
+			</form>
+		</div>
+	</div>
+</body>
+
+</html>

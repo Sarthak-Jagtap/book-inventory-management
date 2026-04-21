@@ -26,7 +26,7 @@ public class PageController {
 	    // IMPORTANT: Point this to your backend server's address and port!
 	    private final RestClient restClient = RestClient.create("http://localhost:8080");
 
-	    @GetMapping("/")
+	    @GetMapping("/index")
 	    public String home() {
 	        return "index";
 	    }
@@ -288,7 +288,7 @@ public class PageController {
 	            dto.setIsbn(isbn); // Pre-fill ISBN if navigating from the book profile
 	        }
 	        model.addAttribute("bookAuthor", dto);
-	        return "book-author-form";
+	        return "author/book-author-form";
 	    }
 
 	    // Show form to edit an existing mapping (e.g., changing primary author status)
