@@ -2,117 +2,206 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Review Data</title>
-
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
-            padding: 30px;
-        }
-
-        h2 {
+        .big-count-wrap {
             text-align: center;
-            margin-bottom: 25px;
+            padding: 60px 20px;
         }
-
-        .container {
-            width: 85%;
-            margin: auto;
+        .big-count-wrap .big-number {
+            font-size: 96px;
+            font-weight: 700;
+            color: #1a6dbd;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -3px;
         }
-
-        /* TABLE */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #1e293b;
-            border-radius: 10px;
-            overflow: hidden;
+        .big-count-wrap .big-number-label {
+            font-size: 16px;
+            color: #6b7280;
+            margin-top: 12px;
+            font-weight: 400;
         }
-
-        th {
-            background: #111827;
-            padding: 14px;
-            color: #9ca3af;
-            text-align: left;
-        }
-
-        td {
-            padding: 12px;
-            border-top: 1px solid #334155;
-        }
-
-        tr:hover {
-            background: #273449;
-        }
-
-        /* MESSAGE BOX */
-        .message {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        /* BACK BUTTON */
-        a {
-            display: block;
-            width: fit-content;
-            margin: 30px auto 0;
-            text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 8px;
-            background: #6366f1;
-            color: white;
+        .deleted-wrap {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 20px 24px;
+            color: #991b1b;
+            font-size: 15px;
             font-weight: 500;
         }
-
-        a:hover {
-            opacity: 0.9;
-        }
-
+        .rating-stars { color: #f59e0b; font-size: 13px; }
+        .rating-num   { font-size: 13px; color: #6b7280; margin-left: 4px; }
     </style>
 </head>
-
 <body>
 
-<h2>📚 Book Review Data</h2>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="container">
-
-    <!-- ✅ STRING RESPONSE -->
-    <div th:if="${data instanceof T(java.lang.String)}" class="message">
-        <h3 th:text="${data}"></h3>
+<!-- ── Page Header ──────────────────────────────────────── -->
+<div class="page-header">
+    <a href="/ui/review-dashboard" class="page-header-back">&#8592; Back</a>
+    <div>
+        <h1 th:text="${pageTitle != null ? pageTitle : 'Book Review Data'}">Book Review Data</h1>
+        <div class="meta" th:text="${apiEndpoint != null ? apiEndpoint : 'GET /api/v1/reviews'}">
+            GET /api/v1/reviews
+        </div>
     </div>
-
-    <!-- ✅ EMPTY LIST -->
-    <div th:if="${data != null and !(data instanceof T(java.lang.String)) and #lists.isEmpty(data)}" class="message">
-        <h3>No Reviews Found 😕</h3>
-    </div>
-
-    <!-- ✅ TABLE DATA -->
-    <table th:if="${data != null and !(data instanceof T(java.lang.String)) and !#lists.isEmpty(data)}">
-
-        <tr>
-            <th>ISBN</th>
-            <th>Reviewer ID</th>
-            <th>Rating</th>
-            <th>Comments</th>
-        </tr>
-
-        <tr th:each="r : ${data}">
-            <td th:text="${r.isbn}"></td>
-            <td th:text="${r.reviewerId}"></td>
-            <td th:text="${r.rating}"></td>
-            <td th:text="${r.comments}"></td>
-        </tr>
-
-    </table>
-
 </div>
 
-<a href="/ui/review-dashboard">⬅ Back to Dashboard</a>
+<!-- ── Main Content ─────────────────────────────────────── -->
+<div class="page-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="/ui/home">Home</a>
+        <span class="breadcrumb-sep">&rsaquo;</span>
+        <a href="/ui/review-dashboard">Review Module</a>
+        <span class="breadcrumb-sep">&rsaquo;</span>
+        <span th:text="${pageTitle != null ? pageTitle : 'Review Data'}">Review Data</span>
+    </div>
+
+    <!-- API Info Block -->
+    <div class="api-info">
+        <strong>WHAT THIS API DOES</strong>
+        Returns book review records. Supports fetching by ISBN, reviewer ID, or listing all reviews with ratings
+        and comments. Read operations are public. Creating, updating, or deleting reviews requires a valid JWT token.
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         CASE 1: Count result (isCount flag set by controller)
+         The controller extracts just the plain number and sets isCount=true
+         ══════════════════════════════════════════ -->
+    <div th:if="${isCount != null and isCount}" class="big-count-wrap">
+        <div class="big-number" th:text="${data}">0</div>
+        <div class="big-number-label" th:text="${countLabel != null ? countLabel : 'Total Reviews'}">
+            Total Reviews
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         CASE 2: String messages
+         (only shown when isCount is NOT set)
+         ══════════════════════════════════════════ -->
+    <div th:if="${isCount == null or !isCount}">
+
+        <!-- Deleted confirmation -->
+        <div th:if="${data instanceof T(java.lang.String)
+                     and (#strings.contains(data, 'Deleted') or #strings.contains(data, 'deleted'))}"
+             class="deleted-wrap">
+            &#10005; &nbsp;<span th:text="${data}"></span>
+        </div>
+
+        <!-- ── NEW: Generic error / not-found message ── -->
+        <div th:if="${data instanceof T(java.lang.String)
+                     and !#strings.contains(data, 'Deleted')
+                     and !#strings.contains(data, 'deleted')}"
+             class="empty-state">
+            <span class="empty-state-icon">&#128218;</span>
+            <h3>Review Not Found</h3>
+            <p th:text="${data}"></p>
+        </div>
+
+        <!-- ══════════════════════════════════════════
+             CASE 3: Single review object
+             ══════════════════════════════════════════ -->
+        <div th:if="${data != null
+                     and !(data instanceof T(java.lang.String))
+                     and !(data instanceof T(java.util.List))}">
+
+            <div class="result-header">
+                <span>&#128218; Review Record</span>
+            </div>
+            <div class="result-body" style="padding: 0;">
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ISBN</th>
+                                <th>Reviewer ID</th>
+                                <th>Rating</th>
+                                <th>Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="mono" th:text="${data.isbn}"></td>
+                                <td th:text="${data.reviewerId}"></td>
+                                <td>
+                                    <span class="rating-stars">&#9733;</span>
+                                    <span class="rating-num" th:text="${data.rating}"></span>
+                                </td>
+                                <td th:text="${data.comments}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════════════════════════
+             CASE 4: List of reviews
+             ══════════════════════════════════════════ -->
+        <div th:if="${data instanceof T(java.util.List)}">
+
+            <!-- Empty list -->
+            <div th:if="${#lists.isEmpty(data)}" class="empty-state">
+                <span class="empty-state-icon">&#128218;</span>
+                <h3>No Reviews Found</h3>
+                <p>No reviews match the requested query.</p>
+            </div>
+
+            <!-- Filled list -->
+            <div th:if="${!#lists.isEmpty(data)}">
+
+                <div class="result-header">
+                    <span>&#128218; Book Reviews</span>
+                    <span class="tag" th:text="${#lists.size(data)} + ' records'"></span>
+                </div>
+
+                <div class="result-body" style="padding: 0;">
+                    <div class="data-table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ISBN</th>
+                                    <th>Reviewer ID</th>
+                                    <th>Rating</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r : ${data}">
+                                    <td class="mono" th:text="${r.isbn}"></td>
+                                    <td th:text="${r.reviewerId}"></td>
+                                    <td>
+                                        <span class="rating-stars">&#9733;</span>
+                                        <span class="rating-num" th:text="${r.rating}"></span>
+                                    </td>
+                                    <td th:text="${r.comments}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════
+             CASE 5: Null / no data returned
+             ══════════════════════════════════════════ -->
+        <div th:if="${data == null and (isCount == null or !isCount)}" class="empty-state">
+            <span class="empty-state-icon">&#10060;</span>
+            <h3>No Data Returned</h3>
+            <p>The API returned an empty response.</p>
+        </div>
+
+    </div><!-- end isCount else block -->
+
+</div><!-- end page-wrapper -->
 
 </body>
 </html>

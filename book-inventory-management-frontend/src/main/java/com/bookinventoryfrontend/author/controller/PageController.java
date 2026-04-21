@@ -141,7 +141,7 @@ public class PageController {
 	        
 	        // Keeps the search term in the search box after page reload
 	        model.addAttribute("searchQuery", name); 
-	        return "authors-list"; // HTML page 1
+	        return "/author/authors-list"; // HTML page 1
 	    }
 
 	    // =========================================================================
@@ -172,7 +172,7 @@ public class PageController {
 	            model.addAttribute("error", "Failed to load author profile details.");
 	        }
 	        
-	        return "author-profile"; // HTML page 2
+	        return "/author/author-profile"; // HTML page 2
 	    }
 
 	    // =========================================================================
@@ -183,7 +183,7 @@ public class PageController {
 	    @GetMapping("/store-owner/authors/new")
 	    public String showCreateForm(Model model) {
 	        model.addAttribute("author", new AuthorDTO());
-	        return "author-form"; // HTML page 3
+	        return "/author/author-form"; // HTML page 3
 	    }
 
 	    // Show pre-filled form for editing an existing author
@@ -197,7 +197,7 @@ public class PageController {
 	        } catch (Exception e) {
 	            return "redirect:/authors?error=CouldNotLoadAuthor";
 	        }
-	        return "author-form"; // Reuses HTML page 3
+	        return "/author/author-form"; // Reuses HTML page 3
 	    }
 
 	    // =========================================================================
@@ -273,7 +273,7 @@ public class PageController {
 	        } catch (Exception e) {
 	            model.addAttribute("error", "Failed to load book-author details.");
 	        }
-	        return "book-profile";
+	        return "/author/book-profile";
 	    }
 
 	    // =========================================================================
@@ -288,7 +288,7 @@ public class PageController {
 	            dto.setIsbn(isbn); // Pre-fill ISBN if navigating from the book profile
 	        }
 	        model.addAttribute("bookAuthor", dto);
-	        return "author/book-author-form";
+	        return "/author/book-author-form";
 	    }
 
 	    // Show form to edit an existing mapping (e.g., changing primary author status)
@@ -298,7 +298,7 @@ public class PageController {
 	        dto.setIsbn(isbn);
 	        dto.setAuthorID(authorId);
 	        model.addAttribute("bookAuthor", dto);
-	        return "book-author-form";
+	        return "/author/book-author-form";
 	    }
 
 	    // =========================================================================

@@ -174,12 +174,12 @@ public class SecurityConfig {
                 // DELETE /api/v1/user/reviews/{isbn}/{reviewerId}
                 .requestMatchers(HttpMethod.POST,
                     "/api/v1/user/reviews",
-                    "/api/v1/reviews")
+                    "/api/v1/reviews/book")
                     .hasAnyRole("RegisteredUser", "StoreOwner", "Admin")
 
                 .requestMatchers(HttpMethod.PUT,
                     "/api/v1/user/reviews/**",
-                    "/api/v1/reviews")
+                    "/api/v1/reviews/**")
                     .hasAnyRole("RegisteredUser", "StoreOwner", "Admin")
 
                 .requestMatchers(HttpMethod.DELETE,

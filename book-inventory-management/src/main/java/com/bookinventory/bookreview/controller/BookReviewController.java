@@ -60,18 +60,18 @@ public class BookReviewController {
 
     //  CREATE review
     @PostMapping("/reviews/book")
-    public BookReview createReview(@RequestBody BookReview review) {
-        return service.createReview(review);
+    public BookReviewDTO createReview(@RequestBody BookReviewDTO reviewdto) {
+        return service.createReview(reviewdto);
     }
 
     //  UPDATE review
     @PutMapping("/reviews/book")
-    public BookReview updateReview(@RequestBody BookReview review) {
-        return service.updateReview(review);
+    public BookReviewDTO updateReview(@RequestBody BookReviewDTO reviewdto) {
+        return service.updateReview(reviewdto);
     }
 
     //  DELETE review 
-    @DeleteMapping("/reviews/book/{isbn}/{reviewerId}")
+    @DeleteMapping("/reviews/{reviewerId}/book/{isbn}")
     public String deleteReview(@PathVariable String isbn,
                                @PathVariable Integer reviewerId) {
         

@@ -72,6 +72,14 @@ public class SecurityConfig {
                 .requestMatchers("/publishers/**")
                     .permitAll()
                     
+                // Public author/book read pages (no login required to browse)
+                .requestMatchers(
+                    "/authors",
+                    "/authors/{id}",
+                    "/books/{isbn}",
+                    "/api-author-dashboard",
+                    "/api-author-result"
+                ).permitAll()
                 // User self-service pages
                 .requestMatchers(
                     "/user/profile",
@@ -79,10 +87,12 @@ public class SecurityConfig {
                     "/user/purchases",
                     "/user/change-password"
                 ).hasAnyRole("RegisteredUser", "StoreOwner", "Admin")
-                // Store Owner pages
+                // Store Owner write operations — POST/PUT/DELETE author/book-author forms
                 .requestMatchers("/store-owner/**").hasAnyRole("StoreOwner", "Admin")
                 // Admin pages
                 .requestMatchers("/admin/**").hasRole("Admin")
+                
+                .requestMatchers("/ui/**").hasAnyRole("RegisteredUser", "StoreOwner", "Admin")
                 // Everything else needs auth
                 .anyRequest().authenticated()
             )

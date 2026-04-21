@@ -111,59 +111,84 @@ public class BookReviewService {
 
     // ================= CREATE =================
 
-    public BookReview createReview(BookReview review) {
+    public BookReviewDTO createReview(BookReviewDTO dto) {
 
-        Book book = bookRepo.findById(review.getBook().getIsbn())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Book not found with ISBN: " + review.getBook().getIsbn()));
+        Book book = bookRepo.findById(dto.getIsbn())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Book not found with ISBN: " + dto.getIsbn()));
 
-        Reviewer reviewer = reviewerRepo.findById(review.getReviewer().getReviewerID())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Reviewer not found with ID: " + review.getReviewer().getReviewerID()));
+        Reviewer reviewer = reviewerRepo.findById(dto.getReviewerId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Reviewer not found with ID: " + dto.getReviewerId()));
 
         BookReviewId id = new BookReviewId(
-            book.getIsbn(),
-            reviewer.getReviewerID()
+                book.getIsbn(),
+                reviewer.getReviewerID()
         );
 
-        if(repo.existsById(id)) {
+        if (repo.existsById(id)) {
             throw new DuplicateResourceException(
-                "Review already exists for this Book and Reviewer");
+                    "Review already exists for this Book and Reviewer");
         }
 
+        // ✅ DTO → ENTITY conversion
+        BookReview review = new BookReview();
+        review.setId(id);
         review.setBook(book);
         review.setReviewer(reviewer);
-        review.setId(id);
+        review.setRating(dto.getRating());
+        review.setComments(dto.getComments());
 
-        return repo.save(review);
+        // ✅ SAVE ENTITY
+        BookReview saved = repo.save(review);
+
+        // ✅ ENTITY → DTO
+        return new BookReviewDTO(
+                saved.getBook().getIsbn(),
+                saved.getReviewer().getReviewerID(),
+                saved.getRating(),
+                saved.getComments()
+        );
     }
 
     // ================= UPDATE =================
 
-    public BookReview updateReview(BookReview review) {
+    public BookReviewDTO updateReview(BookReviewDTO dto) {
 
-        Book book = bookRepo.findById(review.getBook().getIsbn())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Book not found with ISBN: " + review.getBook().getIsbn()));
+        Book book = bookRepo.findById(dto.getIsbn())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Book not found with ISBN: " + dto.getIsbn()));
 
-        Reviewer reviewer = reviewerRepo.findById(review.getReviewer().getReviewerID())
-            .orElseThrow(() -> new ResourceNotFoundException(
-                "Reviewer not found with ID: " + review.getReviewer().getReviewerID()));
+        Reviewer reviewer = reviewerRepo.findById(dto.getReviewerId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Reviewer not found with ID: " + dto.getReviewerId()));
 
         BookReviewId id = new BookReviewId(
-            book.getIsbn(),
-            reviewer.getReviewerID()
+                book.getIsbn(),
+                reviewer.getReviewerID()
         );
 
-        if(!repo.existsById(id)) {
+        if (!repo.existsById(id)) {
             throw new ResourceNotFoundException("Review not found to update");
         }
 
+        // ✅ DTO → ENTITY
+        BookReview review = new BookReview();
+        review.setId(id);
         review.setBook(book);
         review.setReviewer(reviewer);
-        review.setId(id);
+        review.setRating(dto.getRating());
+        review.setComments(dto.getComments());
 
-        return repo.save(review);
+        BookReview updated = repo.save(review);
+
+        // ✅ ENTITY → DTO
+        return new BookReviewDTO(
+                updated.getBook().getIsbn(),
+                updated.getReviewer().getReviewerID(),
+                updated.getRating(),
+                updated.getComments()
+        );
     }
 
     // ================= DELETE =================

@@ -83,18 +83,23 @@ public class BookReviewServiceTest {
         Reviewer reviewer = new Reviewer();
         reviewer.setReviewerID(1);
 
-        BookReview review = new BookReview();
-        review.setBook(book);
-        review.setReviewer(reviewer);
+        BookReview savedReview = new BookReview();
+        savedReview.setBook(book);
+        savedReview.setReviewer(reviewer);
+        savedReview.setRating(5);
+        savedReview.setComments("Good");
+
+        BookReviewDTO dto = new BookReviewDTO("123", 1, 5, "Good");
 
         Mockito.when(bookRepo.findById("123")).thenReturn(Optional.of(book));
         Mockito.when(reviewerRepo.findById(1)).thenReturn(Optional.of(reviewer));
         Mockito.when(repo.existsById(Mockito.any())).thenReturn(false);
-        Mockito.when(repo.save(Mockito.any())).thenReturn(review);
+        Mockito.when(repo.save(Mockito.any())).thenReturn(savedReview);
 
-        BookReview result = service.createReview(review);
+        BookReviewDTO result = service.createReview(dto);
 
         assertNotNull(result);
+        assertEquals("123", result.getIsbn());
     }
 
     // ❌ DUPLICATE EXCEPTION
@@ -107,16 +112,14 @@ public class BookReviewServiceTest {
         Reviewer reviewer = new Reviewer();
         reviewer.setReviewerID(1);
 
-        BookReview review = new BookReview();
-        review.setBook(book);
-        review.setReviewer(reviewer);
+        BookReviewDTO dto = new BookReviewDTO("123", 1, 5, "Good");
 
         Mockito.when(bookRepo.findById("123")).thenReturn(Optional.of(book));
         Mockito.when(reviewerRepo.findById(1)).thenReturn(Optional.of(reviewer));
         Mockito.when(repo.existsById(Mockito.any())).thenReturn(true);
 
         assertThrows(DuplicateResourceException.class, () -> {
-            service.createReview(review);
+            service.createReview(dto);
         });
     }
 
@@ -130,18 +133,23 @@ public class BookReviewServiceTest {
         Reviewer reviewer = new Reviewer();
         reviewer.setReviewerID(1);
 
-        BookReview review = new BookReview();
-        review.setBook(book);
-        review.setReviewer(reviewer);
+        BookReview updatedReview = new BookReview();
+        updatedReview.setBook(book);
+        updatedReview.setReviewer(reviewer);
+        updatedReview.setRating(4);
+        updatedReview.setComments("Updated");
+
+        BookReviewDTO dto = new BookReviewDTO("123", 1, 4, "Updated");
 
         Mockito.when(bookRepo.findById("123")).thenReturn(Optional.of(book));
         Mockito.when(reviewerRepo.findById(1)).thenReturn(Optional.of(reviewer));
         Mockito.when(repo.existsById(Mockito.any())).thenReturn(true);
-        Mockito.when(repo.save(Mockito.any())).thenReturn(review);
+        Mockito.when(repo.save(Mockito.any())).thenReturn(updatedReview);
 
-        BookReview result = service.updateReview(review);
+        BookReviewDTO result = service.updateReview(dto);
 
         assertNotNull(result);
+        assertEquals(4, result.getRating());
     }
 
     // ❌ UPDATE NOT FOUND
@@ -154,16 +162,14 @@ public class BookReviewServiceTest {
         Reviewer reviewer = new Reviewer();
         reviewer.setReviewerID(1);
 
-        BookReview review = new BookReview();
-        review.setBook(book);
-        review.setReviewer(reviewer);
+        BookReviewDTO dto = new BookReviewDTO("123", 1, 5, "Test");
 
         Mockito.when(bookRepo.findById("123")).thenReturn(Optional.of(book));
         Mockito.when(reviewerRepo.findById(1)).thenReturn(Optional.of(reviewer));
         Mockito.when(repo.existsById(Mockito.any())).thenReturn(false);
 
         assertThrows(ResourceNotFoundException.class, () -> {
-            service.updateReview(review);
+            service.updateReview(dto);
         });
     }
 

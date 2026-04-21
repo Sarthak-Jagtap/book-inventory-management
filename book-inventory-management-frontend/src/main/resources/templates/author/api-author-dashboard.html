@@ -1,46 +1,13 @@
 <!DOCTYPE html> 
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Book Inventory API Dashboard</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#f7f8fc;--surface:#fff;--surface2:#f0f2f8;--text:#1a1d2e;--text2:#6b7280;--text3:#9ca3af;
-  --border:#e5e7eb;--border2:#d1d5db;
-  --get-bg:#eafaf3;--get-text:#0d6b3f;--get-dot:#16a34a;
-  --post-bg:#eff6ff;--post-text:#1d4ed8;--post-dot:#3b82f6;
-  --put-bg:#fffbeb;--put-text:#b45309;--put-dot:#f59e0b;
-  --del-bg:#fef2f2;--del-text:#b91c1c;--del-dot:#ef4444;
-  --accent:#6366f1;--accent2:#818cf8;--tag-bg:#f3f4f6;
-}
-body.dark{
-  --bg:#0f1117;--surface:#1a1d2e;--surface2:#252840;--text:#e8eaf6;--text2:#9ca3af;--text3:#6b7280;
-  --border:#2d3148;--border2:#3d4165;
-  --get-bg:#052e16;--get-text:#4ade80;--get-dot:#22c55e;
-  --post-bg:#0c1a3d;--post-text:#93c5fd;--post-dot:#60a5fa;
-  --put-bg:#1c1404;--put-text:#fcd34d;--put-dot:#f59e0b;
-  --del-bg:#1c0505;--del-text:#fca5a5;--del-dot:#f87171;
-  --accent:#818cf8;--accent2:#a5b4fc;--tag-bg:#252840;
-}
-body{
-  background:var(--bg);color:var(--text);
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-  transition:background .3s,color .3s;
-  padding:0 0 60px;
-}
-.topbar{ background:var(--surface);border-bottom:1px solid var(--border); padding:16px 32px;display:flex;align-items:center;justify-content:space-between; position:sticky;top:0;z-index:100;}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-icon{ width:32px;height:32px;background:var(--accent);border-radius:8px; display:flex;align-items:center;justify-content:center;}
-.logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
-.logo-title{font-size:15px;font-weight:600;color:var(--text)}
-.logo-sub{font-size:11px;color:var(--text3);letter-spacing:.5px;text-transform:uppercase}
-.topbar-actions{display:flex;align-items:center;gap:12px}
-.badge-live{ background:#dcfce7;color:#166534;font-size:11px; padding:3px 10px;border-radius:20px;font-weight:500;}
-body.dark .badge-live{background:#052e16;color:#4ade80}
-.btn-dark{ background:var(--surface2);border:1px solid var(--border);color:var(--text2); padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px; display:flex;align-items:center;gap:6px;transition:all .2s;}
-.btn-dark:hover{border-color:var(--accent);color:var(--accent)}
+/* Specific definitions to keep the interactive API Explorer working */
 .hero{padding:40px 32px 0;display:flex;align-items:flex-end;gap:32px;flex-wrap:wrap}
 .hero-text h1{font-size:28px;font-weight:700;color:var(--text);line-height:1.2}
 .hero-text p{color:var(--text2);font-size:14px;margin-top:6px;max-width:520px;line-height:1.6}
@@ -60,23 +27,21 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
 .section-desc{ background:var(--surface2);border-left:3px solid var(--accent); padding:12px 16px;border-radius:0 8px 8px 0; font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6;}
 .section-desc strong{color:var(--text)}
 .section-desc code{ background:var(--border);padding:1px 5px;border-radius:4px; font-family:monospace;font-size:12px;color:var(--accent);}
-.endpoint-card{ background:var(--surface);border:1px solid var(--border); border-radius:12px;margin-bottom:10px;overflow:hidden; transition:box-shadow .2s,border-color .2s;}
+.endpoint-card{ background:var(--surface);border:1px solid var(--border); border-radius:12px;margin-bottom:16px;overflow:hidden; transition:box-shadow .2s,border-color .2s;}
 .endpoint-card:hover{border-color:var(--border2);box-shadow:0 4px 16px rgba(99,102,241,.07)}
-.ep-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none}
 .method-badge{ font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px; letter-spacing:.5px;min-width:56px;text-align:center;}
-.get  .method-badge{background:var(--get-bg);color:var(--get-text)}
-.post .method-badge{background:var(--post-bg);color:var(--post-text)}
-.put  .method-badge{background:var(--put-bg);color:var(--put-text)}
-.delete .method-badge{background:var(--del-bg);color:var(--del-text)}
+.get  .method-badge{background:#dcfce7;color:#166534}
+.post .method-badge{background:#eff6ff;color:#1d4ed8}
+.put  .method-badge{background:#fffbeb;color:#b45309}
+.delete .method-badge{background:#fef2f2;color:#b91c1c}
+.endpoint-card.open .chevron{transform:rotate(180deg)}
+.ep-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none}
 .ep-path{font-family:'Courier New',monospace;font-size:13px;color:var(--text);flex:1}
-.ep-path .param{color:var(--accent)}
 .ep-desc-inline{font-size:12px;color:var(--text3);margin-left:auto;padding-right:8px}
 .chevron{color:var(--text3);font-size:14px;transition:transform .25s;flex-shrink:0}
-.endpoint-card.open .chevron{transform:rotate(180deg)}
 .ep-body{ border-top:1px solid var(--border);padding:16px; background:var(--surface2);display:none;}
 .endpoint-card.open .ep-body{display:block;animation:fadeIn .2s ease}
 .ep-body-desc{font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6}
-.ep-body-desc code{ background:var(--border);padding:1px 5px;border-radius:4px; font-family:monospace;font-size:12px;color:var(--accent);}
 .params-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .param-item{ background:var(--surface);border:1px solid var(--border); padding:10px 12px;border-radius:8px;}
 .param-name{font-family:monospace;font-size:12px;color:var(--accent);margin-bottom:2px}
@@ -84,46 +49,20 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
 .param-type{font-size:10px;color:var(--text3);margin-top:2px}
 .input-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .ep-label{font-size:12px;color:var(--text3);min-width:60px}
-.ep-input{ background:var(--surface);border:1px solid var(--border2); color:var(--text);font-size:13px;padding:7px 12px;border-radius:8px; outline:none;width:200px;transition:border-color .2s;}
+.ep-input{ background:var(--surface);border:1px solid var(--border); color:var(--text);font-size:13px;padding:7px 12px;border-radius:8px; outline:none;width:200px;transition:border-color .2s;}
 .ep-input:focus{border-color:var(--accent)}
-.ep-input::placeholder{color:var(--text3)}
-.run-btn{ background:var(--accent);color:#fff;border:none; padding:8px 18px;border-radius:8px;cursor:pointer; font-size:13px;font-weight:500; transition:background .2s,transform .1s; display:flex;align-items:center;gap:6px;}
-.run-btn:hover{background:var(--accent2)}
-.run-btn:active{transform:scale(.97)}
-.run-btn svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.5}
-.code-block{ background:#1a1d2e;color:#c7d2fe;padding:14px 16px;border-radius:8px; font-family:'Courier New',monospace;font-size:12px; overflow-x:auto;white-space:pre;border:1px solid #2d3148;line-height:1.7;}
-.code-key{color:#7dd3fc}
-.code-str{color:#86efac}
-.code-num{color:#fde68a}
-.response-tag{ background:var(--tag-bg);border:1px solid var(--border); color:var(--text2);font-size:11px;padding:3px 10px; border-radius:6px;display:inline-block;margin:2px 2px 8px 0;}
 .method-section-label{ font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px; color:var(--text3);margin:24px 0 10px; padding-bottom:6px;border-bottom:1px solid var(--border);}
 .try-note{font-size:11px;color:var(--text3);margin-top:8px;font-style:italic}
 @media(max-width:600px){
-  .topbar{padding:12px 16px} .hero{padding:24px 16px 0} .tabs{padding:20px 16px 0} .content{padding:20px 16px}
+  .hero{padding:24px 16px 0} .tabs{padding:20px 16px 0} .content{padding:20px 16px}
   .params-grid{grid-template-columns:1fr} .ep-desc-inline{display:none} .ep-input{width:140px} .hero-text h1{font-size:22px}
 }
 </style>
 </head>
-<body class="dark">
+<body>
 
-<div class="topbar">
-  <div class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-    </div>
-    <div>
-      <div class="logo-title">Book Inventory API</div>
-      <div class="logo-sub">v1 &middot; Interactive Explorer</div>
-    </div>
-  </div>
-  <div class="topbar-actions">
-    <span class="badge-live">&#9679; Live</span>
-    <button class="btn-dark" onclick="toggleDark()">
-      <span id="dark-icon">☀️</span>
-      <span id="dark-label">Light mode</span>
-    </button>
-  </div>
-</div>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
 
 <div class="hero">
   <div class="hero-text">
@@ -172,7 +111,7 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
           <p class="ep-body-desc" th:text="${ep?.description}">Description</p>
           
           <th:block th:if="${ep?.path == '/api/v1/authors'}">
-            <button class="run-btn" onclick="event.stopPropagation(); window.location.href='/authors'">
+            <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/authors'">
               <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Go to List UI
             </button>
             <p class="try-note">Opens the Frontend Authors List.</p>
@@ -186,8 +125,8 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
             </div>
             <div class="input-row">
               <span class="ep-label">Author ID</span>
-              <input class="ep-input" id="a-id1" placeholder="e.g. 42" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); window.location.href='/authors/' + document.getElementById('a-id1').value">
+              <input type="text" class="ep-input" id="a-id1" placeholder="e.g. 42" onclick="event.stopPropagation()">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/authors/' + document.getElementById('a-id1').value">
                 <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> View Profile UI
               </button>
             </div>
@@ -201,8 +140,8 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
             </div>
             <div class="input-row">
               <span class="ep-label">Name</span>
-              <input class="ep-input" id="a-search" placeholder="e.g. Gosling" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); window.location.href='/authors?name=' + document.getElementById('a-search').value">
+              <input type="text" class="ep-input" id="a-search" placeholder="e.g. Gosling" onclick="event.stopPropagation()">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/authors?name=' + document.getElementById('a-search').value">
                 <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Search in UI
               </button>
             </div>
@@ -211,8 +150,8 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
           <th:block th:if="${ep?.path == '/api/v1/authors/{id}/books'}">
             <div class="input-row">
               <span class="ep-label">Author ID</span>
-              <input class="ep-input" id="a-id2" placeholder="e.g. 5" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); window.location.href='/authors/' + document.getElementById('a-id2').value">
+              <input type="text" class="ep-input" id="a-id2" placeholder="e.g. 5" onclick="event.stopPropagation()">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/authors/' + document.getElementById('a-id2').value">
                 <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> View in Profile UI
               </button>
             </div>
@@ -221,8 +160,8 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
           <th:block th:if="${ep?.path == '/api/v1/authors/{id}/stats'}">
             <div class="input-row">
               <span class="ep-label">Author ID</span>
-              <input class="ep-input" id="a-id3" placeholder="e.g. 5" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); window.location.href='/authors/' + document.getElementById('a-id3').value">
+              <input type="text" class="ep-input" id="a-id3" placeholder="e.g. 5" onclick="event.stopPropagation()">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/authors/' + document.getElementById('a-id3').value">
                 <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> View in Profile UI
               </button>
             </div>
@@ -255,8 +194,8 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
           <th:block th:if="${ep?.path == '/api/v1/books/{isbn}/authors'}">
             <div class="input-row">
               <span class="ep-label">ISBN</span>
-              <input class="ep-input" id="b-isbn1" placeholder="e.g. 9-455-61223-3" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); window.location.href='/books/' + document.getElementById('b-isbn1').value">
+              <input type="text" class="ep-input" id="b-isbn1" placeholder="e.g. 9-455-61223-3" onclick="event.stopPropagation()">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/books/' + document.getElementById('b-isbn1').value">
                 <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> View Book UI
               </button>
             </div>
@@ -265,8 +204,8 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
           <th:block th:if="${ep?.path == '/api/v1/books/author/{authorId}'}">
             <div class="input-row">
               <span class="ep-label">Author ID</span>
-              <input class="ep-input" id="b-aid1" placeholder="e.g. 5" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); window.location.href='/authors/' + document.getElementById('b-aid1').value">
+              <input type="text" class="ep-input" id="b-aid1" placeholder="e.g. 5" onclick="event.stopPropagation()">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/authors/' + document.getElementById('b-aid1').value">
                 <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> View Author UI
               </button>
             </div>
@@ -275,8 +214,8 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
           <th:block th:if="${ep?.path == '/api/v1/books/{isbn}/primary-author'}">
             <div class="input-row">
               <span class="ep-label">ISBN</span>
-              <input class="ep-input" id="b-isbn2" placeholder="e.g. 9-455-61223-3" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); window.location.href='/books/' + document.getElementById('b-isbn2').value">
+              <input type="text" class="ep-input" id="b-isbn2" placeholder="e.g. 9-455-61223-3" onclick="event.stopPropagation()">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/books/' + document.getElementById('b-isbn2').value">
                 <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> View Book UI
               </button>
             </div>
@@ -289,7 +228,13 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
 
   <div id="tab-write" class="section">
     <div class="section-desc">
-      <strong>Store owner write operations</strong>
+      <strong>Store owner write operations</strong> &mdash; <em>Login as StoreOwner or Admin required.</em>
+    </div>
+
+    <!-- Login notice for unauthenticated users -->
+    <div sec:authorize="!isAuthenticated()" style="background:var(--del-bg);border:1px solid var(--del-text);border-radius:10px;padding:16px 20px;margin-bottom:18px;color:var(--del-text);font-size:13px;">
+      🔒 You must be logged in as a <strong>Store Owner</strong> to use POST, PUT, and DELETE operations.
+      <a href="/auth/login" style="color:var(--accent);font-weight:600;margin-left:8px;">Login &rarr;</a>
     </div>
 
     <div class="method-section-label">POST — Create</div>
@@ -306,25 +251,69 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
           <p class="ep-body-desc" th:text="${ep?.description}"></p>
           
           <th:block th:if="${ep?.path == '/api/v1/store-owner/authors'}">
-            <button class="run-btn" onclick="event.stopPropagation(); window.location.href='/store-owner/authors/new'" style="margin-bottom:12px;">
-              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Open Create Form UI
-            </button>
-            <div class="code-block"><span class="code-key">{</span>
-  <span class="code-key">"authorID"</span>: <span class="code-num">50</span>,
-  <span class="code-key">"firstName"</span>: <span class="code-str">"James"</span>,
-  <span class="code-key">"lastName"</span>: <span class="code-str">"Gosling"</span>,
-  <span class="code-key">"photo"</span>: <span class="code-str">""</span>
-<span class="code-key">}</span></div>
+            <div sec:authorize="hasAnyRole('StoreOwner','Admin')">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/store-owner/authors/new'" style="margin-bottom:12px;">
+                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Open Create Form UI
+              </button>
+              <div class="params-grid" style="grid-template-columns:1fr 1fr;margin-bottom:10px;">
+                <div class="param-item">
+                  <div class="param-name">authorID</div>
+                  <input type="text" class="ep-input" id="c-author-id" placeholder="e.g. 50" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">integer · required · must be unique</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-name">firstName</div>
+                  <input type="text" class="ep-input" id="c-author-fn" placeholder="e.g. James" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">string · required</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-name">lastName</div>
+                  <input type="text" class="ep-input" id="c-author-ln" placeholder="e.g. Gosling" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">string · required</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-name">photo</div>
+                  <input type="text" class="ep-input" id="c-author-photo" placeholder="URL or leave blank" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">string · optional</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); openCreateAuthorForm()" style="margin-top:4px;">
+                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Open Pre-filled Create Form
+              </button>
+            </div>
+            <div sec:authorize="!isAuthenticated()" style="font-size:12px;color:var(--del-text);margin-top:8px;">Login required to create authors.</div>
           </th:block>
-          
+
+          <!-- POST /api/v1/store-owner/book-authors — Assign Author to Book -->
           <th:block th:if="${ep?.path == '/api/v1/store-owner/book-authors'}">
-            <div class="code-block"><span class="code-key">{</span>
-  <span class="code-key">"isbn"</span>: <span class="code-str">"9-455-61223-3"</span>,
-  <span class="code-key">"authorID"</span>: <span class="code-num">5</span>,
-  <span class="code-key">"primaryAuthor"</span>: <span class="code-str">"Y"</span>
-<span class="code-key">}</span></div>
+            <div sec:authorize="hasAnyRole('StoreOwner','Admin')">
+              <div class="params-grid" style="grid-template-columns:1fr 1fr;margin-bottom:10px;">
+                <div class="param-item">
+                  <div class="param-name">isbn</div>
+                  <input type="text" class="ep-input" id="c-ba-isbn" placeholder="e.g. 9-455-61223-3" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">string · required</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-name">authorID</div>
+                  <input type="text" class="ep-input" id="c-ba-aid" placeholder="e.g. 5" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">integer · required</div>
+                </div>
+                <div class="param-item" style="grid-column:1/-1;">
+                  <div class="param-name">primaryAuthor</div>
+                  <select type="text" class="ep-input" id="c-ba-primary" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                    <option value="Y">Y — Yes (Primary)</option>
+                    <option value="N">N — No</option>
+                  </select>
+                  <div class="param-type">string · Y or N · required</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); openAssignAuthorForm()" style="margin-top:4px;">
+                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> Open Pre-filled Assign Form
+              </button>
+            </div>
+            <div sec:authorize="!isAuthenticated()" style="font-size:12px;color:var(--del-text);margin-top:8px;">Login required to assign authors.</div>
           </th:block>
-          
+
         </div>
       </div>
     </th:block>
@@ -341,23 +330,75 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
         </div>
         <div class="ep-body">
           <p class="ep-body-desc" th:text="${ep?.description}"></p>
-          
+
+          <!-- PUT /api/v1/store-owner/authors/{id} — Update Author -->
           <th:block th:if="${ep?.path == '/api/v1/store-owner/authors/{id}'}">
-            <div class="input-row">
-              <span class="ep-label">Author ID</span>
-              <input class="ep-input" id="w-upd-id" placeholder="e.g. 5" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); doUpdate()" style="background:#b45309">
-                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Run PUT
+            <div sec:authorize="hasAnyRole('StoreOwner','Admin')">
+              <div class="params-grid" style="grid-template-columns:1fr 1fr;margin-bottom:10px;">
+                <div class="param-item" style="grid-column:1/-1;">
+                  <div class="param-name">id <span style="color:var(--put-text)">(path param)</span></div>
+                  <input type="text" class="ep-input" id="u-author-id" placeholder="Author ID to update e.g. 5" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">integer · required · identifies the author to edit</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-name">firstName</div>
+                  <input type="text" class="ep-input" id="u-author-fn" placeholder="New first name" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">string · optional</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-name">lastName</div>
+                  <input type="text" class="ep-input" id="u-author-ln" placeholder="New last name" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">string · optional</div>
+                </div>
+                <div class="param-item" style="grid-column:1/-1;">
+                  <div class="param-name">photo</div>
+                  <input type="text" class="ep-input" id="u-author-photo" placeholder="New photo URL or leave blank" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">string · optional</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); openEditAuthorForm()" style="background:#b45309;margin-top:4px;">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Open Pre-filled Edit Form
+              </button>
+            </div>
+            <div sec:authorize="!isAuthenticated()">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/auth/login'" style="background:#b45309">
+                🔒 Login to Update
               </button>
             </div>
           </th:block>
-          
+
+          <!-- PUT /api/v1/store-owner/book-authors/{isbn}/{authorId} — Update Mapping -->
           <th:block th:if="${ep?.path == '/api/v1/store-owner/book-authors/{isbn}/{authorId}'}">
-            <div class="code-block"><span class="code-key">{</span>
-  <span class="code-key">"isbn"</span>: <span class="code-str">"9-455-61223-3"</span>,
-  <span class="code-key">"authorID"</span>: <span class="code-num">5</span>,
-  <span class="code-key">"primaryAuthor"</span>: <span class="code-str">"N"</span>
-<span class="code-key">}</span></div>
+            <div sec:authorize="hasAnyRole('StoreOwner','Admin')">
+              <div class="params-grid" style="grid-template-columns:1fr 1fr;margin-bottom:10px;">
+                <div class="param-item">
+                  <div class="param-name">isbn <span style="color:var(--put-text)">(path)</span></div>
+                  <input type="text" class="ep-input" id="u-ba-isbn" placeholder="e.g. 9-455-61223-3" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">string · required</div>
+                </div>
+                <div class="param-item">
+                  <div class="param-name">authorId <span style="color:var(--put-text)">(path)</span></div>
+                  <input type="text" class="ep-input" id="u-ba-aid" placeholder="e.g. 5" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                  <div class="param-type">integer · required</div>
+                </div>
+                <div class="param-item" style="grid-column:1/-1;">
+                  <div class="param-name">primaryAuthor</div>
+                  <select type="text" class="ep-input" id="u-ba-primary" style="width:100%;margin-top:6px;" onclick="event.stopPropagation()">
+                    <option value="Y">Y — Yes (Primary)</option>
+                    <option value="N">N — No</option>
+                  </select>
+                  <div class="param-type">string · Y or N · required</div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); openEditBookAuthorForm()" style="background:#b45309;margin-top:4px;">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Open Pre-filled Edit Mapping Form
+              </button>
+            </div>
+            <div sec:authorize="!isAuthenticated()">
+              <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/auth/login'" style="background:#b45309">
+                🔒 Login to Update
+              </button>
+            </div>
           </th:block>
         </div>
       </div>
@@ -379,22 +420,36 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
           <th:block th:if="${ep?.path == '/api/v1/store-owner/authors/{id}'}">
             <div class="input-row">
               <span class="ep-label">Author ID</span>
-              <input class="ep-input" id="w-del-id" placeholder="e.g. 5" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); doDelete()" style="background:#b91c1c">
-                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg> Delete
-              </button>
+              <input type="text" class="ep-input" id="w-del-id" placeholder="e.g. 5" onclick="event.stopPropagation()">
+              <div sec:authorize="hasAnyRole('StoreOwner','Admin')">
+                <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); doDelete()" style="background:#b91c1c">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg> Delete
+                </button>
+              </div>
+              <div sec:authorize="!isAuthenticated()">
+                <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/auth/login'" style="background:#b91c1c">
+                  🔒 Login to Delete
+                </button>
+              </div>
             </div>
           </th:block>
           
           <th:block th:if="${ep?.path == '/api/v1/store-owner/book-authors/{isbn}/{authorId}'}">
             <div class="input-row">
               <span class="ep-label">ISBN</span>
-              <input class="ep-input" id="w-del-isbn" placeholder="e.g. 9-455-61223-3" onclick="event.stopPropagation()">
+              <input type="text" class="ep-input" id="w-del-isbn" placeholder="e.g. 9-455-61223-3" onclick="event.stopPropagation()">
               <span class="ep-label">Author ID</span>
-              <input class="ep-input" id="w-del-aid" placeholder="e.g. 5" onclick="event.stopPropagation()">
-              <button class="run-btn" onclick="event.stopPropagation(); doDeleteBA()" style="background:#b91c1c">
-                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg> Delete
-              </button>
+              <input type="text" class="ep-input" id="w-del-aid" placeholder="e.g. 5" onclick="event.stopPropagation()">
+              <div sec:authorize="hasAnyRole('StoreOwner','Admin')">
+                <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); doDeleteBA()" style="background:#b91c1c">
+                  <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg> Delete
+                </button>
+              </div>
+              <div sec:authorize="!isAuthenticated()">
+                <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); window.location.href='/auth/login'" style="background:#b91c1c">
+                  🔒 Login to Delete
+                </button>
+              </div>
             </div>
           </th:block>
 
@@ -409,29 +464,9 @@ body.dark .badge-live{background:#052e16;color:#4ade80}
 // IMPORTANT: Update this variable to match your Backend Server URL!
 const BACKEND_URL = 'http://localhost:8080';
 
-document.addEventListener('DOMContentLoaded', (event) => {
-  const savedTheme = localStorage.getItem('theme');
-  if(savedTheme === 'light') {
-    document.body.classList.remove('dark');
-    document.getElementById('dark-icon').textContent = '🌙';
-    const darkLabel = document.getElementById('dark-label');
-    if(darkLabel) darkLabel.textContent = 'Dark mode'; 
-  } else {
-    document.body.classList.add('dark');
-    document.getElementById('dark-icon').textContent = '☀️';
-    const darkLabel = document.getElementById('dark-label');
-    if(darkLabel) darkLabel.textContent = 'Light mode';
-  }
-});
 
-function toggleDark() {
-  document.body.classList.toggle('dark');
-  const isDark = document.body.classList.contains('dark');
-  document.getElementById('dark-icon').textContent = isDark ? '☀️' : '🌙';
-  const darkLabel = document.getElementById('dark-label');
-  if(darkLabel) darkLabel.textContent = isDark ? 'Light mode' : 'Dark mode';
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
-}
+
+
 
 function switchTab(id, el) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -444,22 +479,53 @@ function toggle(card) {
   card.classList.toggle('open');
 }
 
-// Write Operations trigger API calls and then redirect to the UI!
-function doUpdate() {
-  const id = document.getElementById('w-upd-id').value;
-  if (!id) { alert('Please enter an Author ID'); return; }
-  fetch(BACKEND_URL + '/api/v1/store-owner/authors/' + id, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ firstName: 'Updated', lastName: 'Author', photo: '' })
-  })
-  .then(r => r.json())
-  .then(() => { 
-      // Redirect to the Author Profile UI upon success
-      window.location.href = '/authors/' + id; 
-  })
-  .catch(() => alert('Request sent (check network tab for response)'));
+// ── POST/PUT Author form navigation ───────────────────────────────────
+// Stores field values in sessionStorage then redirects to the real form page.
+// The form page reads sessionStorage on load and pre-fills the fields.
+
+function openCreateAuthorForm() {
+  const id    = document.getElementById('c-author-id').value.trim();
+  const fn    = document.getElementById('c-author-fn').value.trim();
+  const ln    = document.getElementById('c-author-ln').value.trim();
+  const photo = document.getElementById('c-author-photo').value.trim();
+  // Store for pickup by the form page
+  sessionStorage.setItem('prefill_author', JSON.stringify({ authorID: id, firstName: fn, lastName: ln, photo: photo }));
+  window.location.href = '/store-owner/authors/new';
 }
+
+function openEditAuthorForm() {
+  const id = document.getElementById('u-author-id').value.trim();
+  if (!id) { alert('Please enter an Author ID to edit.'); return; }
+  const fn    = document.getElementById('u-author-fn').value.trim();
+  const ln    = document.getElementById('u-author-ln').value.trim();
+  const photo = document.getElementById('u-author-photo').value.trim();
+  // Store override values for pickup by the edit form page
+  sessionStorage.setItem('prefill_author', JSON.stringify({ firstName: fn, lastName: ln, photo: photo }));
+  window.location.href = '/store-owner/authors/' + id + '/edit';
+}
+
+// ── POST/PUT Book-Author mapping form navigation ───────────────────────
+
+function openAssignAuthorForm() {
+  const isbn    = document.getElementById('c-ba-isbn').value.trim();
+  const aid     = document.getElementById('c-ba-aid').value.trim();
+  const primary = document.getElementById('c-ba-primary').value;
+  sessionStorage.setItem('prefill_bookauthor', JSON.stringify({ isbn: isbn, authorID: aid, primaryAuthor: primary }));
+  const qs = isbn ? '?isbn=' + encodeURIComponent(isbn) : '';
+  window.location.href = '/store-owner/book-authors/new' + qs;
+}
+
+function openEditBookAuthorForm() {
+  const isbn    = document.getElementById('u-ba-isbn').value.trim();
+  const aid     = document.getElementById('u-ba-aid').value.trim();
+  const primary = document.getElementById('u-ba-primary').value;
+  if (!isbn || !aid) { alert('Please enter both ISBN and Author ID.'); return; }
+  sessionStorage.setItem('prefill_bookauthor', JSON.stringify({ isbn: isbn, authorID: aid, primaryAuthor: primary }));
+  window.location.href = '/store-owner/book-authors/' + encodeURIComponent(isbn) + '/' + aid + '/edit';
+}
+
+// ── DELETE operations ──────────────────────────────────────────────────
+
 
 function doDelete() {
   const id = document.getElementById('w-del-id').value;
@@ -468,7 +534,6 @@ function doDelete() {
   fetch(BACKEND_URL + '/api/v1/store-owner/authors/' + id, { method: 'DELETE' })
     .then(() => {
         alert('Author deleted successfully');
-        // Redirect back to Authors List UI upon success
         window.location.href = '/authors';
     })
     .catch(() => alert('Delete request sent'));

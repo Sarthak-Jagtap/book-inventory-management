@@ -37,8 +37,8 @@ public class HomeController {
 						"Inventory Module", "inventory-module", "Inventory · BookCondition · Stock"),
 				new TeamMember("Prajwal", // ← CHANGE THIS
 						"Review Module", "review-module", "BookReviews · Ratings · Reviewers"),
-				new TeamMember("Sudhanshu", // ← CHANGE THIS
-						"Cart Module", "cart-module", "ShoppingCart · Checkout · State"));
+				new TeamMember("Lawhare Sudhanshu", // ← CHANGE THIS
+						"Author Module", "author-module", "Authors · Book-Author · Primary-Author"));
 		// ──────────────────────────────────────────────────────────
 
 		model.addAttribute("members", members);
@@ -82,11 +82,11 @@ public class HomeController {
 
 	@GetMapping("/team/review-module")
 	public String reviewModule() {
-		return "redirect:/home";
+		return "/reviewui/review-dashboard";
 	}
 
-	@GetMapping("/team/cart-module")
-	public String cartModule() {
-		return "redirect:/home";
+	@GetMapping("/team/author-module")
+	public String authorModule() {
+		return "redirect:/api-author-dashboard";
 	}
 }
