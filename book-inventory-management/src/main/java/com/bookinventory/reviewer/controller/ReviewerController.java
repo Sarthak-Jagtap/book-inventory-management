@@ -17,9 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookinventory.reviewer.dto.ReviewerDTO;
-import com.bookinventory.reviewer.entity.Reviewer;
 import com.bookinventory.reviewer.service.ReviewerService;
 import com.bookinventory.user.common.response.ApiResponse;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -60,12 +61,12 @@ public class ReviewerController {
 	}
 	
 	@PostMapping("/reviewer")
-	public ReviewerDTO createReviewer(@RequestBody ReviewerDTO reviewerdto) {
+	public ReviewerDTO createReviewer(@Valid @RequestBody ReviewerDTO reviewerdto) {
 		return service.createReviewer(reviewerdto);
 	}
 	
 	@PutMapping("/reviewer")
-	public ReviewerDTO updateReviewer(@RequestBody ReviewerDTO reviewerdto) {
+	public ReviewerDTO updateReviewer(@Valid @RequestBody ReviewerDTO reviewerdto) {
 		return service.updateReviewer(reviewerdto);
 	}
 	
