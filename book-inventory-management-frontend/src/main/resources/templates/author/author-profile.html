@@ -4,122 +4,182 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Author Profile | Book Inventory System</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
 <style>
-/* Same base CSS variables as previous pages */
-*{box-sizing:border-box;margin:0;padding:0}
-:root{ --bg:#f7f8fc;--surface:#fff;--surface2:#f0f2f8;--text:#1a1d2e;--text2:#6b7280;--text3:#9ca3af; --border:#e5e7eb;--border2:#d1d5db; --accent:#6366f1;--accent2:#818cf8;--danger:#ef4444; }
-body.dark{ --bg:#0f1117;--surface:#1a1d2e;--surface2:#252840;--text:#e8eaf6;--text2:#9ca3af;--text3:#6b7280; --border:#2d3148;--border2:#3d4165; --accent:#818cf8;--accent2:#a5b4fc;--danger:#ef4444;}
-body{ background:var(--bg);color:var(--text); font-family:system-ui,-apple-system,sans-serif; transition:background .3s,color .3s; padding:0 0 60px; }
+/* ── Author Profile Page ──────────────────────────────────── */
+.profile-banner {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.04);
+  margin-bottom: 20px;
+}
+.profile-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--surface2);
+  border: 2.5px solid var(--border);
+  overflow: hidden; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar svg { width: 34px; height: 34px; fill: var(--text3); }
 
-/* Topbar & Container */
-.topbar{ background:var(--surface);border-bottom:1px solid var(--border); padding:16px 32px;display:flex;align-items:center;justify-content:space-between; position:sticky;top:0;z-index:100; }
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.logo-icon{ width:32px;height:32px;background:var(--accent);border-radius:8px; display:flex;align-items:center;justify-content:center; }
-.logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
-.logo-title{font-size:15px;font-weight:600;color:var(--text)}
-.btn-dark{ background:var(--surface2);border:1px solid var(--border);color:var(--text2); padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500; display:flex;align-items:center;gap:6px; }
-.container{max-width:1000px;margin:40px auto;padding:0 32px;display:flex;flex-direction:column;gap:24px}
+.profile-info h1 {
+  font-size: 22px; font-weight: 700; color: var(--text);
+  margin-bottom: 4px; line-height: 1.25;
+}
+.profile-meta {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 4px;
+}
+.meta-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  padding: 3px 10px; border-radius: 20px;
+  font-family: monospace;
+}
+.profile-actions { margin-left: auto; display: flex; gap: 10px; flex-shrink: 0; }
 
-/* Profile Header Card */
-.profile-card{ background:var(--surface);border:1px solid var(--border); border-radius:12px;padding:32px;display:flex;gap:24px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.02); }
-.profile-avatar{ width:100px;height:100px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.profile-avatar img{width:100%;height:100%;object-fit:cover}
-.profile-avatar svg{width:40px;height:40px;fill:var(--text3)}
-.profile-info h1{font-size:24px;color:var(--text);margin-bottom:4px}
-.profile-info p{color:var(--text2);font-size:14px;font-family:monospace}
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,.03);
+}
+.stat-value { font-size: 26px; font-weight: 800; color: var(--accent); margin-bottom: 4px; }
+.stat-label {
+  font-size: 11px; text-transform: uppercase;
+  color: var(--text3); letter-spacing: 0.6px; font-weight: 600;
+}
 
-/* Stats Grid */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px}
-.stat-box{ background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center; }
-.stat-value{font-size:28px;font-weight:800;color:var(--accent);margin-bottom:4px}
-.stat-label{font-size:12px;text-transform:uppercase;color:var(--text3);letter-spacing:0.5px;font-weight:600}
-
-/* Books Table */
-.card{ background:var(--surface);border:1px solid var(--border); border-radius:12px;overflow:hidden;}
-.card-header{padding:16px 24px;border-bottom:1px solid var(--border);font-weight:600;font-size:15px}
-table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}
-th{ background:var(--surface2);color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;font-size:11px;padding:14px 20px;border-bottom:1px solid var(--border); }
-td{padding:14px 20px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
-tr:hover td{background:var(--surface2)}
-.btn-back{text-decoration:none;color:var(--text2);font-size:14px;display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;}
-.btn-back:hover{color:var(--accent)}
+/* Books table polishing */
+.isbn-cell { font-family: monospace; font-size: 13px; color: var(--text3); }
+.title-cell { font-weight: 600; color: var(--text); }
+.edition-cell {
+  display: inline-block;
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 2px 9px; border-radius: 5px; font-size: 12px; color: var(--text2);
+}
+.empty-state {
+  padding: 48px 20px; text-align: center; color: var(--text2); font-size: 14px;
+}
 </style>
 </head>
-<body class="dark">
+<body>
 
-<div class="topbar">
-  <a href="/" class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
-    <div class="logo-title">Book Inventory System</div>
-  </a>
-  <button class="btn-dark" onclick="toggleDark()"><span id="dark-icon">☀️</span></button>
-</div>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="container">
-  <a th:href="@{/authors}" class="btn-back">← Back to Authors</a>
+<div class="page-wrapper-sm">
 
-  <div th:if="${error}" style="padding:16px;background:var(--danger);color:#fff;border-radius:8px" th:text="${error}"></div>
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a th:href="@{/authors}">Authors</a>
+    <span class="sep">›</span>
+    <span>Author Profile</span>
+  </div>
+
+  <!-- Error -->
+  <div th:if="${error}"
+       style="padding:14px 18px;background:var(--danger,#fef2f2);color:#b91c1c;border-radius:10px;border:1px solid #fecaca;margin-bottom:16px;"
+       th:text="${error}"></div>
 
   <th:block th:if="${author != null}">
-    <div class="profile-card">
+
+    <!-- Profile Banner -->
+    <div class="profile-banner">
       <div class="profile-avatar">
-        <img th:if="${author.photo != null and !author.photo.isEmpty()}" th:src="${author.photo}">
-        <svg th:unless="${author.photo != null and !author.photo.isEmpty()}" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        <img th:if="${author.photo != null and !author.photo.isEmpty()}" th:src="${author.photo}" alt="Avatar">
+        <svg th:unless="${author.photo != null and !author.photo.isEmpty()}" viewBox="0 0 24 24">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
       </div>
       <div class="profile-info">
         <h1 th:text="${author.firstName + ' ' + author.lastName}">Author Name</h1>
-        <p th:text="'Author ID: #' + ${author.authorID}">ID: #0</p>
+        <div class="profile-meta">
+          <span class="meta-chip" th:text="'ID: #' + ${author.authorID}">ID: #0</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <a th:href="@{/store-owner/authors/{id}/edit(id=${author.authorID})}"
+           class="btn btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Edit Author
+        </a>
       </div>
     </div>
 
-    <div class="stats-grid" th:if="${stats != null}">
-      <div class="stat-box" th:each="stat : ${stats}">
+    <!-- Stats -->
+    <div class="stats-row" th:if="${stats != null}">
+      <div class="stat-card" th:each="stat : ${stats}">
         <div class="stat-value" th:text="${stat.value}">0</div>
         <div class="stat-label" th:text="${stat.key}">Stat</div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">Books Authored</div>
-      <div style="overflow-x:auto;">
-        <table th:if="${books != null and !#lists.isEmpty(books)}">
+    <!-- Books Table -->
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <div style="padding: 16px 20px 12px; border-bottom: 1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="font-size:15px; font-weight:700; color:var(--text);">Books Authored</div>
+          <div style="font-size:12px; color:var(--text3); margin-top:2px;">
+            All books associated with this author
+          </div>
+        </div>
+      </div>
+
+      <div class="data-table-wrapper">
+        <table class="data-table" th:if="${books != null and !#lists.isEmpty(books)}">
           <thead>
             <tr>
-              <th>ISBN</th>
+              <th style="width:180px; padding-left:20px;">ISBN</th>
               <th>Title</th>
-              <th>Edition</th>
+              <th style="width:110px; text-align:center;">Edition</th>
             </tr>
           </thead>
           <tbody>
             <tr th:each="book : ${books}">
-              <td style="font-family:monospace;color:var(--text3)" th:text="${book.get('isbn')}"></td>
-              <td style="font-weight:600" th:text="${book.get('title')}"></td>
-              <td th:text="${book.get('edition')}"></td>
+              <td class="isbn-cell" style="padding-left:20px;" th:text="${book.get('isbn')}"></td>
+              <td class="title-cell" th:text="${book.get('title')}"></td>
+              <td style="text-align:center;">
+                <span class="edition-cell" th:text="${book.get('edition')}"></span>
+              </td>
             </tr>
           </tbody>
         </table>
-        <div th:if="${books == null or #lists.isEmpty(books)}" style="padding:32px;text-align:center;color:var(--text2)">
-          No books found for this author.
+
+        <div th:if="${books == null or #lists.isEmpty(books)}" class="empty-state">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--border2)" stroke-width="1.5" style="margin:0 auto 12px;display:block;">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          <p style="font-weight:600; margin-bottom:4px;">No books yet</p>
+          <p style="font-size:13px; color:var(--text3);">No books found for this author.</p>
         </div>
       </div>
     </div>
+
   </th:block>
 
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  if(localStorage.getItem('theme') === 'light') {
-    document.body.classList.remove('dark');
-    document.getElementById('dark-icon').textContent = '🌙';
-  }
-});
-function toggleDark() {
-  document.body.classList.toggle('dark');
-  const isDark = document.body.classList.contains('dark');
-  document.getElementById('dark-icon').textContent = isDark ? '☀️' : '🌙';
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
-}
-</script>
 </body>
 </html>
