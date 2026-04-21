@@ -1,19 +1,47 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
+	<meta charset="UTF-8" />
 	<title>Find State</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 
 <body>
 
-	<h2>Search State by Code</h2>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-	<form action="/states/details" method="get">
-		<label>State Code:</label>
-		<input type="text" name="stateCode" required>
-		<button type="submit">Search</button>
-	</form>
+	<div class="page-wrapper">
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">Find State</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">
+					Search for specific state information by its code
+				</div>
+			</div>
+
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
+
+				<a class="btn btn-secondary btn-sm" th:href="@{/states}">← View All States</a>
+			</div>
+		</div>
+
+		<div class="card" style="padding: 24px; max-width: 450px;">
+			<form th:action="@{/states/details}" method="get">
+				<div style="margin-bottom: 16px;">
+					<label
+						style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 6px;">
+						State Code (e.g., NY, CA)
+					</label>
+					<input type="text" name="stateCode" required
+						style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;"
+						placeholder="Enter 2-letter code">
+				</div>
+				<button type="submit" class="btn btn-primary">Search Details</button>
+			</form>
+		</div>
+	</div>
 
 </body>
 

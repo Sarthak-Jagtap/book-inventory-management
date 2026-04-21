@@ -72,7 +72,7 @@ public class HomeController {
 	@GetMapping("/team/book-module")
 	public String bookModule(Model model) {
 		model.addAttribute("message", "Book Module — Coming Soon");
-		return "redirect:/home"; // Replace with actual page when teammate builds it
+		return "team/book-module"; // Replace with actual page when teammate builds it
 	}
 
 	@GetMapping("/team/inventory-module")

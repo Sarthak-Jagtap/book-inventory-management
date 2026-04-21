@@ -1,16 +1,61 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
+	<meta charset="UTF-8" />
 	<title>State Details</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
 
 <body>
 
-	<h2>State Details</h2>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-	<p><b>Code:</b> <span th:text="${state.stateCode}"></span></p>
-	<p><b>Name:</b> <span th:text="${state.stateName}"></span></p>
+	<div class="page-wrapper">
+
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">State Details</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">
+					Information for code: <span th:text="${state.stateCode}" style="font-weight:bold;"></span>
+				</div>
+			</div>
+
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
+
+				<a class="btn btn-secondary btn-sm" th:href="@{/states/code-form}">← New Search</a>
+			</div>
+		</div>
+
+		<div class="card" style="padding: 24px; max-width: 600px;">
+			<table class="detail-table" style="width:100%; border-collapse:collapse;">
+				<tr>
+					<th
+						style="width:140px; padding:12px; text-align:left; color:#6b7280; font-weight:500; font-size:13px; border-bottom:1px solid #f3f4f6;">
+						State Code
+					</th>
+					<td style="padding:12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6; font-weight: 600;"
+						th:text="${state.stateCode}"></td>
+				</tr>
+				<tr>
+					<th
+						style="padding:12px; text-align:left; color:#6b7280; font-weight:500; font-size:13px; border-bottom:1px solid #f3f4f6;">
+						State Name
+					</th>
+					<td style="padding:12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6;"
+						th:text="${state.stateName}"></td>
+				</tr>
+			</table>
+
+			<div style="margin-top: 24px;">
+				<a th:href="@{/publishers/state(stateCode=${state.stateCode})}" class="btn btn-secondary btn-sm">
+					View Publishers in this State →
+				</a>
+			</div>
+		</div>
+
+	</div>
 
 </body>
 

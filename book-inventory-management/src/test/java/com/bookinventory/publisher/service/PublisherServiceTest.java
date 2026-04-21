@@ -64,17 +64,36 @@ class PublisherServiceTest {
 	// Create Publisher : Success
 	@Test
 	void testCreatePublisher_Success() {
-		when(stateRepository.findById("MH")).thenReturn(Optional.of(state));
-		when(publisherRepository.save(any(Publisher.class))).thenReturn(publisher);
 
-		PublisherResponseDTO reponseDTO = publisherService.createPublisher(requestDTO);
+	    PublisherRequestDTO requestDTO = new PublisherRequestDTO();
+	    requestDTO.setPublisherId(1);
+	    requestDTO.setName("ABC Publications");
+	    requestDTO.setCity("Pune");
+	    requestDTO.setStateCode("MH");
 
-		assertNotNull(reponseDTO);
-		assertEquals("ABC Publications", reponseDTO.getName());
-		assertEquals("MH", reponseDTO.getStateCode());
+	    State state = new State();
+	    state.setStateCode("MH");
+	    state.setStateName("Maharashtra");
 
-		verify(stateRepository).findById("MH");
-		verify(publisherRepository).save(any(Publisher.class));
+	    Publisher publisher = new Publisher();
+	    publisher.setPublisherId(1);
+	    publisher.setName("ABC Publications");
+	    publisher.setCity("Pune");
+	    publisher.setState(state);
+
+	    when(stateRepository.findById("MH")).thenReturn(Optional.of(state));
+	    when(publisherRepository.save(any(Publisher.class))).thenReturn(publisher);
+
+	    PublisherResponseDTO responseDTO = publisherService.createPublisher(requestDTO);
+
+	    assertNotNull(responseDTO);
+	    assertEquals(1, responseDTO.getPublisherId());
+	    assertEquals("ABC Publications", responseDTO.getName());
+	    assertEquals("Pune", responseDTO.getCity());
+	    assertEquals("MH", responseDTO.getStateCode());
+
+	    verify(stateRepository).findById("MH");
+	    verify(publisherRepository).save(any(Publisher.class));
 	}
 
 	// Create Publisher : State Not Found

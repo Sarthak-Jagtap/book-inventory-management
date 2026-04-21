@@ -1,24 +1,67 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
 <head>
-    <title>States</title>
+	<meta charset="UTF-8" />
+	<title>States List</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
+
 <body>
 
-<h2>States List</h2>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<table border="1">
-    <tr>
-        <th>Code</th>
-        <th>Name</th>
-    </tr>
+	<div class="page-wrapper">
 
-    <tr th:each="state : ${states}">
-        <td th:text="${state.stateCode}"></td>
-        <td th:text="${state.stateName}"></td>
-    </tr>
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">States Inventory</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">
+					List of all registered states in the system
+				</div>
+			</div>
 
-</table>
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
+
+				<a class="btn btn-primary btn-sm" th:href="@{/states/code-form}">Search by Code</a>
+			</div>
+		</div>
+
+		<div class="card">
+			<table class="table" style="width:100%; border-collapse:collapse;">
+				<thead style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+					<tr>
+						<th
+							style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Code</th>
+						<th
+							style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							State Name</th>
+						<th
+							style="padding: 12px 16px; text-align: right; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Actions</th>
+					</tr>
+				</thead>
+				<tbody style="font-size: 14px; color: #374151;">
+					<tr th:each="state : ${states}" style="border-bottom: 1px solid #f3f4f6;">
+						<td style="padding: 12px 16px; font-weight: 600;" th:text="${state.stateCode}"></td>
+						<td style="padding: 12px 16px;" th:text="${state.stateName}"></td>
+						<td style="padding: 12px 16px; text-align: right;">
+							<a th:href="@{/states/details(stateCode=${state.stateCode})}"
+								class="btn btn-secondary btn-sm" style="padding: 4px 8px;">View</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div th:if="${#lists.isEmpty(states)}" style="padding: 40px; text-align: center; color: #9ca3af;">
+				No states found in the database.
+			</div>
+		</div>
+
+	</div>
 
 </body>
+
 </html>

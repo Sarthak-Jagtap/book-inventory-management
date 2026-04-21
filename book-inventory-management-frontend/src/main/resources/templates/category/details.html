@@ -1,17 +1,53 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
+	<meta charset="UTF-8">
 	<title>Category Details</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div class="page-wrapper">
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">Category Details</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">Detailed view of the selected category</div>
+			</div>
 
-	<h2>Category Details</h2>
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
 
-	<p><b>ID:</b> <span th:text="${category.categoryId}"></span></p>
-	<p><b>Name:</b> <span th:text="${category.categoryDescription}"></span></p>
+				<a class="btn btn-secondary btn-sm" th:href="@{/categories/list}">← Back to List</a>
+			</div>
+		</div>
 
+		<div class="card" style="padding: 24px; max-width: 600px;">
+			<table class="detail-table" style="width:100%; border-collapse:collapse;">
+				<tr>
+					<th
+						style="width:160px; padding:12px; text-align:left; color:#6b7280; font-weight:500; font-size:13px; border-bottom:1px solid #f3f4f6;">
+						ID</th>
+					<td style="padding:12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6; font-weight: 600;"
+						th:text="${category.categoryId}"></td>
+				</tr>
+				<tr>
+					<th
+						style="padding:12px; text-align:left; color:#6b7280; font-weight:500; font-size:13px; border-bottom:1px solid #f3f4f6;">
+						Name</th>
+					<td style="padding:12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6;"
+						th:text="${category.categoryDescription}"></td>
+				</tr>
+			</table>
+
+			<div style="margin-top: 24px; display: flex; gap: 12px;">
+				<a th:href="@{/categories/update(categoryId=${category.categoryId})}" class="btn btn-primary">Edit
+					Category</a>
+				<a th:href="@{/categories/delete(categoryId=${category.categoryId})}" class="btn btn-danger">Delete</a>
+			</div>
+		</div>
+	</div>
 </body>
 
 </html>

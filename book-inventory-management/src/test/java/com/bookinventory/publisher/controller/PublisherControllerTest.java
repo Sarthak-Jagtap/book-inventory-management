@@ -3,6 +3,7 @@ package com.bookinventory.publisher.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -90,11 +91,11 @@ class PublisherControllerTest {
 				.andDo(print());
 	}
 	
-	// POST - Create Publisher
 	@Test
 	void testCreatePublisher() throws Exception {
 
 	    PublisherRequestDTO request = new PublisherRequestDTO();
+	    request.setPublisherId(1);   // ✅ REQUIRED now
 	    request.setName("ABC Publications");
 	    request.setCity("Pune");
 	    request.setStateCode("MH");
@@ -102,6 +103,8 @@ class PublisherControllerTest {
 	    PublisherResponseDTO response = new PublisherResponseDTO();
 	    response.setPublisherId(1);
 	    response.setName("ABC Publications");
+	    response.setCity("Pune");
+	    response.setStateCode("MH");
 
 	    when(publisherService.createPublisher(any(PublisherRequestDTO.class)))
 	            .thenReturn(response);
@@ -110,9 +113,13 @@ class PublisherControllerTest {
 	            .contentType(MediaType.APPLICATION_JSON)
 	            .content(objectMapper.writeValueAsString(request)))
 	            .andExpect(status().isCreated())
-	            .andExpect(jsonPath("$.data.name")
-	            .value("ABC Publications"))
-				.andDo(print());
+	            .andExpect(jsonPath("$.data.publisherId").value(1))   // ✅ added
+	            .andExpect(jsonPath("$.data.name").value("ABC Publications"))
+	            .andExpect(jsonPath("$.data.city").value("Pune"))     // ✅ added
+	            .andExpect(jsonPath("$.data.stateCode").value("MH"))  // ✅ added
+	            .andDo(print());
+
+	    verify(publisherService).createPublisher(any(PublisherRequestDTO.class));
 	}
 	
 	// PUT - Update Publisher
@@ -120,6 +127,7 @@ class PublisherControllerTest {
 	void testUpdatePublisher() throws Exception {
 
 	    PublisherRequestDTO request = new PublisherRequestDTO();
+	    request.setPublisherId(1);   // ✅ REQUIRED now
 	    request.setName("Updated Publisher");
 	    request.setCity("Mumbai");
 	    request.setStateCode("MH");
@@ -127,6 +135,8 @@ class PublisherControllerTest {
 	    PublisherResponseDTO response = new PublisherResponseDTO();
 	    response.setPublisherId(1);
 	    response.setName("Updated Publisher");
+	    response.setCity("Mumbai");
+	    response.setStateCode("MH");
 
 	    when(publisherService.updatePublisher(eq(1), any(PublisherRequestDTO.class)))
 	            .thenReturn(response);
@@ -135,9 +145,13 @@ class PublisherControllerTest {
 	            .contentType(MediaType.APPLICATION_JSON)
 	            .content(objectMapper.writeValueAsString(request)))
 	            .andExpect(status().isOk())
-	            .andExpect(jsonPath("$.data.name")
-	            .value("Updated Publisher"))
-				.andDo(print());
+	            .andExpect(jsonPath("$.data.publisherId").value(1))   // ✅ added
+	            .andExpect(jsonPath("$.data.name").value("Updated Publisher"))
+	            .andExpect(jsonPath("$.data.city").value("Mumbai"))   // ✅ added
+	            .andExpect(jsonPath("$.data.stateCode").value("MH"))  // ✅ added
+	            .andDo(print());
+
+	    verify(publisherService).updatePublisher(eq(1), any(PublisherRequestDTO.class));
 	}
 	
 	// DELETE - Delete Publisher

@@ -1,1 +1,26 @@
-<h3 th:text="${message}"></h3>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Success</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div>
+		<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
+
+	</div>
+	<div class="page-wrapper" style="display: flex; align-items: center; justify-content: center; min-height: 60vh;">
+		<div class="card" style="padding: 40px; text-align: center; max-width: 500px; width: 100%;">
+			<div style="font-size: 48px; margin-bottom: 16px; color: #10b981;">✓</div>
+			<h2 style="font-size: 20px; font-weight: 600; color: #111827; margin-bottom: 12px;">Action Successful</h2>
+			<p th:text="${message}" style="color: #6b7280; font-size: 15px; margin-bottom: 32px;"></p>
+			<a th:href="@{/publishers}" class="btn btn-primary" style="width: 100%;">Return to Publishers List</a>
+		</div>
+	</div>
+</body>
+
+</html>
