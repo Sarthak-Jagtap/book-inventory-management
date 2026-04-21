@@ -63,7 +63,7 @@
         </td>
         <td>
           <span th:if="${opt.availableCount > 0}" class="pill pill-yes">In Stock</span>
-          <span th:unless="${opt.availableCount > 0}" class="pill pill-no">Out of Stock</span>
+          <span th:unless="${opt.availableCount > 0}" class="pill pill-no">Sold out</span>
         </td>
       </tr>
       </tbody>
@@ -71,7 +71,8 @@
   </div>
 
   <div th:if="${options == null or #lists.isEmpty(options)}" class="empty-state">
-    No quality options available for this book.
+    <h3>Sold out</h3>
+    <p>This book is currently unavailable in our inventory.</p>
   </div>
 
   <div class="footer-actions">

@@ -113,14 +113,14 @@ public class InventoryController {
 
             InventoryResponse data = response != null ? response.getData() : null;
             if (data == null) {
-                model.addAttribute("apiError", "Inventory item doesn't exist.");
+                model.addAttribute("apiError", "Item doesn't exist");
                 return "inventory/details";
             }
             model.addAttribute("inventory", data);
             return "inventory/details";
         } catch (HttpStatusCodeException ex) {
             if (ex.getStatusCode().value() == 404) {
-                model.addAttribute("apiError", "Inventory item doesn't exist.");
+                model.addAttribute("apiError", "Item doesn't exist");
             } else {
                 model.addAttribute("apiError", extractErrorMessage(ex));
             }
@@ -263,7 +263,7 @@ public class InventoryController {
 
             InventoryResponse inventory = response != null ? response.getData() : null;
             if (inventory == null) {
-                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
+                redirectAttributes.addFlashAttribute("apiError", "Item doesn't exist");
                 return "redirect:/store-owner/inventory";
             }
 
@@ -275,7 +275,7 @@ public class InventoryController {
             return "inventory/edit";
         } catch (HttpStatusCodeException ex) {
             if (ex.getStatusCode().value() == 404) {
-                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
+                redirectAttributes.addFlashAttribute("apiError", "Item doesn't exist");
             } else {
                 redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
             }
@@ -287,7 +287,8 @@ public class InventoryController {
     public String updateInventory(@PathVariable Integer inventoryId,
                                   @Valid @ModelAttribute("updateInventoryRequest") UpdateInventoryRequest request,
                                   BindingResult bindingResult,
-                                  Model model) {
+                                  Model model,
+                                  RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("inventoryId", inventoryId);
             return "inventory/edit";
@@ -300,7 +301,8 @@ public class InventoryController {
                     .retrieve()
                     .toBodilessEntity();
 
-            return "redirect:/store-owner/inventory";
+            redirectAttributes.addFlashAttribute("successMessage", "Item updated successfully!");
+            return "redirect:/team/inventory-module";
         } catch (HttpStatusCodeException ex) {
             model.addAttribute("inventoryId", inventoryId);
             model.addAttribute("apiError", extractErrorMessage(ex));
@@ -319,7 +321,7 @@ public class InventoryController {
 
             InventoryResponse inventory = getResponse != null ? getResponse.getData() : null;
             if (inventory == null) {
-                redirectAttributes.addFlashAttribute("apiError", "Inventory item doesn't exist.");
+                redirectAttributes.addFlashAttribute("apiError", "Item doesn't exist");
                 return "redirect:/team/inventory-module";
             }
 

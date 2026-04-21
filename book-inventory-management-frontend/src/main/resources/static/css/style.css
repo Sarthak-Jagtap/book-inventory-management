@@ -375,7 +375,8 @@ ul { list-style: none; }
 }
 .endpoint-desc {
   font-size: 13px;
-  color: #6b7280;
+  color: #374151;
+  font-weight: 500;
   flex: 1.2;
   line-height: 1.5;
 }

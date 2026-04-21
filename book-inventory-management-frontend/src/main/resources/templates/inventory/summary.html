@@ -48,7 +48,9 @@
         <th>Rank</th>
         <th>Condition</th>
         <th>Price</th>
-        <th>Available Count</th>
+        <th>Available</th>
+        <th>Sold</th>
+        <th>Total</th>
       </tr>
       </thead>
       <tbody>
@@ -56,13 +58,28 @@
         <td th:text="${item.rank}"></td>
         <td th:text="${item.condition}"></td>
         <td th:text="'₹' + ${item.price}"></td>
-        <td th:text="${item.availableCount}"></td>
+        <td>
+          <span class="pill pill-yes" th:text="${item.availableCount}"></span>
+        </td>
+        <td>
+          <span class="pill pill-no" th:text="${item.totalCount - item.availableCount}"></span>
+        </td>
+        <td th:text="${item.totalCount}"></td>
       </tr>
       </tbody>
     </table>
   </div>
 
-  <div th:if="${summaryList == null or #lists.isEmpty(summaryList)}" class="empty-state">
+  <div th:if="${summaryList != null and !#lists.isEmpty(summaryList)}" 
+       style="margin-top: 20px; padding: 15px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-align: center;">
+    <h3 style="margin: 0; color: var(--text-main);">
+      Overall Sales: 
+      <span style="color: var(--accent);" th:text="${#aggregates.sum(summaryList.![totalCount - availableCount])}">0</span>
+      copies sold
+    </h3>
+  </div>
+
+  <div th:if="${(summaryList == null or #lists.isEmpty(summaryList)) and apiError == null}" class="empty-state">
     No inventory summary available for this ISBN.
   </div>
 

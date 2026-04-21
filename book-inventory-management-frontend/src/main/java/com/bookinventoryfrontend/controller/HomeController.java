@@ -86,7 +86,7 @@ public class HomeController {
     public String inventoryModule(Model model) {
         model.addAttribute("activePage", "inventory-module");
         model.addAttribute("memberName", "Yashomati");
-        model.addAttribute("endpointCount", 17);
+        model.addAttribute("endpointCount", 16);
         model.addAttribute("groupCount", 3);
         return "team/inventory-module";
     }

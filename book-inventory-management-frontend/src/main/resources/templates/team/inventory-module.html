@@ -8,13 +8,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
   <style>
-    .endpoint-row { gap: 10px; }
-    .endpoint-form { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-    .endpoint-form input { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; width: 130px; }
+    .endpoint-row { 
+      display: grid; 
+      grid-template-columns: 85px 340px 1fr 260px; 
+      align-items: center; 
+      gap: 24px;
+      padding: 14px 20px;
+    }
+    .method { width: auto; font-family: 'Courier New', monospace; }
+    .endpoint-url { font-family: 'Courier New', monospace; font-size: 13px; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .endpoint-desc { font-size: 13px; color: #374151; font-weight: 500; line-height: 1.4; }
+    .endpoint-form { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+    .endpoint-form input { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; width: 140px; }
     .endpoint-form button { background: #1a6dbd; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: background 0.2s; }
-    .endpoint-form button:hover { background: #155fa3; }
-    .endpoint-desc { flex: 1; }
-    .method { width: 70px; }
+    .access-tag { justify-self: end; }
     .alert-popup {
       position: fixed; top: 20px; right: 20px; z-index: 1000;
       padding: 16px 24px; border-radius: 12px;
@@ -43,7 +50,7 @@
   </div>
 </div>
 
-<div class="page-wrapper-sm">
+<div class="page-wrapper" style="max-width: 1200px;">
   <div class="breadcrumb">
     <a th:href="@{/home}">Home</a>
     <span class="sep">›</span>
@@ -60,14 +67,13 @@
     </div>
 
     <!-- ══ GROUP 1: Book Conditions ══ -->
-    <div class="section-title">Group 1 — Book Conditions <span class="tag">Owner+</span></div>
+    <div class="section-title">Group 1 — Book Conditions <span class="tag">Owner Only</span></div>
     <div class="endpoint-list">
       <th:block th:if="${session.ROLE_NAME == 'StoreOwner' or session.ROLE_NAME == 'Admin'}">
         <a class="endpoint-row" th:href="@{/store-owner/inventory/book-conditions}">
           <span class="method method-get">GET</span>
           <span class="endpoint-url">/api/v1/store-owner/book-conditions</span>
           <span class="endpoint-desc">Fetch condition descriptions and base prices ($)</span>
-          <span class="access-tag access-owner">Owner+</span>
         </a>
       </th:block>
       <th:block th:if="${session.ROLE_NAME != 'StoreOwner' and session.ROLE_NAME != 'Admin'}">
@@ -80,14 +86,13 @@
     </div>
 
     <!-- ══ GROUP 2: Inventory Management ══ -->
-    <div class="section-title">Group 2 — Inventory Management <span class="tag">Owner+</span></div>
+    <div class="section-title">Group 2 — Inventory Management <span class="tag">Owner Only</span></div>
     <div class="endpoint-list">
       <th:block th:if="${session.ROLE_NAME == 'StoreOwner' or session.ROLE_NAME == 'Admin'}">
         <a class="endpoint-row" th:href="@{/store-owner/inventory}">
           <span class="method method-get">GET</span>
           <span class="endpoint-url">/api/v1/store-owner/inventory</span>
           <span class="endpoint-desc">List all inventory items in the store</span>
-          <span class="access-tag access-owner">Owner+</span>
         </a>
 
         <div class="endpoint-row">
@@ -144,7 +149,6 @@
           <span class="method method-post">POST</span>
           <span class="endpoint-url">/api/v1/store-owner/inventory</span>
           <span class="endpoint-desc">Add a new book item to stock</span>
-          <span class="access-tag access-owner">Owner+</span>
         </a>
 
         <div class="endpoint-row">
@@ -170,32 +174,30 @@
         <div class="endpoint-row">
           <span class="method method-delete">DELETE</span>
           <span class="endpoint-url">/api/v1/store-owner/inventory/{id}</span>
-          <span class="endpoint-desc">Permanently delete an inventory record</span>
-          <form class="endpoint-form" th:action="@{/store-owner/inventory/delete/run}" method="post" 
-                onsubmit="return confirm('Permanently remove this item?')">
-            <input type="number" name="inventoryId" min="1000000" placeholder="ID" required/>
-            <button type="submit" style="background:#dc2626">Delete</button>
+          <span class="endpoint-desc">Permanently remove an inventory record</span>
+          <form class="endpoint-form" id="deleteForm" th:action="@{/store-owner/inventory/delete/run}" method="post">
+            <input type="number" id="deleteId" name="inventoryId" min="1000000" placeholder="ID" required/>
+            <button type="button" onclick="confirmDelete()" style="background:#dc2626">Delete</button>
           </form>
         </div>
       </th:block>
       <th:block th:if="${session.ROLE_NAME != 'StoreOwner' and session.ROLE_NAME != 'Admin'}">
         <div class="endpoint-row locked">
           <span class="method method-get">--</span>
-          <span class="endpoint-url">/api/v1/store-owner/** (10 endpoints)</span>
+          <span class="endpoint-url">/api/v1/store-owner/**</span>
           <span class="access-tag access-owner">StoreOwner Only</span>
         </div>
       </th:block>
     </div>
 
     <!-- ══ GROUP 3: User Cart ══ -->
-    <div class="section-title">Group 3 — Shopping Cart <span class="tag">Registered Only</span></div>
+    <div class="section-title">Group 3 — Shopping Cart <span class="tag">User Only</span></div>
     <div class="endpoint-list">
       <th:block th:if="${session.ROLE_NAME == 'RegisteredUser' or session.ROLE_NAME == 'Admin'}">
         <a class="endpoint-row" th:href="@{/user/cart/view}">
           <span class="method method-get">GET</span>
           <span class="endpoint-url">/api/v1/user/cart/view/{userId}</span>
           <span class="endpoint-desc">View your current shopping cart</span>
-          <span class="access-tag access-auth">User Only</span>
         </a>
 
         <div class="endpoint-row">
@@ -212,21 +214,18 @@
           <span class="method method-post">POST</span>
           <span class="endpoint-url">/api/v1/user/cart/add</span>
           <span class="endpoint-desc">Add a new book to your cart</span>
-          <span class="access-tag access-auth">User Only</span>
         </a>
 
         <a class="endpoint-row" th:href="@{/user/cart/view}">
           <span class="method method-delete">DELETE</span>
           <span class="endpoint-url">/api/v1/user/cart/remove</span>
           <span class="endpoint-desc">Remove an item from your cart</span>
-          <span class="access-tag access-auth">User Only</span>
         </a>
 
         <a class="endpoint-row" th:href="@{/user/cart/checkout}">
           <span class="method method-post">POST</span>
           <span class="endpoint-url">/api/v1/user/cart/checkout</span>
-          <span class="endpoint-desc">Finalize purchase and empty cart (Validated)</span>
-          <span class="access-tag access-auth">User Only</span>
+          <span class="endpoint-desc">Complete purchase and empty cart</span>
         </a>
       </th:block>
       <th:block th:if="${session.ROLE_NAME != 'RegisteredUser' and session.ROLE_NAME != 'Admin'}">
@@ -244,13 +243,41 @@
 <div class="footer">Book Inventory Management — Yashomati's Module</div>
 
 <script>
+  async function confirmDelete() {
+    const idInput = document.getElementById('deleteId');
+    const id = idInput.value;
+    if (!id) {
+      alert('Please enter an Inventory ID.');
+      return;
+    }
+
+    try {
+      // Step 1: Check if exists by calling the detail endpoint
+      // We use the absolute path or relative to context
+      const response = await fetch('/store-owner/inventory/' + id, { method: 'GET' });
+      
+      if (response.ok && !response.url.includes('?apiError=')) {
+        // Step 2: If found, ask for confirmation
+        if (confirm('Item found! Are you sure you want to PERMANENTLY delete record #' + id + '?')) {
+          document.getElementById('deleteForm').submit();
+        }
+      } else {
+        // Step 3: If not found (or redirected to error)
+        alert('Item doesn\'t exist. No action taken.');
+      }
+    } catch (error) {
+      console.error('Check failed:', error);
+      alert('Unable to verify item. Please try again.');
+    }
+  }
+
   // Auto-hide success message after 5 seconds
-  const alert = document.getElementById('successAlert');
-  if (alert) {
+  const alertBox = document.getElementById('successAlert');
+  if (alertBox) {
     setTimeout(() => {
-      alert.style.transition = 'opacity 0.5s ease';
-      alert.style.opacity = '0';
-      setTimeout(() => alert.remove(), 500);
+      alertBox.style.transition = 'opacity 0.5s ease';
+      alertBox.style.opacity = '0';
+      setTimeout(() => alertBox.remove(), 500);
     }, 5000);
   }
 </script>

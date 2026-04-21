@@ -31,7 +31,7 @@
 <div class="content">
 
   <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
-  <div th:if="${checkoutMessage != null}" class="success-box" th:text="${checkoutMessage}"></div>
+  <div th:if="${successMessage != null}" class="success-box" th:text="${successMessage}"></div>
 
   <!-- Main Checkout Form (Empty, used for association) -->
   <form id="checkoutForm" th:action="@{/user/cart/checkout}" method="post">
@@ -60,13 +60,14 @@
                 <option value="">Choose quality...</option>
                 <option th:each="opt : ${optionsByIsbn[item.isbn]}"
                         th:value="${opt.rank}"
-                        th:text="${opt.condition + ' - $' + opt.price}">
+                        th:text="${opt.condition + ' - $' + opt.price}"
+                        th:disabled="${opt.availableCount <= 0}">
                 </option>
               </select>
             </div>
             <div th:if="${optionsByIsbn[item.isbn] == null or #lists.isEmpty(optionsByIsbn[item.isbn])}"
                  style="color:#b91c1c; font-weight:600; font-size: 13px;">
-              ✖ Out of Stock
+              ✖ Sold out
             </div>
           </td>
           <td>

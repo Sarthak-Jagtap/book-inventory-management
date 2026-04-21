@@ -108,7 +108,13 @@ public class CartServiceImpl implements CartService {
         ShoppingCartId cartId = new ShoppingCartId(request.getUserId(), request.getIsbn());
 
         if (cartRepository.existsById(cartId)) {
-            throw new BadRequestException("Book already exists in cart for this user");
+            throw new BadRequestException("Book already in cart");
+        }
+
+        // Check if book is in stock
+        List<Inventory> available = inventoryRepository.getAvailableInventoryByIsbn(request.getIsbn());
+        if (available == null || available.isEmpty()) {
+            throw new BadRequestException("Sold out");
         }
 
         ShoppingCart cart = new ShoppingCart();
@@ -203,9 +209,7 @@ public class CartServiceImpl implements CartService {
                     .orElse(null);
 
             if (inventory == null) {
-                // If one item fails, we could either fail the whole transaction or skip.
-                // Given the transactional nature and user request, failing with a clear message is better.
-                throw new BadRequestException("No available copy for ISBN: " + isbn + " with rank: " + rank);
+                throw new BadRequestException("Item sold out or unavailable");
             }
 
             inventory.setPurchased(true);

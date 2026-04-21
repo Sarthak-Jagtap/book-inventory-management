@@ -74,7 +74,7 @@
     </table>
   </div>
 
-  <div th:if="${inventoryList == null or #lists.isEmpty(inventoryList)}" class="empty-state">
+  <div th:if="${(inventoryList == null or #lists.isEmpty(inventoryList)) and apiError == null}" class="empty-state">
     No inventory items found.
   </div>
 
