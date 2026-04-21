@@ -33,23 +33,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-// ─────────────────────────────────────────────────────────────────────
-// @Nested — a new concept in this phase
-//
-// When a test class gets large, @Nested lets you GROUP related tests
-// into inner classes. This makes the test output much cleaner:
-//
-//  UserServiceImplTest
-//    ├── RegisterTests
-//    │     ├── register_WhenValid_ShouldReturnDTO
-//    │     └── register_WhenDuplicateUsername_ShouldThrow
-//    ├── LoginTests
-//    │     ├── login_WhenValid_ShouldReturnToken
-//    │     └── login_WhenWrongPassword_ShouldThrow
-//    └── ...
-//
-// Each @Nested class shares the outer class's @Mock and @InjectMocks
-// ─────────────────────────────────────────────────────────────────────
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
@@ -63,13 +46,6 @@ class UserServiceImplTest {
     @Mock
     private PurchaseLogRepository purchaseLogRepository;
 
-    // ─────────────────────────────────────────────────────────────────
-    // JwtUtil is also a dependency — we mock it too
-    // We don't want real JWT generation in unit tests
-    //   → it's slow
-    //   → it depends on application.properties values
-    //   → we only care that the service CALLS it correctly
-    // ─────────────────────────────────────────────────────────────────
     @Mock
     private JwtUtil jwtUtil;
 

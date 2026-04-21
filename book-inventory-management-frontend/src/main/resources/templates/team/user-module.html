@@ -14,12 +14,25 @@
 
 <!-- Member hero -->
 <div class="member-hero">
-  <div class="avatar av-1"
-       th:text="${#strings.substring(memberName,0,2).toUpperCase()}">YN</div>
+ 
+  <!-- Photo (if available) OR colored avatar (fallback) -->
+  <th:block th:if="${memberPhoto != null}">
+    <div style="width:64px;height:64px;border-radius:50%;overflow:hidden;
+                border:3px solid rgba(255,255,255,0.2);flex-shrink:0;">
+      <img th:src="${memberPhoto}"
+           th:alt="${memberName}"
+           style="width:100%;height:100%;object-fit:cover;display:block;"/>
+    </div>
+  </th:block>
+  <th:block th:if="${memberPhoto == null}">
+    <div class="avatar av-1"
+         th:text="${#strings.substring(memberName,0,2).toUpperCase()}">KV</div>
+  </th:block>
+ 
   <div class="info">
     <div class="module-tag">User Module</div>
     <h2 th:text="${memberName}">Your Name</h2>
-    <p>Authentication · User Management · Roles · Purchase Logging</p>
+    <p>Authentication &middot; User Management &middot; Roles &middot; Purchase Logging</p>
   </div>
   <div class="meta">
     <div class="m"><div class="n">24</div><div class="l">Endpoints</div></div>
@@ -84,14 +97,14 @@
       <span class="access-tag access-public">Public</span>
     </a>
 
-    <a class="endpoint-row" th:href="@{/user/api/roles/1}">
+    <a class="endpoint-row" th:href="@{/user/api/roles/detail}">
       <span class="method method-get">GET</span>
       <span class="endpoint-url">/api/v1/roles/{roleNumber}</span>
       <span class="endpoint-desc">Fetch a single role by its numeric ID</span>
       <span class="access-tag access-public">Public</span>
     </a>
 
-    <a class="endpoint-row" th:href="@{/user/api/roles/1/user-count}">
+    <a class="endpoint-row" th:href="@{/user/api/roles/count}">
       <span class="method method-get">GET</span>
       <span class="endpoint-url">/api/v1/roles/{roleNumber}/user-count</span>
       <span class="endpoint-desc">Count how many users belong to a specific role</span>

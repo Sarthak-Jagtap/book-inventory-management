@@ -80,7 +80,7 @@ public class UserViewController {
 			model.addAttribute("tokenResult", result);
 			model.addAttribute("tokenPreview", token.length() > 50 ? token.substring(0, 50) + "..." : token);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 
 		return "user/validate-token";
@@ -129,11 +129,81 @@ public class UserViewController {
 			List<PermRoleResponseDTO> roles = backendApiService.getAllRoles();
 			model.addAttribute("roles", roles);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/roles"; // → templates/user/roles.html
 	}
-
+	
+	@GetMapping("/roles/detail")
+	public String getRoleByNumberDynamic(
+	        @RequestParam(required = false) Integer roleNumber,
+	        Model model) {
+	 
+	    model.addAttribute("apiDescription",
+	        "Fetches a single role by its numeric ID. Returns roleNumber and permRole name. " +
+	        "Throws 404 if the role does not exist. Public endpoint — no login required.");
+	 
+	    if (roleNumber == null) {
+	        model.addAttribute("apiEndpoint", "GET /api/v1/roles/{roleNumber}");
+	        return "user/role-detail";
+	    }
+	 
+	    model.addAttribute("roleNumber", roleNumber);
+	    model.addAttribute("apiEndpoint", "GET /api/v1/roles/" + roleNumber);
+	 
+	    try {
+	        com.bookinventoryfrontend.dto.PermRoleResponseDTO role =
+	            backendApiService.getRoleById(roleNumber);
+	        model.addAttribute("role", role);
+	    } catch (Exception e) {
+	        model.addAttribute("error", cleanError(e));
+	    }
+	    return "user/role-detail";
+	}
+	 
+	/**
+	 * GET /user/api/roles/count?roleNumber=2
+	 *
+	 * Handles the dynamic role user count form on role-user-count.html.
+	 * ADD THIS BEFORE the existing @GetMapping("/roles/{roleNumber}/user-count")
+	 */
+	@GetMapping("/roles/count")
+	public String getRoleUserCountDynamic(
+	        @RequestParam(required = false) Integer roleNumber,
+	        Model model) {
+	 
+	    model.addAttribute("apiDescription",
+	        "Returns how many registered users belong to a specific role. " +
+	        "Useful for system statistics. Public endpoint — no login required. " +
+	        "Uses countByRole_RoleNumber() repository method.");
+	 
+	    if (roleNumber == null) {
+	        model.addAttribute("apiEndpoint", "GET /api/v1/roles/{roleNumber}/user-count");
+	        return "user/role-user-count";
+	    }
+	 
+	    model.addAttribute("roleNumber", roleNumber);
+	    model.addAttribute("apiEndpoint", "GET /api/v1/roles/" + roleNumber + "/user-count");
+	 
+	    try {
+	        // Fetch the role name for display
+	        try {
+	            com.bookinventoryfrontend.dto.PermRoleResponseDTO role =
+	                backendApiService.getRoleById(roleNumber);
+	            model.addAttribute("role", role);
+	        } catch (Exception ignored) {}
+	 
+	        // Fetch the count
+	        java.util.Map<String, Object> countData =
+	            backendApiService.getRoleUserCount(roleNumber);
+	        model.addAttribute("countData", countData);
+	 
+	    } catch (Exception e) {
+	        model.addAttribute("error", cleanError(e));
+	    }
+	    return "user/role-user-count";
+	}
+	
 	/** GET /user/api/roles/{roleNumber} — Single role detail */
 	@GetMapping("/roles/{roleNumber}")
 	public String getRoleById(@PathVariable Integer roleNumber, Model model) {
@@ -146,7 +216,7 @@ public class UserViewController {
 			model.addAttribute("role", role);
 			model.addAttribute("roleNumber", roleNumber);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/role-detail"; // → templates/user/role-detail.html
 	}
@@ -167,7 +237,7 @@ public class UserViewController {
 			model.addAttribute("countData", countData);
 			model.addAttribute("roleNumber", roleNumber);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/role-user-count"; // → templates/user/role-user-count.html
 	}
@@ -191,7 +261,7 @@ public class UserViewController {
 			UserResponseDTO profile = backendApiService.getMyProfile(token);
 			model.addAttribute("profile", profile);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/profile"; // → templates/user/profile.html
 	}
@@ -211,7 +281,7 @@ public class UserViewController {
 			UserDashboardDTO dashboard = backendApiService.getMyDashboard(token);
 			model.addAttribute("dashboard", dashboard);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/dashboard"; // → templates/user/dashboard.html
 	}
@@ -232,7 +302,7 @@ public class UserViewController {
 			model.addAttribute("purchases", purchases);
 			model.addAttribute("purchaseCount", purchases.size());
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/purchases"; // → templates/user/purchases.html
 	}
@@ -251,7 +321,7 @@ public class UserViewController {
 			Long count = backendApiService.getMyPurchaseCount(token);
 			model.addAttribute("count", count);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/purchase-count"; // → templates/user/purchase-count.html
 	}
@@ -276,7 +346,7 @@ public class UserViewController {
 			model.addAttribute("hasPurchased", result);
 			model.addAttribute("inventoryId", inventoryId);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/purchase-check"; // → templates/user/purchase-check.html
 	}
@@ -301,7 +371,7 @@ public class UserViewController {
 			model.addAttribute("purchases", purchases);
 			model.addAttribute("purchaseCount", purchases.size());
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/store-owner-purchases"; // → templates/user/store-owner-purchases.html
 	}
@@ -311,38 +381,39 @@ public class UserViewController {
 	 * form until user enters one
 	 */
 	@GetMapping("/store-owner/purchases/user")
-	public String getPurchasesByUser(@RequestParam(required = false) Integer userId, // NO defaultValue
-			HttpSession session, Model model) {
-
-		model.addAttribute("apiDescription",
-				"Returns all purchases made by a specific user, identified by userId. "
-						+ "Store owners use this to look up individual customer purchase history. "
-						+ "Requires StoreOwner or Admin role.");
-
-		model.addAttribute("userId", userId);
-
-		// Show which URL was called
-		if (userId != null) {
-			model.addAttribute("apiEndpoint", "GET /api/v1/store-owner/purchases/user/" + userId);
-		} else {
-			model.addAttribute("apiEndpoint", "GET /api/v1/store-owner/purchases/user/{userId}");
-		}
-
-		// Only call backend if userId was actually provided
-		if (userId != null) {
-			try {
-				String token = getToken(session);
-				List<PurchaseLogResponseDTO> purchases = backendApiService.getPurchasesByUser(token, userId);
-				model.addAttribute("purchases", purchases);
-				model.addAttribute("purchaseCount", purchases.size());
-			} catch (Exception e) {
-				model.addAttribute("error", e.getMessage());
-			}
-		}
-		// If userId is null, template just shows the search form
-
-		addBreadcrumb(model, "Purchases by User");
-		return "user/store-owner-purchases";
+	public String getPurchasesByUser(
+	        @RequestParam(required = false) Integer userId,
+	        HttpSession session,
+	        Model model) {
+	 
+	    if (userId != null) {
+	        model.addAttribute("apiEndpoint",
+	            "GET /api/v1/store-owner/purchases/user/" + userId);
+	    } else {
+	        model.addAttribute("apiEndpoint",
+	            "GET /api/v1/store-owner/purchases/user/{userId}");
+	    }
+	    model.addAttribute("apiDescription",
+	        "Returns all purchases made by a specific user, identified by userId. " +
+	        "Store owners use this to look up individual customer purchase history. " +
+	        "Requires StoreOwner or Admin role.");
+	    model.addAttribute("currentPage", "Purchases by User");
+	    model.addAttribute("userId", userId);
+	 
+	    if (userId != null) {
+	        try {
+	            String token = getToken(session);
+	            List<com.bookinventoryfrontend.dto.PurchaseLogResponseDTO> purchases =
+	                backendApiService.getPurchasesByUser(token, userId);
+	            model.addAttribute("purchases",     purchases);
+	            model.addAttribute("purchaseCount", purchases.size());
+	        } catch (Exception e) {
+	            // IMPORTANT: catch here so we stay on this page, not error page
+	            model.addAttribute("error", cleanError(e));
+	            model.addAttribute("purchases", new java.util.ArrayList<>());
+	        }
+	    }
+	    return "user/store-owner-purchases";
 	}
 
 	/**
@@ -350,34 +421,38 @@ public class UserViewController {
 	 * search form until user enters one
 	 */
 	@GetMapping("/store-owner/purchases/inventory")
-	public String getPurchasesByInventory(@RequestParam(required = false) Integer inventoryId, // NO defaultValue
-			HttpSession session, Model model) {
-
-		model.addAttribute("apiDescription", "Returns a list of all users who purchased a specific inventory item. "
-				+ "Useful to see which customers own a particular book. " + "Requires StoreOwner or Admin role.");
-
-		model.addAttribute("inventoryId", inventoryId);
-
-		if (inventoryId != null) {
-			model.addAttribute("apiEndpoint", "GET /api/v1/store-owner/purchases/inventory/" + inventoryId);
-		} else {
-			model.addAttribute("apiEndpoint", "GET /api/v1/store-owner/purchases/inventory/{inventoryId}");
-		}
-
-		if (inventoryId != null) {
-			try {
-				String token = getToken(session);
-				List<PurchaseLogResponseDTO> purchases = backendApiService.getPurchasesByInventory(token, inventoryId);
-				model.addAttribute("purchases", purchases);
-				model.addAttribute("purchaseCount", purchases.size());
-			} catch (Exception e) {
-				model.addAttribute("error", e.getMessage());
-				model.addAttribute("inventoryId", inventoryId);
-			}
-		}
-
-		addBreadcrumb(model, "Purchases by Inventory");
-		return "user/store-owner-purchases";
+	public String getPurchasesByInventory(
+	        @RequestParam(required = false) Integer inventoryId,
+	        HttpSession session,
+	        Model model) {
+	 
+	    if (inventoryId != null) {
+	        model.addAttribute("apiEndpoint",
+	            "GET /api/v1/store-owner/purchases/inventory/" + inventoryId);
+	    } else {
+	        model.addAttribute("apiEndpoint",
+	            "GET /api/v1/store-owner/purchases/inventory/{inventoryId}");
+	    }
+	    model.addAttribute("apiDescription",
+	        "Returns a list of all users who purchased a specific inventory item. " +
+	        "Useful to see which customers own a particular book. " +
+	        "Requires StoreOwner or Admin role.");
+	    model.addAttribute("currentPage", "Purchases by Inventory");
+	    model.addAttribute("inventoryId", inventoryId);
+	 
+	    if (inventoryId != null) {
+	        try {
+	            String token = getToken(session);
+	            List<com.bookinventoryfrontend.dto.PurchaseLogResponseDTO> purchases =
+	                backendApiService.getPurchasesByInventory(token, inventoryId);
+	            model.addAttribute("purchases",     purchases);
+	            model.addAttribute("purchaseCount", purchases.size());
+	        } catch (Exception e) {
+	            model.addAttribute("error", cleanError(e));
+	            model.addAttribute("purchases", new java.util.ArrayList<>());
+	        }
+	    }
+	    return "user/store-owner-purchases";
 	}
 
 	/** GET /user/api/store-owner/stats */
@@ -395,7 +470,7 @@ public class UserViewController {
 			Map<String, Object> stats = backendApiService.getPurchaseStats(token);
 			model.addAttribute("stats", stats);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/purchase-stats"; // → templates/user/purchase-stats.html
 	}
@@ -413,7 +488,7 @@ public class UserViewController {
 			List<Map<String, Object>> topBuyers = backendApiService.getTopBuyers(token, 5);
 			model.addAttribute("topBuyers", topBuyers);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/top-buyers"; // → templates/user/top-buyers.html
 	}
@@ -437,7 +512,7 @@ public class UserViewController {
 			model.addAttribute("users", users);
 			model.addAttribute("userCount", users.size());
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/admin-users"; // → templates/user/admin-users.html
 	}
@@ -473,7 +548,7 @@ public class UserViewController {
 			com.bookinventoryfrontend.dto.UserResponseDTO user = backendApiService.getUserById(token, userId);
 			model.addAttribute("user", user);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 
 		return "user/admin-user-detail";
@@ -494,7 +569,7 @@ public class UserViewController {
 			model.addAttribute("user", user);
 			model.addAttribute("userId", userId);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 			model.addAttribute("userId", userId);
 		}
 		return "user/admin-user-detail"; // → templates/user/admin-user-detail.html
@@ -525,7 +600,7 @@ public class UserViewController {
 				model.addAttribute("resultCount", results.size());
 				model.addAttribute("searched", true);
 			} catch (Exception e) {
-				model.addAttribute("error", e.getMessage());
+				model.addAttribute("error", cleanError(e));
 			}
 		}
 		return "user/admin-search"; // → templates/user/admin-search.html
@@ -550,7 +625,7 @@ public class UserViewController {
 			model.addAttribute("allRoles", allRoles);
 			model.addAttribute("roleNumber", roleNumber);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 			model.addAttribute("roleNumber", roleNumber);
 		}
 		return "user/admin-by-role"; // → templates/user/admin-by-role.html
@@ -571,7 +646,7 @@ public class UserViewController {
 			Map<String, Object> dashboard = backendApiService.getAdminDashboard(token);
 			model.addAttribute("dashboard", dashboard);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/admin-dashboard"; // → templates/user/admin-dashboard.html
 	}
@@ -592,7 +667,7 @@ public class UserViewController {
 			UserResponseDTO profile = backendApiService.getMyProfile(token);
 			model.addAttribute("profile", profile);
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/update-profile"; // → templates/user/update-profile.html
 	}
@@ -623,7 +698,7 @@ public class UserViewController {
 			model.addAttribute("allUsers", backendApiService.getAllUsers(token));
 			model.addAttribute("allRoles", backendApiService.getAllRoles());
 		} catch (Exception e) {
-			model.addAttribute("error", e.getMessage());
+			model.addAttribute("error", cleanError(e));
 		}
 		return "user/admin-update-role"; // → templates/user/admin-update-role.html
 	}
@@ -657,7 +732,7 @@ public class UserViewController {
 			return "user/change-password";
 
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed: " + e.getMessage());
+			model.addAttribute("error", cleanError(e));
 			model.addAttribute("apiEndpoint", "PATCH /api/v1/user/change-password");
 			model.addAttribute("apiDescription", "Changes the logged-in user's password.");
 			return "user/change-password";
@@ -688,7 +763,7 @@ public class UserViewController {
 			return "user/update-profile";
 
 		} catch (Exception e) {
-			model.addAttribute("error", "Failed: " + e.getMessage());
+			model.addAttribute("error", cleanError(e));
 			model.addAttribute("apiEndpoint", "PATCH /api/v1/user/profile");
 			model.addAttribute("apiDescription", "Partial update of the logged-in user's profile.");
 			try {
@@ -733,5 +808,67 @@ public class UserViewController {
 			}
 			return "user/admin-update-role";
 		}
+	}
+	
+	// Add this private helper method to UserViewController.java
+	// It cleans raw JSON error responses into readable messages
+
+	private String cleanError(Exception e) {
+	    String raw = e.getMessage();
+	    if (raw == null) return "An unexpected error occurred.";
+
+	    try {
+	        // Extract "message" field first
+	        String message = null;
+	        int msgIdx = raw.indexOf("\"message\":\"");
+	        if (msgIdx != -1) {
+	            int start = msgIdx + 11;
+	            int end   = raw.indexOf("\"", start);
+	            if (end > start) {
+	                message = raw.substring(start, end);
+	            }
+	        }
+
+	        // Extract "data" field — used for validation errors
+	        // e.g. {"phoneNumber":"Phone number must be in format (XXX) XXX-XXXX"}
+	        String dataSection = null;
+	        int dataIdx = raw.indexOf("\"data\":{");
+	        if (dataIdx != -1) {
+	            int start = dataIdx + 7;
+	            int end   = raw.indexOf("}", start) + 1;
+	            if (end > start) {
+	                dataSection = raw.substring(start, end);
+	                // Parse the first key-value from data
+	                // {"phoneNumber":"Phone number must be in format (XXX) XXX-XXXX"}
+	                dataSection = dataSection
+	                    .replace("{", "").replace("}", "")
+	                    .replaceAll("\"[^\"]+\":\"", "") // remove key:"
+	                    .replace("\"", "")              // remove closing "
+	                    .trim();
+	            }
+	        }
+
+	        // If we have validation data, show it as the main message
+	        if (dataSection != null && !dataSection.isEmpty()) {
+	            return (message != null ? message + ": " : "") + dataSection;
+	        }
+
+	        // Otherwise return just the message
+	        if (message != null && !message.isEmpty()) {
+	            return message;
+	        }
+
+	    } catch (Exception ignored) {}
+
+	    // Fallback by HTTP status code
+	    if (raw.contains("404")) return "Not found. Please check the ID and try again.";
+	    if (raw.contains("400")) return "Invalid input. Please check your values and try again.";
+	    if (raw.contains("401")) return "Unauthorized. Please log in again.";
+	    if (raw.contains("403")) return "Access denied. You do not have permission.";
+	    if (raw.contains("409")) return "Conflict — this resource already exists.";
+	    if (raw.contains("500")) return "Backend server error. Please try again later.";
+	    if (raw.contains("Connection refused")) return "Cannot connect to backend. Is it running?";
+
+	    return raw.length() > 120 ? raw.substring(0, 120) + "..." : raw;
 	}
 }

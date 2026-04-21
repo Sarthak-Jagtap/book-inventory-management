@@ -9,6 +9,7 @@ import com.bookinventory.user.dto.PermRoleResponseDTO;
 import com.bookinventory.user.dto.UserRequestDTO;
 import com.bookinventory.user.dto.UserResponseDTO;
 import com.bookinventory.user.service.UserService;
+import com.bookinventory.user.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +21,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -45,6 +48,15 @@ class AuthControllerTest {
 
     @MockBean
     private UserService userService;
+    
+    @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
+    private AuthenticationManager authenticationManager;
+
+    @MockBean
+    private PasswordEncoder passwordEncoder;
 
     // ── Shared test data ──────────────────────────────────────────
     private UserResponseDTO registeredUserResponse;
@@ -105,7 +117,7 @@ class AuthControllerTest {
             // 201 CREATED
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.status").value(201))
+            .andExpect(jsonPath("$.statusCode").value(201))
             .andExpect(jsonPath("$.message")
                     .value("User registered successfully"))
 
@@ -150,7 +162,7 @@ class AuthControllerTest {
             // 409 CONFLICT
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.statusCode").value(409))
             .andExpect(jsonPath("$.message")
                     .value(org.hamcrest.Matchers
                             .containsString("johndoe")));
@@ -179,7 +191,7 @@ class AuthControllerTest {
                 .content(objectMapper.writeValueAsString(invalidDTO)))
 
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.statusCode").value(400))
             .andExpect(jsonPath("$.message")
                     .value("Validation failed"));
 
@@ -208,7 +220,7 @@ class AuthControllerTest {
                 .content(objectMapper.writeValueAsString(invalidDTO)))
 
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.status").value(400));
+            .andExpect(jsonPath("$.statusCode").value(400));
 
         verify(userService, never()).registerUser(any());
     }
@@ -238,7 +250,7 @@ class AuthControllerTest {
             // 200 OK
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.statusCode").value(200))
 
             // Full login response data
             .andExpect(jsonPath("$.data.userId").value(1))
@@ -278,7 +290,7 @@ class AuthControllerTest {
             // 401 UNAUTHORIZED
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.status").value(401))
+            .andExpect(jsonPath("$.statusCode").value(401))
             .andExpect(jsonPath("$.message")
                     .value("Invalid username or password"));
     }
@@ -299,7 +311,7 @@ class AuthControllerTest {
                 .content(objectMapper.writeValueAsString(invalidDTO)))
 
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.statusCode").value(400))
             .andExpect(jsonPath("$.message")
                     .value("Validation failed"));
 

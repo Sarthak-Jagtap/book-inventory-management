@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
+import java.util.Arrays;
 
 @Controller
 public class HomeController {
@@ -16,21 +17,18 @@ public class HomeController {
     }
 
     @GetMapping("/home")
-    public String home(Model model) {
+    public String getHomePage(Model model) {
+
         model.addAttribute("activePage", "home");
 
-		// ── UPDATE THESE NAMES WITH YOUR ACTUAL TEAM ──────────────
-		List<TeamMember> members = Arrays.asList(new TeamMember("Krishna Varma", // ← CHANGE THIS to your name
-				"User Module", "user-module", "Auth · Users · Roles · Purchases"),
-				new TeamMember("Sarthak Jagtap", // ← CHANGE THIS
-						"Book Module", "book-module", "Books · Authors · Categories · Publishers"),
-				new TeamMember("Yashomati", // ← CHANGE THIS
-						"Inventory Module", "inventory-module", "Inventory · BookCondition · Stock"),
-				new TeamMember("Prajwal", // ← CHANGE THIS
-						"Review Module", "review-module", "BookReviews · Ratings · Reviewers"),
-				new TeamMember("Lawhare Sudhanshu", // ← CHANGE THIS
-						"Author Module", "author-module", "Authors · Book-Author · Primary-Author"));
-		// ──────────────────────────────────────────────────────────
+        // ✅ MERGED VERSION (photos + extra info)
+        List<TeamMember> members = Arrays.asList(
+                new TeamMember("Krishna Varma", "User Module", "/images/team/krishna.jpg"),
+                new TeamMember("Sarthak Jagtap", "Book Module", "/images/team/sarthak.jpeg"),
+                new TeamMember("Yashomati", "Inventory Module", "/images/team/yashomati.jpeg"),
+                new TeamMember("Prajwal", "Review Module", "/images/team/prajwal.jpeg"),
+                new TeamMember("Sudhanshu", "Cart Module", "/images/team/sudhanshu.jpeg")
+        );
 
         model.addAttribute("members", members);
         model.addAttribute("teamMembers", members);
@@ -47,7 +45,8 @@ public class HomeController {
     @GetMapping("/team/user-module")
     public String userModule(Model model) {
         model.addAttribute("activePage", "user-module");
-        model.addAttribute("memberName", "Krishna");
+        model.addAttribute("memberName", "Krishna Varma");
+        model.addAttribute("memberPhoto", "/images/team/krishna.jpg");
         model.addAttribute("endpointCount", 24);
         model.addAttribute("groupCount", 5);
         return "team/user-module";
@@ -56,7 +55,7 @@ public class HomeController {
     @GetMapping("/team/book-module")
     public String bookModule(Model model) {
         model.addAttribute("activePage", "book-module");
-        model.addAttribute("memberName", "Member 2");
+        model.addAttribute("memberName", "Sarthak Jagtap");
         model.addAttribute("endpointCount", 20);
         model.addAttribute("groupCount", 4);
         return "team/book-module";
@@ -74,7 +73,7 @@ public class HomeController {
     @GetMapping("/team/review-module")
     public String reviewModule(Model model) {
         model.addAttribute("activePage", "review-module");
-        model.addAttribute("memberName", "Member 4");
+        model.addAttribute("memberName", "Prajwal");
         model.addAttribute("endpointCount", 15);
         model.addAttribute("groupCount", 3);
         return "team/review-module";
@@ -83,7 +82,7 @@ public class HomeController {
     @GetMapping("/team/author-module")
     public String authorModule(Model model) {
         model.addAttribute("activePage", "author-module");
-        model.addAttribute("memberName", "Member 5");
+        model.addAttribute("memberName", "Sudhanshu");
         model.addAttribute("endpointCount", 15);
         model.addAttribute("groupCount", 3);
         return "author/api-author-dashboard";

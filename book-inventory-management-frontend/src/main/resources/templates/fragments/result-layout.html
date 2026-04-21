@@ -1,18 +1,5 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<!--
-  result-layout.html
-  ==================
-  Reusable fragment for ALL API result pages.
-  Usage in any page:
-    <div th:replace="~{fragments/result-layout :: result-page(~{::content})}">
-
-  Every result page has:
-  - Back button → /team/user-module
-  - API endpoint + description
-  - Error alert (if model has "error")
-  - Custom content slot
--->
 
 <th:block th:fragment="result-page(content)">
 <!DOCTYPE html>

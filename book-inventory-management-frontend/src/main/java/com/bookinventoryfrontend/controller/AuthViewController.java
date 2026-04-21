@@ -107,9 +107,13 @@ public class AuthViewController {
             return "redirect:/home";
  
         } catch (Exception e) {
-            // Login failed — show error on login page
-            model.addAttribute("error", "Login failed: " + e.getMessage());
-            model.addAttribute("userName", userName); // Keep username in the form
+            // Extract clean message from JSON error response
+            // Raw error looks like: 401 Unauthorized: {"success":false,...,"message":"Invalid username or password",...}
+            String rawMessage = e.getMessage();
+            String cleanMessage = extractErrorMessage(rawMessage);
+
+            model.addAttribute("error", cleanMessage);
+            model.addAttribute("userName", userName);
             return "auth/login";
         }
     }
@@ -162,8 +166,7 @@ public class AuthViewController {
             return "redirect:/auth/login?registered=true";
  
         } catch (Exception e) {
-            // Registration failed — show error
-            model.addAttribute("error", "Registration failed: " + e.getMessage());
+            model.addAttribute("error", extractErrorMessage(e.getMessage())); // ← change this
             model.addAttribute("firstName",   firstName);
             model.addAttribute("lastName",    lastName);
             model.addAttribute("userName",    userName);
@@ -173,5 +176,51 @@ public class AuthViewController {
             } catch (Exception ignored) {}
             return "auth/register";
         }
+    }
+    
+    /**
+     * Extracts a clean, user-friendly error message from the raw
+     * exception message which may contain a full JSON body.
+     *
+     * Example input:
+     *   "401 Unauthorized: {"success":false,"statusCode":401,
+     *    "message":"Invalid username or password","data":null}"
+     *
+     * Returns: "Invalid username or password"
+     */
+    private String extractErrorMessage(String rawMessage) {
+        if (rawMessage == null) {
+            return "An unexpected error occurred. Please try again.";
+        }
+
+        // Try to extract "message":"..." from the JSON
+        try {
+            int msgIndex = rawMessage.indexOf("\"message\":\"");
+            if (msgIndex != -1) {
+                int start = msgIndex + 11; // length of "message":"
+                int end   = rawMessage.indexOf("\"", start);
+                if (end > start) {
+                    return rawMessage.substring(start, end);
+                }
+            }
+        } catch (Exception ignored) {}
+
+        // Fallback: if it's a 401, give a standard message
+        if (rawMessage.contains("401")) {
+            return "Invalid username or password. Please check your credentials.";
+        }
+        if (rawMessage.contains("404")) {
+            return "User not found. Please check your username.";
+        }
+        if (rawMessage.contains("500")) {
+            return "Backend server error. Please try again later.";
+        }
+        if (rawMessage.contains("Connection refused") ||
+            rawMessage.contains("connect timed out")) {
+            return "Cannot connect to backend server. Please ensure it is running.";
+        }
+
+        // Last fallback: return raw but trimmed
+        return rawMessage.length() > 120 ? rawMessage.substring(0, 120) + "..." : rawMessage;
     }
 }
