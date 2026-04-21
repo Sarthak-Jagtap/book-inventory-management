@@ -19,38 +19,18 @@ public class HomeController {
     public String home(Model model) {
         model.addAttribute("activePage", "home");
 
-        List<TeamMember> members = List.of(
-                new TeamMember(
-                        "Krishna",
-                        "User Module",
-                        "user-module",
-                        "Auth · Users · Roles · Purchases"
-                ),
-                new TeamMember(
-                        "Member 2",
-                        "Book Module",
-                        "book-module",
-                        "Books · Categories · Publishers · States"
-                ),
-                new TeamMember(
-                        "Yashomati",
-                        "Inventory & Cart Module",
-                        "inventory-module",
-                        "Inventory · Cart · Book Conditions"
-                ),
-                new TeamMember(
-                        "Member 4",
-                        "Review Module",
-                        "review-module",
-                        "Reviews · Reviewer UI"
-                ),
-                new TeamMember(
-                        "Member 5",
-                        "Author Module",
-                        "author-module",
-                        "Authors · Book Authors"
-                )
-        );
+		// ── UPDATE THESE NAMES WITH YOUR ACTUAL TEAM ──────────────
+		List<TeamMember> members = Arrays.asList(new TeamMember("Krishna Varma", // ← CHANGE THIS to your name
+				"User Module", "user-module", "Auth · Users · Roles · Purchases"),
+				new TeamMember("Sarthak Jagtap", // ← CHANGE THIS
+						"Book Module", "book-module", "Books · Authors · Categories · Publishers"),
+				new TeamMember("Yashomati", // ← CHANGE THIS
+						"Inventory Module", "inventory-module", "Inventory · BookCondition · Stock"),
+				new TeamMember("Prajwal", // ← CHANGE THIS
+						"Review Module", "review-module", "BookReviews · Ratings · Reviewers"),
+				new TeamMember("Lawhare Sudhanshu", // ← CHANGE THIS
+						"Author Module", "author-module", "Authors · Book-Author · Primary-Author"));
+		// ──────────────────────────────────────────────────────────
 
         model.addAttribute("members", members);
         model.addAttribute("teamMembers", members);

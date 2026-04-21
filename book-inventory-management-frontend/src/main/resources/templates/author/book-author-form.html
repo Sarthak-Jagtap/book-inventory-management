@@ -4,89 +4,178 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Map Author | Book Inventory System</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{ --bg:#f7f8fc;--surface:#fff;--surface2:#f0f2f8;--text:#1a1d2e;--text2:#6b7280;--text3:#9ca3af; --border:#e5e7eb;--border2:#d1d5db; --accent:#6366f1;--accent-hover:#4f46e5; }
-body.dark{ --bg:#0f1117;--surface:#1a1d2e;--surface2:#252840;--text:#e8eaf6;--text2:#9ca3af;--text3:#6b7280; --border:#2d3148;--border2:#3d4165; --accent:#818cf8;--accent-hover:#6366f1;}
-body{ background:var(--bg);color:var(--text); font-family:system-ui,-apple-system,sans-serif; padding:0 0 60px; }
+/* ── Book-Author Form ─────────────────────────────────────── */
 
-.topbar{ background:var(--surface);border-bottom:1px solid var(--border); padding:16px 32px;display:flex;align-items:center; }
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.logo-icon{ width:32px;height:32px;background:var(--accent);border-radius:8px; display:flex;align-items:center;justify-content:center; }
-.logo-icon svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2}
-.logo-title{font-size:15px;font-weight:600;color:var(--text)}
-
-.container{max-width:600px;margin:40px auto;padding:0 32px;}
-.card{ background:var(--surface);border:1px solid var(--border); border-radius:12px;padding:32px;box-shadow:0 4px 16px rgba(0,0,0,.02); }
-.card-title{font-size:24px;font-weight:700;margin-bottom:24px;color:var(--text)}
-
-.form-group{margin-bottom:20px}
-.form-label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px}
-.form-control{
-  width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);
-  padding:12px 16px;border-radius:8px;font-size:15px;outline:none;
+/* Info summary bar shown when editing */
+.mapping-summary {
+  display: flex; gap: 12px; margin-bottom: 24px;
+  padding: 12px 16px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; flex-wrap: wrap;
 }
-.form-control:focus{border-color:var(--accent)}
+.mapping-chip {
+  font-size: 12px; font-family: monospace; font-weight: 600;
+  color: var(--text2); display: flex; align-items: center; gap: 5px;
+}
+.mapping-chip strong { color: var(--text); }
 
-.btn-group{display:flex;gap:12px;margin-top:32px}
-.btn{ padding:12px 24px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;flex:1;text-align:center;text-decoration:none; }
-.btn-primary{background:var(--accent);color:#fff;}
-.btn-primary:hover{background:var(--accent-hover)}
-.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text)}
-.btn-outline:hover{background:var(--surface2)}
+/* Form grid */
+.form-grid-2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px;
+}
+@media (max-width: 560px) { .form-grid-2 { grid-template-columns: 1fr; } }
+.form-grid-2 .span-2 { grid-column: 1 / -1; }
+
+/* Readonly */
+.field-readonly { background: var(--surface2) !important; opacity: .7; cursor: not-allowed; }
+
+/* Actions row */
+.form-actions {
+  display: flex; gap: 10px; margin-top: 28px;
+  padding-top: 20px; border-top: 1px solid var(--border);
+}
+
+/* Context label */
+.form-context-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  padding: 3px 10px; border-radius: 20px; margin-bottom: 10px;
+}
 </style>
 </head>
-<body class="dark">
+<body>
 
-<div class="topbar">
-  <a href="/" class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
-    <div class="logo-title">Book Inventory System</div>
-  </a>
-</div>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="container">
-  <div class="card">
-    
-    <h2 class="card-title" th:text="${bookAuthor.primaryAuthor == null ? 'Assign Author to Book' : 'Edit Author Role'}">Assign Author</h2>
-    
-    <div th:if="${param.error}" style="color:#ef4444;margin-bottom:16px;font-size:14px;font-weight:500;">
-        Assignment failed. Please check inputs.
+<div class="page-wrapper-sm">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a th:href="@{/books/{isbn}(isbn=${bookAuthor.isbn})}">Book</a>
+    <span class="sep">›</span>
+    <a th:href="@{/books/{isbn}/authors(isbn=${bookAuthor.isbn})}">Authors</a>
+    <span class="sep">›</span>
+    <span th:text="${bookAuthor.primaryAuthor == null} ? 'Assign Author' : 'Edit Role'">Assign Author</span>
+  </div>
+
+  <div class="card" style="padding: 28px 32px;">
+
+    <!-- Context label -->
+    <div class="form-context-label"
+         th:text="${bookAuthor.primaryAuthor == null} ? '+ Assign Author' : '✎ Edit Role'">+ Assign Author</div>
+
+    <h2 class="card-title"
+        th:text="${bookAuthor.primaryAuthor == null} ? 'Assign Author to Book' : 'Edit Author Role'"
+        style="font-size:20px; margin-bottom:4px;">Assign Author</h2>
+    <p class="card-sub" style="margin-bottom:24px;"
+       th:text="${bookAuthor.primaryAuthor == null}
+                ? 'Link an author to a book and define their role.'
+                : 'Update the primary author status for this mapping.'">
+      Link an author to a book.
+    </p>
+
+    <!-- Error -->
+    <div th:if="${param.error}" class="alert alert-danger" style="margin-bottom:20px;">
+      Assignment failed. Please check inputs and try again.
     </div>
 
-    <form th:action="@{${bookAuthor.primaryAuthor == null ? '/store-owner/book-authors' : '/store-owner/book-authors/' + bookAuthor.isbn + '/' + bookAuthor.authorID + '/update'}}" 
+    <!-- Mapping summary (edit mode only) -->
+    <div class="mapping-summary" th:if="${bookAuthor.primaryAuthor != null}">
+      <div class="mapping-chip">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        ISBN: <strong th:text="${bookAuthor.isbn}">—</strong>
+      </div>
+      <div class="mapping-chip">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Author ID: <strong th:text="${bookAuthor.authorID}">—</strong>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form th:action="@{${bookAuthor.primaryAuthor == null
+                         ? '/store-owner/book-authors'
+                         : '/store-owner/book-authors/' + bookAuthor.isbn + '/' + bookAuthor.authorID + '/update'}}"
           th:object="${bookAuthor}" method="post">
-      
-      <div class="form-group">
-        <label class="form-label">Book ISBN *</label>
-        <input type="text" class="form-control" th:field="*{isbn}" required placeholder="13-digit ISBN" th:readonly="${bookAuthor.primaryAuthor != null}">
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">Author ID *</label>
-        <input type="number" class="form-control" th:field="*{authorID}" required placeholder="e.g. 50" th:readonly="${bookAuthor.primaryAuthor != null}">
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">Is Primary Author?</label>
-        <select class="form-control" th:field="*{primaryAuthor}" required>
-          <option value="Y">Yes (Y)</option>
-          <option value="N">No (N)</option>
-        </select>
+
+      <div class="form-grid-2">
+
+        <!-- ISBN -->
+        <div class="form-group">
+          <label class="form-label">Book ISBN <span style="color:var(--accent)">*</span></label>
+          <input type="text" class="form-control"
+                 th:field="*{isbn}" required placeholder="e.g. 9-455-61223-3"
+                 th:readonly="${bookAuthor.primaryAuthor != null}"
+                 th:classappend="${bookAuthor.primaryAuthor != null} ? 'field-readonly' : ''">
+          <div class="form-hint" th:if="${bookAuthor.primaryAuthor != null}">
+            ISBN is locked for editing.
+          </div>
+        </div>
+
+        <!-- Author ID -->
+        <div class="form-group">
+          <label class="form-label">Author ID <span style="color:var(--accent)">*</span></label>
+          <input type="number" class="form-control"
+                 th:field="*{authorID}" required placeholder="e.g. 50"
+                 th:readonly="${bookAuthor.primaryAuthor != null}"
+                 th:classappend="${bookAuthor.primaryAuthor != null} ? 'field-readonly' : ''">
+          <div class="form-hint" th:if="${bookAuthor.primaryAuthor != null}">
+            Author ID is locked for editing.
+          </div>
+        </div>
+
+        <!-- Primary Author select (full width) -->
+        <div class="form-group span-2">
+          <label class="form-label">Author Role <span style="color:var(--accent)">*</span></label>
+          <select class="form-control" th:field="*{primaryAuthor}" required>
+            <option value="Y">⭐ Primary Author (Y)</option>
+            <option value="N">Co-Author (N)</option>
+          </select>
+          <div class="form-hint">Choose whether this author is the primary author or a co-author.</div>
+        </div>
+
       </div>
 
-      <div class="btn-group">
-        <a th:href="@{/books/{isbn}(isbn=${bookAuthor.isbn})}" class="btn btn-outline">Cancel</a>
-        <button type="submit" class="btn btn-primary">Save Mapping</button>
+      <div class="form-actions">
+        <a th:href="@{/books/{isbn}(isbn=${bookAuthor.isbn})}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span th:text="${bookAuthor.primaryAuthor == null} ? 'Assign Author' : 'Save Changes'">Save</span>
+        </button>
       </div>
+
     </form>
-
   </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  if(localStorage.getItem('theme') === 'light') document.body.classList.remove('dark');
+  // Pre-fill from API dashboard if navigated via "Open Pre-filled Form" button
+  const raw = sessionStorage.getItem('prefill_bookauthor');
+  if (raw) {
+    try {
+      const d = JSON.parse(raw);
+      const isbnEl    = document.querySelector('[name="isbn"]');
+      const aidEl     = document.querySelector('[name="authorID"]');
+      const primaryEl = document.querySelector('[name="primaryAuthor"]');
+      if (isbnEl    && !isbnEl.readOnly    && d.isbn)        isbnEl.value    = d.isbn;
+      if (aidEl     && !aidEl.readOnly     && d.authorID)    aidEl.value     = d.authorID;
+      if (primaryEl && d.primaryAuthor) primaryEl.value = d.primaryAuthor;
+    } catch(e) {}
+    sessionStorage.removeItem('prefill_bookauthor');
+  }
 });
 </script>
 </body>

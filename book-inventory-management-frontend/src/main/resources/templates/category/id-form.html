@@ -1,20 +1,42 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
+	<meta charset="UTF-8">
 	<title>Find Category</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div class="page-wrapper">
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">Search Category</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">Retrieve details by unique ID</div>
+			</div>
 
-	<h2>Search Category by ID</h2>
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
 
-	<form action="/categories/details" method="get">
-		<label>Category ID:</label>
-		<input type="number" name="categoryId" required>
-		<button type="submit">Search</button>
-	</form>
+				<a class="btn btn-secondary btn-sm" th:href="@{/categories/list}">← Back to List</a>
+			</div>
+		</div>
 
+		<div class="card" style="padding: 24px; max-width: 450px;">
+			<form th:action="@{/categories/details}" method="get">
+				<div style="margin-bottom: 20px;">
+					<label
+						style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 6px;">Category
+						ID</label>
+					<input type="number" name="categoryId" required
+						style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;"
+						placeholder="Enter ID to search">
+				</div>
+				<button type="submit" class="btn btn-primary">Search Details</button>
+			</form>
+		</div>
+	</div>
 </body>
 
 </html>

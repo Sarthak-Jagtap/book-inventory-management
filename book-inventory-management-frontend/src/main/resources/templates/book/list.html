@@ -1,35 +1,125 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
-	<title>Books</title>
+	<meta charset="UTF-8" />
+	<title>Books List</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}" />
+	<style>
+		/* Local override to allow more horizontal space for the wide table */
+		.page-wrapper {
+			max-width: 1400px !important;
+		}
+
+		.nowrap-cell {
+			white-space: nowrap;
+		}
+	</style>
 </head>
 
 <body>
 
-	<h2>Books List</h2>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
 
+	<div class="page-wrapper">
 
-	<table border="1">
-		<tr>
-			<th>ISBN</th>
-			<th>Title</th>
-			<th>Description</th>
-			<th>Edition</th>
-			<th>Category</th>
-			<th>Publisher</th>
-		</tr>
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">Books by Category</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">Filter inventory by specific category ID</div>
+			</div>
+			<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
+		</div>
 
-		<tr th:each="book : ${books}">
-			<td th:text="${book.isbn}"></td>
-			<td th:text="${book.title}"></td>
-			<td th:text="${book.description}"></td>
-			<td th:text="${book.edition}"></td>
+		<!-- Header row -->
+		<div class="flex-between mb-2">
+			<div>
+			</div>
+			<a class="btn btn-primary btn-sm" th:href="@{/books/add}">+ Add Book</a>
+		</div>
 
-			<td th:text="${categoryMap[book.categoryId]}"></td>
-			<td th:text="${publisherMap[book.publisherId]}"></td>
-		</tr>
-	</table>
+		<!-- Flash message after delete -->
+		<div th:if="${message}" class="alert alert-success mb-2">
+			<span>✓</span>
+			<span th:text="${message}"></span>
+		</div>
+
+		<!-- Table Container -->
+		<div class="card" style="overflow:hidden;">
+			<div style="overflow-x:auto;">
+				<table style="width:100%; border-collapse:collapse; min-width: 1000px;">
+					<thead>
+						<tr style="background:#f9fafb; border-bottom:1px solid #e5e7eb;">
+							<th class="nowrap-cell"
+								style="padding:12px 14px; text-align:left; font-size:12px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px;">
+								ISBN</th>
+							<th
+								style="padding:12px 14px; text-align:left; font-size:12px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px;">
+								Title</th>
+							<th class="nowrap-cell"
+								style="padding:12px 14px; text-align:left; font-size:12px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px;">
+								Edition</th>
+							<th class="nowrap-cell"
+								style="padding:12px 14px; text-align:left; font-size:12px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px;">
+								Category</th>
+							<th class="nowrap-cell"
+								style="padding:12px 14px; text-align:left; font-size:12px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px;">
+								Publisher</th>
+							<th class="nowrap-cell"
+								style="padding:12px 14px; text-align:right; font-size:12px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px;">
+								Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="book : ${books}" style="border-bottom:1px solid #f3f4f6;"
+							onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+							<td class="nowrap-cell"
+								style="padding:14px 14px; font-size:13px; font-family:monospace; color:#4b5563;"
+								th:text="${book.isbn}"></td>
+							<td style="padding:14px 14px; font-size:14px; font-weight:500; color:#111827;"
+								th:text="${book.title}"></td>
+							<td class="nowrap-cell" style="padding:14px 14px; font-size:13px; color:#6b7280;"
+								th:text="${book.edition ?: '—'}"></td>
+							<td class="nowrap-cell" style="padding:14px 14px; font-size:13px; color:#6b7280;"
+								th:text="${categoryMap[book.categoryId] ?: '—'}"></td>
+							<td class="nowrap-cell" style="padding:14px 14px; font-size:13px; color:#6b7280;"
+								th:text="${publisherMap[book.publisherId] ?: '—'}"></td>
+							<td style="padding:14px 14px; text-align: right;">
+								<div style="display:flex; gap:8px; justify-content: flex-end;">
+									<a th:href="@{/books/details(isbn=${book.isbn})}" class="btn btn-sm btn-outline"
+										style="padding: 4px 10px;">View</a>
+									<a th:href="@{/books/update(isbn=${book.isbn})}" class="btn btn-sm btn-outline"
+										style="padding: 4px 10px;">Edit</a>
+								</div>
+							</td>
+						</tr>
+						<!-- Empty state row -->
+						<tr th:if="${books == null or #lists.isEmpty(books)}">
+							<td colspan="6" style="padding:48px; text-align:center; color:#9ca3af; font-size:14px;">
+								No books found in the inventory.
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Pagination -->
+		<div
+			style="display:flex; align-items:center; justify-content:space-between; margin-top:20px; padding-bottom: 40px;">
+			<span style="font-size:13px; color:#6b7280;"
+				th:text="'Showing page ' + (${currentPage} + 1) + ' of ' + ${totalPages}"></span>
+			<div style="display:flex; gap:10px;">
+				<a th:if="${currentPage > 0}" th:href="@{/books(page=${currentPage-1}, size=5)}"
+					class="btn btn-secondary btn-sm">← Previous</a>
+				<a th:if="${currentPage < totalPages - 1}" th:href="@{/books(page=${currentPage+1}, size=5)}"
+					class="btn btn-secondary btn-sm">Next →</a>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="footer">Book Inventory Management System — v1.0</div>
 </body>
 
 </html>

@@ -1,19 +1,69 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
+	<meta charset="UTF-8">
 	<title>Publisher Details</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div class="page-wrapper">
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">Publisher Profile</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">Information for <span
+						th:text="${publisher.name}"></span></div>
+			</div>
 
-	<h2>Publisher Details</h2>
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
 
-	<p><b>ID:</b> <span th:text="${publisher.publisherId}"></span></p>
-	<p><b>Name:</b> <span th:text="${publisher.name}"></span></p>
-	<p><b>City:</b> <span th:text="${publisher.city}"></span></p>
-	<p><b>State Code:</b> <span th:text="${publisher.stateCode}"></span></p>
+				<a class="btn btn-secondary btn-sm" th:href="@{/publishers}">← Back to List</a>
+			</div>
+		</div>
 
+		<div class="card" style="padding: 24px; max-width: 600px;">
+			<table class="detail-table" style="width:100%; border-collapse:collapse;">
+				<tr>
+					<th
+						style="width:160px; padding:12px; text-align:left; color:#6b7280; font-weight:500; font-size:13px; border-bottom:1px solid #f3f4f6;">
+						Publisher ID</th>
+					<td style="padding:12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6; font-weight: 600;"
+						th:text="${publisher.publisherId}"></td>
+				</tr>
+				<tr>
+					<th
+						style="padding:12px; text-align:left; color:#6b7280; font-weight:500; font-size:13px; border-bottom:1px solid #f3f4f6;">
+						Company Name</th>
+					<td style="padding:12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6;"
+						th:text="${publisher.name}"></td>
+				</tr>
+				<tr>
+					<th
+						style="padding:12px; text-align:left; color:#6b7280; font-weight:500; font-size:13px; border-bottom:1px solid #f3f4f6;">
+						City</th>
+					<td style="padding:12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6;"
+						th:text="${publisher.city}"></td>
+				</tr>
+				<tr>
+					<th
+						style="padding:12px; text-align:left; color:#6b7280; font-weight:500; font-size:13px; border-bottom:1px solid #f3f4f6;">
+						State Code</th>
+					<td style="padding:12px; font-size:14px; color:#111827; border-bottom:1px solid #f3f4f6;"
+						th:text="${publisher.stateCode}"></td>
+				</tr>
+			</table>
+
+			<div style="margin-top: 24px; display: flex; gap: 12px;">
+				<a th:href="@{/publishers/update(publisherId=${publisher.publisherId})}" class="btn btn-primary">Edit
+					Publisher</a>
+				<a th:href="@{/publishers/delete(publisherId=${publisher.publisherId})}"
+					class="btn btn-danger">Delete</a>
+			</div>
+		</div>
+	</div>
 </body>
 
 </html>
