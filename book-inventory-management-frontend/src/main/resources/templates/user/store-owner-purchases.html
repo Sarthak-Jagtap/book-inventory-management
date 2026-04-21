@@ -17,7 +17,6 @@
     <h1 th:text="${currentPage!=null?currentPage:'Purchases'}">Purchases</h1>
     <div class="meta" th:text="${apiEndpoint}"></div>
   </div>
-  <!-- Only show count badge if a search was done -->
   <span class="tag" style="margin-left:auto;"
         th:if="${purchases!=null}"
         th:text="${purchases.size()+' records'}">0 records</span>
@@ -35,12 +34,8 @@
     <span th:text="${apiDescription}"></span>
   </div>
 
-  <!-- ── Store-owner purchases/user — search form ───────────────── -->
-  <th:block th:if="${userId != null or (inventoryId == null and purchases == null and userId == null and (apiEndpoint!=null and #strings.contains(apiEndpoint,'user/{userId}')))}">
-  </th:block>
-
   <!-- Search form for BY USER variant -->
-  <th:block th:if="${apiEndpoint!=null and #strings.contains(apiEndpoint,'user/')}">
+  <th:block th:if="${userId != null or (apiEndpoint!=null and #strings.contains(apiEndpoint,'user/'))}">
     <div class="card mb-2">
       <div class="card-header">Search Purchases by User ID</div>
       <form th:action="@{/user/api/store-owner/purchases/user}" method="get">
@@ -55,7 +50,7 @@
         <div class="form-hint mt-1">
           Tip: See valid user IDs in
           <a th:href="@{/user/api/admin/users}" style="color:#1a6dbd;font-weight:500;">All Users</a>
-          or check
+          or
           <a th:href="@{/user/api/store-owner/purchases}" style="color:#1a6dbd;font-weight:500;">All Purchases</a>
         </div>
       </form>
@@ -63,7 +58,7 @@
   </th:block>
 
   <!-- Search form for BY INVENTORY variant -->
-  <th:block th:if="${apiEndpoint!=null and #strings.contains(apiEndpoint,'inventory/')}">
+  <th:block th:if="${inventoryId != null or (apiEndpoint!=null and #strings.contains(apiEndpoint,'inventory/'))}">
     <div class="card mb-2">
       <div class="card-header">Search Purchases by Inventory ID</div>
       <form th:action="@{/user/api/store-owner/purchases/inventory}" method="get">
@@ -76,38 +71,28 @@
           <button type="submit" class="btn btn-primary">Search</button>
         </div>
         <div class="form-hint mt-1">
-          Tip: Inventory IDs are listed in
+          Tip: Inventory IDs are shown in
           <a th:href="@{/user/api/store-owner/purchases}" style="color:#1a6dbd;font-weight:500;">All Purchases</a>
         </div>
       </form>
     </div>
   </th:block>
 
-  <!-- ── Error — clean display, NO raw JSON ──────────────────────── -->
+  <!-- Error — controller already cleaned the message, just display it -->
   <div class="alert alert-error" th:if="${error!=null}">
     <span>&#9888;</span>
     <div>
-      <strong>Error from backend</strong><br/>
-      <!-- Parse out the friendly message if it's JSON -->
-      <span th:with="msg=${error}"
-            th:text="${#strings.contains(msg,'message') ?
-                       #strings.substringBetween(msg,'&quot;message&quot;:&quot;',',&quot;') != null ?
-                       #strings.substringBetween(msg,'&quot;message&quot;:&quot;',',&quot;') :
-                       'The requested resource was not found. Please check the ID and try again.' :
-                       msg}">
-        Error message
-      </span>
+      <strong>Error</strong><br/>
+      <span th:text="${error}">Error message</span>
       <br/>
-      <span style="font-size:12px;margin-top:4px;display:block;">
-        <a th:href="@{/user/api/store-owner/purchases}"
-           style="color:#991b1b;font-weight:600;">
-          &#8592; View All Purchases to find valid IDs
-        </a>
-      </span>
+      <a th:href="@{/user/api/store-owner/purchases}"
+         style="color:#991b1b;font-weight:600;font-size:13px;margin-top:4px;display:inline-block;">
+        &#8592; View All Purchases to find valid IDs
+      </a>
     </div>
   </div>
 
-  <!-- ── No search done yet (initial state) ───────────────────────── -->
+  <!-- No search done yet -->
   <th:block th:if="${purchases == null and error == null}">
     <div class="alert alert-info">
       <span>i</span>
@@ -115,9 +100,8 @@
     </div>
   </th:block>
 
-  <!-- ── Results table ────────────────────────────────────────────── -->
-  <div th:if="${purchases!=null and !purchases.isEmpty()}"
-       class="card" style="padding:0;">
+  <!-- Results table -->
+  <div th:if="${purchases!=null and !purchases.isEmpty()}" class="card" style="padding:0;">
     <div class="table-wrap">
       <table class="data-table">
         <thead>
@@ -140,23 +124,19 @@
     </div>
   </div>
 
-  <!-- ── Empty result (search done but 0 results) ─────────────────── -->
+  <!-- Empty result -->
   <div class="empty"
        th:if="${purchases!=null and purchases.isEmpty() and error==null}">
     <div class="icon">&#128230;</div>
     <h3>No purchase records found</h3>
     <p th:if="${userId!=null}">
-      No purchases found for User ID
-      <strong th:text="${userId}"></strong>.
-      This user may not have made any purchases yet.
+      No purchases found for User ID <strong th:text="${userId}"></strong>.
     </p>
     <p th:if="${inventoryId!=null}">
-      No purchases found for Inventory Item
-      <strong th:text="'#'+${inventoryId}"></strong>.
+      No purchases for Inventory Item #<span th:text="${inventoryId}"></span>.
     </p>
-    <div style="margin-top:14px;">
-      <a class="btn btn-secondary btn-sm"
-         th:href="@{/user/api/store-owner/purchases}">
+    <div style="margin-top:12px;">
+      <a class="btn btn-secondary btn-sm" th:href="@{/user/api/store-owner/purchases}">
         View All Purchases
       </a>
     </div>

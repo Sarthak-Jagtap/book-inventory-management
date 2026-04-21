@@ -96,7 +96,7 @@ class PurchaseLogControllerTest {
             // 201 CREATED
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.status").value(201))
+            .andExpect(jsonPath("$.statusCode").value(201))
             .andExpect(jsonPath("$.message")
                     .value("Purchase logged successfully"))
 
@@ -133,7 +133,7 @@ class PurchaseLogControllerTest {
 
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.statusCode").value(400))
             .andExpect(jsonPath("$.message")
                     .value(org.hamcrest.Matchers
                             .containsString("already purchased")));
@@ -156,7 +156,7 @@ class PurchaseLogControllerTest {
 
             // @Valid catches this — returns 400 Validation failed
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.status").value(400));
+            .andExpect(jsonPath("$.statusCode").value(400));
 
         // Service should NEVER be called if validation fails
         verify(purchaseLogService, never())
@@ -207,7 +207,7 @@ class PurchaseLogControllerTest {
 
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.status").value(404));
+            .andExpect(jsonPath("$.statusCode").value(404));
     }
 
     // ═════════════════════════════════════════════════════════════

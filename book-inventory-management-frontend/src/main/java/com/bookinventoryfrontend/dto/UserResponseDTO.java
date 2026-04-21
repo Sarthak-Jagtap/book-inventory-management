@@ -64,7 +64,7 @@ public class UserResponseDTO {
 		return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
 	}
 
-	// Convenience: initials for avatar
+	
 	public String getInitials() {
 		String f = (firstName != null && !firstName.isEmpty()) ? firstName.substring(0, 1) : "";
 		String l = (lastName != null && !lastName.isEmpty()) ? lastName.substring(0, 1) : "";

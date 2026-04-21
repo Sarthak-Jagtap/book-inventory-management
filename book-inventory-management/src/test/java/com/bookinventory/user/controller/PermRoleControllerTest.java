@@ -3,6 +3,7 @@ package com.bookinventory.user.controller;
 import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.user.common.config.JwtAuthFilter;
 import com.bookinventory.user.dto.PermRoleResponseDTO;
+import com.bookinventory.user.repository.UserRepository;
 import com.bookinventory.user.service.PermRoleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,18 +24,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// ─────────────────────────────────────────────────────────────────
-// @WebMvcTest(PermRoleController.class)
-//   → Loads ONLY PermRoleController into the Spring test context
-//   → Does NOT load services, repositories, or security filters
-//   → Is much faster than loading the full application
-//
-// excludeFilters — we exclude JwtAuthFilter here because:
-//   → @WebMvcTest tries to load all @Component filters
-//   → JwtAuthFilter needs JwtUtil which needs jwt.secret property
-//   → In these simple public-endpoint tests we don't need JWT
-//   → Excluding it prevents application context failures
-// ─────────────────────────────────────────────────────────────────
+
 @AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(
     value = PermRoleController.class,
@@ -45,22 +35,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 class PermRoleControllerTest {
 
-    // ─────────────────────────────────────────────────────────────
-    // MockMvc — the main tool for controller tests
-    //   → Autowired automatically by @WebMvcTest
-    //   → Use it to fire HTTP requests at your controller
-    // ─────────────────────────────────────────────────────────────
     @Autowired
     private MockMvc mockMvc;
 
-    // ─────────────────────────────────────────────────────────────
-    // @MockBean — NOT @Mock
-    //   → Creates a fake PermRoleService
-    //   → Registers it in the Spring context
-    //   → PermRoleController will use THIS fake instead of the real one
-    // ─────────────────────────────────────────────────────────────
     @MockBean
     private PermRoleService permRoleService;
+    
+    @MockBean
+    private UserRepository userRepository;
 
     // Sample DTOs reused across tests
     private PermRoleResponseDTO guestDTO;
@@ -102,7 +84,7 @@ class PermRoleControllerTest {
             // Check the response body fields
             // $ = root of JSON response
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.statusCode").value(200))
             .andExpect(jsonPath("$.message")
                     .value("Roles fetched successfully"))
 
@@ -166,7 +148,7 @@ class PermRoleControllerTest {
 
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.statusCode").value(200))
             .andExpect(jsonPath("$.message")
                     .value("Role fetched successfully"))
             .andExpect(jsonPath("$.data.roleNumber").value(2))
@@ -194,7 +176,7 @@ class PermRoleControllerTest {
             // GlobalExceptionHandler converts this to 404
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.statusCode").value(404))
             .andExpect(jsonPath("$.message").value(
                     org.hamcrest.Matchers.containsString("99")));
 

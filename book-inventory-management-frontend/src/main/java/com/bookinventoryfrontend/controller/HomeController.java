@@ -26,24 +26,20 @@ public class HomeController {
 	 * first entry is YOUR name (User Module). The rest are your teammates' names.
 	 */
 	@GetMapping("/home")
-	public String home(Model model) {
-
-		// ── UPDATE THESE NAMES WITH YOUR ACTUAL TEAM ──────────────
-		List<TeamMember> members = Arrays.asList(new TeamMember("Krishna Varma", // ← CHANGE THIS to your name
-				"User Module", "user-module", "Auth · Users · Roles · Purchases"),
-				new TeamMember("Sarthak Jagtap", // ← CHANGE THIS
-						"Book Module", "book-module", "Books · Authors · Categories · Publishers"),
-				new TeamMember("Yashomati", // ← CHANGE THIS
-						"Inventory Module", "inventory-module", "Inventory · BookCondition · Stock"),
-				new TeamMember("Prajwal", // ← CHANGE THIS
-						"Review Module", "review-module", "BookReviews · Ratings · Reviewers"),
-				new TeamMember("Sudhanshu", // ← CHANGE THIS
-						"Cart Module", "cart-module", "ShoppingCart · Checkout · State"));
-		// ──────────────────────────────────────────────────────────
-
-		model.addAttribute("members", members);
-		model.addAttribute("activePage", "home");
-		return "home"; // → templates/home.html
+	public String getHomePage(Model model) {
+	 
+	    // ── OPTION A: With team photos ────────────────────────────
+	    // Replace file names with your actual photo filenames
+	    List<TeamMember> members = List.of(
+	        new TeamMember("Krishna Varma",   "User Module",      "/images/team/krishna.jpg"),
+	        new TeamMember("Sarthak Jagtap",  "Book Module",      "/images/team/sarthak.jpeg"),
+	        new TeamMember("Yashomati",       "Inventory Module", "/images/team/yashomati.jpeg"),
+	        new TeamMember("Prajwal",         "Review Module",    "/images/team/prajwal.jpeg"),
+	        new TeamMember("Sudhanshu",       "Cart Module",      "/images/team/sudhanshu.jpeg")
+	    );
+	 
+	    model.addAttribute("members", members);
+	    return "home";
 	}
 
 	/**
@@ -51,10 +47,13 @@ public class HomeController {
 	 * endpoints organized by group.
 	 */
 	@GetMapping("/team/user-module")
-	public String userModulePage(Model model) {
-		model.addAttribute("memberName", "Krishna Varma"); // ← CHANGE to your name
-		model.addAttribute("activePage", "user-module");
-		return "team/user-module"; // → templates/team/user-module.html
+	public String getUserModulePage(Model model) {
+	    // ── Your name as it should appear at top of user-module page ──
+	    model.addAttribute("memberName",  "Krishna Varma");
+	    model.addAttribute("memberPhoto", "/images/team/krishna.jpg");  // ← ADD THIS
+	    // If no photo, set to null:
+	    // model.addAttribute("memberPhoto", null);
+	    return "team/user-module";
 	}
 
 	/**

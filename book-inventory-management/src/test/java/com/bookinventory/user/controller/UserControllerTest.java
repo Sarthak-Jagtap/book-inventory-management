@@ -54,26 +54,10 @@ class UserControllerTest {
     @MockBean
     private PurchaseLogService purchaseLogService;
 
-    // ─────────────────────────────────────────────────────────────
-    // JwtUtil must be @MockBean here because UserController
-    // injects it directly and calls extractUserId() on every request
-    //
-    // We mock it so that when our fake token arrives,
-    // extractUserId() returns the userId WE choose
-    // ─────────────────────────────────────────────────────────────
+
     @MockBean
     private JwtUtil jwtUtil;
 
-    // ─────────────────────────────────────────────────────────────
-    // FAKE TOKEN STRATEGY
-    //
-    // We define one constant fake token string
-    // In each test we:
-    //   1. Send this token in Authorization header
-    //   2. Mock jwtUtil.extractUserId(FAKE_TOKEN) → return 1
-    //
-    // This simulates a logged-in user with userId = 1
-    // ─────────────────────────────────────────────────────────────
     private static final String FAKE_TOKEN  = "fake.jwt.token";
     private static final String AUTH_HEADER = "Bearer " + FAKE_TOKEN;
 
@@ -102,13 +86,7 @@ class UserControllerTest {
                 1, 202, "John", "Doe", "johndoe");
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Helper method — sets up jwtUtil mock for userId = 1
-    // We call this at the start of every test that needs JWT
-    //
-    // Why a helper? Because EVERY protected endpoint needs this
-    // setup and repeating it in every test is messy
-    // ─────────────────────────────────────────────────────────────
+
     private void mockJwtForUser(Integer userId) {
         when(jwtUtil.extractUserId(FAKE_TOKEN))
                 .thenReturn(userId);
@@ -144,7 +122,7 @@ class UserControllerTest {
 
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.statusCode").value(200))
                 .andExpect(jsonPath("$.message")
                         .value("Profile fetched successfully"))
                 .andExpect(jsonPath("$.data.userId").value(1))
@@ -179,7 +157,7 @@ class UserControllerTest {
 
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.success").value(false))
-                .andExpect(jsonPath("$.status").value(404));
+                .andExpect(jsonPath("$.statusCode").value(404));
         }
     }
 
@@ -265,7 +243,7 @@ class UserControllerTest {
                     .content(objectMapper.writeValueAsString(updateDTO)))
 
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.statusCode").value(409))
                 .andExpect(jsonPath("$.message")
                         .value(org.hamcrest.Matchers
                                 .containsString("takenname")));
@@ -343,7 +321,7 @@ class UserControllerTest {
 
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.status").value(200))
+                .andExpect(jsonPath("$.statusCode").value(200))
                 .andExpect(jsonPath("$.message")
                         .value("Password changed successfully"));
 
@@ -377,7 +355,7 @@ class UserControllerTest {
                     .content(objectMapper.writeValueAsString(dto)))
 
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.statusCode").value(400))
                 .andExpect(jsonPath("$.message")
                         .value("Current password is incorrect"));
         }
@@ -544,7 +522,7 @@ class UserControllerTest {
                     .content(objectMapper.writeValueAsString(requestDTO)))
 
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value(201))
+                .andExpect(jsonPath("$.statusCode").value(201))
                 .andExpect(jsonPath("$.data.userId").value(1))
                 .andExpect(jsonPath("$.data.inventoryId").value(303));
         }
@@ -594,7 +572,7 @@ class UserControllerTest {
                     .contentType(MediaType.APPLICATION_JSON))
 
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.status").value(403))
+                .andExpect(jsonPath("$.statusCode").value(403))
                 .andExpect(jsonPath("$.message")
                         .value(org.hamcrest.Matchers
                                 .containsString("not allowed")));

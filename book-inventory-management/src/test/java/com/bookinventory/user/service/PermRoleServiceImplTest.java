@@ -20,48 +20,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-// ─────────────────────────────────────────────────────────────
-// @ExtendWith(MockitoExtension.class)
-//   → Tells JUnit 5: "use Mockito to handle @Mock and @InjectMocks"
-//   → Without this, your mocks will be null and tests will crash
-// ─────────────────────────────────────────────────────────────
+
 @ExtendWith(MockitoExtension.class)
 class PermRoleServiceImplTest {
 
-    // ─────────────────────────────────────────────────────────
-    // @Mock
-    //   → Creates a FAKE PermRoleRepository
-    //   → It does NOT talk to any real database
-    //   → We will tell it exactly what to return in each test
-    // ─────────────────────────────────────────────────────────
     @Mock
     private PermRoleRepository permRoleRepository;
 
-    // ─────────────────────────────────────────────────────────
-    // @InjectMocks
-    //   → Creates a REAL PermRoleServiceImpl object
-    //   → Automatically injects the @Mock above into it
-    //   → So when the service calls permRoleRepository.findAll(),
-    //     it calls OUR fake, not a real DB
-    // ─────────────────────────────────────────────────────────
     @InjectMocks
     private PermRoleServiceImpl permRoleService;
 
-    // ─────────────────────────────────────────────────────────
-    // Sample data we reuse across multiple tests
-    // Think of these as "test fixtures" — pre-built objects
-    // ─────────────────────────────────────────────────────────
     private PermRole guestRole;
     private PermRole registeredUserRole;
     private PermRole storeOwnerRole;
     private PermRole adminRole;
 
-    // ─────────────────────────────────────────────────────────
-    // @BeforeEach
-    //   → This method runs BEFORE every single @Test method
-    //   → Use it to set up fresh test data each time
-    //   → Prevents one test from affecting another
-    // ─────────────────────────────────────────────────────────
     @BeforeEach
     void setUp() {
         guestRole        = new PermRole(1, "Guest");
@@ -79,14 +52,6 @@ class PermRoleServiceImplTest {
     @DisplayName("getAllRoles() → returns all 4 roles as DTOs")
     void getAllRoles_ShouldReturnAllRoles() {
 
-        // ── ARRANGE ───────────────────────────────────────────
-        // "Arrange" = set up the scenario
-        //
-        // We tell our FAKE repository:
-        //   "When someone calls findAll(), return this list"
-        //
-        // This is the core Mockito pattern:
-        //   when(mock.method()).thenReturn(value)
         List<PermRole> fakeRoles = Arrays.asList(
                 guestRole, registeredUserRole, storeOwnerRole, adminRole);
 
@@ -96,13 +61,7 @@ class PermRoleServiceImplTest {
         // "Act" = call the actual method we are testing
         List<PermRoleResponseDTO> result = permRoleService.getAllRoles();
 
-        // ── ASSERT ────────────────────────────────────────────
-        // "Assert" = verify the result is what we expected
-        //
-        // assertThat() is from AssertJ — it gives readable error messages
-        // if a test fails
 
-        // We got 4 roles back
         assertThat(result).hasSize(4);
 
         // First role has correct data
@@ -166,11 +125,6 @@ class PermRoleServiceImplTest {
         when(permRoleRepository.findById(99))
                 .thenReturn(Optional.empty());
 
-        // ASSERT + ACT (combined when testing exceptions)
-        //
-        // assertThatThrownBy(() -> ...) 
-        //   → runs the lambda, expects it to throw
-        //   → then we check the exception type and message
         assertThatThrownBy(() -> permRoleService.getRoleById(99))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("99");

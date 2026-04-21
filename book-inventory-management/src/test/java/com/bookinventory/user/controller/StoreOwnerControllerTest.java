@@ -76,7 +76,7 @@ class StoreOwnerControllerTest {
 
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.success").value(true))
-            .andExpect(jsonPath("$.status").value(200))
+            .andExpect(jsonPath("$.statusCode").value(200))
             .andExpect(jsonPath("$.message")
                     .value("All purchases fetched successfully"))
             .andExpect(jsonPath("$.data").isArray())

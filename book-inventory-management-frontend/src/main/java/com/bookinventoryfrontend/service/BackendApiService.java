@@ -12,21 +12,6 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 import java.util.Map;
 
-/**
- * BackendApiService
- *
- * All RestClient calls to the backend go here. Controllers never talk to the
- * backend directly — always via this service.
- *
- * HOW IT WORKS: 1. Method makes a RestClient call to the backend 2. Backend
- * returns ApiResponse<T> wrapper (success/statusCode/message/data) 3. We
- * extract the "data" field and return it 4. If backend returns error, we throw
- * a RuntimeException with the message
- *
- * HOW JWT IS SENT: Every protected call needs: Authorization: Bearer <token>
- * The token is stored in the HTTP session by AuthViewController after login.
- * Controllers retrieve it from session and pass it here.
- */
 @Service
 public class BackendApiService {
 

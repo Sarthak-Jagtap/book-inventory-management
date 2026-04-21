@@ -45,7 +45,6 @@ public class PurchaseLog {
 		this.user = user;
 	}
 
-	// Convenience getter for InventoryID (from the embedded composite key)
 	public Integer getInventoryId() {
 		return id != null ? id.getInventoryId() : null;
 	}
