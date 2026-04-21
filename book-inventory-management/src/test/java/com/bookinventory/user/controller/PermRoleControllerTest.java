@@ -3,6 +3,7 @@ package com.bookinventory.user.controller;
 import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.user.common.config.JwtAuthFilter;
 import com.bookinventory.user.dto.PermRoleResponseDTO;
+import com.bookinventory.user.repository.UserRepository;
 import com.bookinventory.user.service.PermRoleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,6 +62,9 @@ class PermRoleControllerTest {
     // ─────────────────────────────────────────────────────────────
     @MockBean
     private PermRoleService permRoleService;
+
+    @MockBean
+    private UserRepository userRepository;
 
     // Sample DTOs reused across tests
     private PermRoleResponseDTO guestDTO;
