@@ -82,7 +82,7 @@ public class HomeController {
 
 	@GetMapping("/team/review-module")
 	public String reviewModule() {
-		return "redirect:/home";
+		return "/reviewui/review-dashboard";
 	}
 
 	@GetMapping("/team/author-module")

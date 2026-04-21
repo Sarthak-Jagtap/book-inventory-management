@@ -1,87 +1,170 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-	<head>
-	<style>
-	body {
-	    font-family: 'Segoe UI';
-	    background: #0f172a;
-	    color: #e2e8f0;
-	    padding: 30px;
-	}
-
-	h2 {
-	    text-align: center;
-	    margin-bottom: 20px;
-	}
-
-	.table-box {
-	    max-width: 800px;
-	    margin: auto;
-	}
-
-	table {
-	    width: 100%;
-	    border-collapse: collapse;
-	    background: #1e293b;
-	    border-radius: 10px;
-	    overflow: hidden;
-	}
-
-	th {
-	    background: #111827;
-	    padding: 12px;
-	    color: #9ca3af;
-	}
-
-	td {
-	    padding: 12px;
-	    border-top: 1px solid #334155;
-	}
-
-	tr:hover {
-	    background: #273449;
-	}
-
-	.message {
-	    text-align: center;
-	    margin-top: 20px;
-	}
-
-	a {
-	    display: block;
-	    text-align: center;
-	    margin-top: 20px;
-	    color: #6366f1;
-	}
-	</style>
-	</head>
+<head>
+    <title>Reviewer Data</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        /* count/message display */
+        .big-count-wrap {
+            text-align: center;
+            padding: 48px 20px;
+        }
+        .big-count-wrap .big-number { font-size: 72px; font-weight: 700; color: #1a6dbd; line-height: 1; }
+        .big-count-wrap .big-number-label { font-size: 16px; color: #6b7280; margin-top: 10px; }
+        .deleted-wrap {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 6px;
+            padding: 20px 24px;
+            color: #991b1b;
+            font-size: 15px;
+            font-weight: 500;
+        }
+    </style>
+</head>
 <body>
 
-<h2>👤 Reviewer Data</h2>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<table border="1" cellpadding="10">
-    <tr>
-        <th>Reviewer ID</th>
-        <th>Name</th>
-        <th>Company</th>
-    </tr>
-
-    <tr th:each="r : ${data}">
-        <td th:text="${r.reviewerID}"></td>
-        <td th:text="${r.name}"></td>
-        <td th:text="${r.employedBy}"></td>
-    </tr>
-</table>
-
-<br>
-
-<!-- Agar delete ya count string aaye toh -->
-<div th:if="${#strings.contains(data, 'Deleted') or #strings.contains(data, 'Total')}">
-    <h3 th:text="${data}"></h3>
+<!-- ── Page Header ──────────────────────────────────────── -->
+<div class="page-header">
+    <a href="/ui/review-dashboard" class="page-header-back">&#8592; Back</a>
+    <div>
+        <h1>Reviewer Data</h1>
+        <div class="meta">GET /api/v1/reviewer</div>
+    </div>
 </div>
 
-<br>
-<a href="/ui/review-dashboard">⬅ Back to Dashboard</a>
+<!-- ── Main Content ─────────────────────────────────────── -->
+<div class="page-wrapper">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="/ui/home">Home</a>
+        <span class="breadcrumb-sep">&rsaquo;</span>
+        <a href="/ui/review-dashboard">Review Module</a>
+        <span class="breadcrumb-sep">&rsaquo;</span>
+        <span>Reviewer Data</span>
+    </div>
+
+    <!-- API Info Block -->
+    <div class="api-info">
+        <strong>WHAT THIS API DOES</strong>
+        Returns reviewer records from the system. Supports fetching by ID, name, company, or listing all reviewers.
+        Read operations are public. Write operations require StoreOwner or Admin role.
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         CASE 1: Single reviewer object (not a list)
+         ══════════════════════════════════════════ -->
+    <div th:if="${data != null and !(data instanceof T(java.util.List))}">
+
+        <!-- Deleted message -->
+        <div th:if="${data instanceof T(java.lang.String) and #strings.contains(data, 'Deleted')}"
+             class="deleted-wrap">
+            &#10005; &nbsp;<span th:text="${data}"></span>
+        </div>
+
+        <!-- Count message -->
+        <div th:if="${data instanceof T(java.lang.String) and #strings.contains(data, 'Total')}"
+             class="big-count-wrap">
+            <div class="big-number" th:text="${#strings.replace(data, 'Total Reviewers: ', '')}"></div>
+            <div class="big-number-label">Total Reviewers</div>
+        </div>
+
+        <!-- ── NEW: Generic error / not-found message ── -->
+        <div th:if="${data instanceof T(java.lang.String)
+                     and !#strings.contains(data, 'Deleted')
+                     and !#strings.contains(data, 'Total')}"
+             class="empty-state">
+            <span class="empty-state-icon">&#128100;</span>
+            <h3>Reviewer Not Found</h3>
+            <p th:text="${data}"></p>
+        </div>
+
+        <!-- Single reviewer card -->
+        <div th:if="${!(data instanceof T(java.lang.String))}" class="result-header">
+            <span>&#128100;</span>
+            <span>Reviewer Record</span>
+        </div>
+        <div th:if="${!(data instanceof T(java.lang.String))}" class="result-body">
+            <div class="data-table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Reviewer ID</th>
+                            <th>Name</th>
+                            <th>Company</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td th:text="${data.reviewerID}"></td>
+                            <td th:text="${data.name}"></td>
+                            <td th:text="${data.employedBy}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         CASE 2: List of reviewers
+         ══════════════════════════════════════════ -->
+    <div th:if="${data instanceof T(java.util.List)}">
+
+        <!-- Empty list -->
+        <div th:if="${#lists.isEmpty(data)}" class="empty-state">
+            <span class="empty-state-icon">&#128100;</span>
+            <h3>No Reviewers Found</h3>
+            <p>Try a different search query.</p>
+        </div>
+
+        <!-- Filled list -->
+        <div th:if="${!#lists.isEmpty(data)}">
+
+            <!-- Header bar with count -->
+            <div class="result-header">
+                <span>&#128100; Reviewers</span>
+                <span class="tag" th:text="${#lists.size(data)} + ' records'"></span>
+            </div>
+
+            <div class="result-body" style="padding: 0;">
+                <div class="data-table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Reviewer ID</th>
+                                <th>Name</th>
+                                <th>Company</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${data}">
+                                <td th:text="${r.reviewerID}"></td>
+                                <td th:text="${r.name}"></td>
+                                <td th:text="${r.employedBy}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         CASE 3: Null / no data
+         ══════════════════════════════════════════ -->
+    <div th:if="${data == null}" class="empty-state">
+        <span class="empty-state-icon">&#10060;</span>
+        <h3>No Data Returned</h3>
+        <p>The API returned an empty response.</p>
+    </div>
+
+</div><!-- end page-wrapper -->
 
 </body>
 </html>

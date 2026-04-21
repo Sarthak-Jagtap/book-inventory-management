@@ -69,6 +69,8 @@ public class SecurityConfig {
                 .requestMatchers("/store-owner/**").hasAnyRole("StoreOwner", "Admin")
                 // Admin pages
                 .requestMatchers("/admin/**").hasRole("Admin")
+                
+                .requestMatchers("/ui/**").hasAnyRole("RegisteredUser", "StoreOwner", "Admin")
                 // Everything else needs auth
                 .anyRequest().authenticated()
             )
