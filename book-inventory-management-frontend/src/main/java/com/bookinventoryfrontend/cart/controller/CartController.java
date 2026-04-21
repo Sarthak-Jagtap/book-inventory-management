@@ -1,13 +1,8 @@
 package com.bookinventoryfrontend.cart.controller;
 
-import com.bookinventoryfrontend.cart.dto.AddToCartRequest;
-import com.bookinventoryfrontend.cart.dto.CartItemResponse;
-import com.bookinventoryfrontend.cart.dto.CartOptionResponse;
-import com.bookinventoryfrontend.cart.dto.CartViewResponse;
-import com.bookinventoryfrontend.cart.dto.CheckoutItemRequest;
-import com.bookinventoryfrontend.cart.dto.CheckoutRequest;
-import com.bookinventoryfrontend.cart.dto.CheckoutResponse;
+import com.bookinventoryfrontend.cart.dto.*;
 import com.bookinventoryfrontend.common.dto.ApiResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Controller;
@@ -29,14 +24,32 @@ public class CartController {
 
     private final RestClient restClient;
 
-    public CartController(RestClient.Builder builder) {
-        this.restClient = builder
-                .baseUrl("http://localhost:8080")
-                .build();
+    public CartController(RestClient restClient) {
+        this.restClient = restClient;
+    }
+
+    private Integer getLoggedUserId(HttpSession session) {
+        Object userId = session.getAttribute("USER_ID");
+        return (userId instanceof Integer) ? (Integer) userId : null;
+    }
+
+    private String getLoggedRole(HttpSession session) {
+        Object role = session.getAttribute("ROLE_NAME");
+        return (role instanceof String) ? (String) role : "";
+    }
+
+    private boolean isUserAccessOnly(HttpSession session) {
+        String role = getLoggedRole(session);
+        return "RegisteredUser".equalsIgnoreCase(role);
     }
 
     @GetMapping("/options")
-    public String getCartOptionsByIsbn(@RequestParam String isbn, Model model) {
+    public String getCartOptionsByIsbn(@RequestParam String isbn, HttpSession session, Model model) {
+        if (!isUserAccessOnly(session)) {
+            model.addAttribute("apiError", "Shop owners cannot access cart operations.");
+            return "cart/options";
+        }
+
         if (isbn == null || isbn.isBlank()) {
             model.addAttribute("apiError", "ISBN is required.");
             model.addAttribute("options", List.of());
@@ -60,47 +73,27 @@ public class CartController {
         }
     }
 
-    @GetMapping("/items")
-    public String getCartItemsByUser(@RequestParam Integer userId, Model model) {
-        if (userId == null || userId <= 0) {
-            model.addAttribute("apiError", "User ID must be greater than 0.");
-            model.addAttribute("cartItems", List.of());
-            return "cart/list";
-        }
-
-        try {
-            ApiResponse<List<CartItemResponse>> response = restClient.get()
-                    .uri("/api/v1/user/cart/{userId}", userId)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<ApiResponse<List<CartItemResponse>>>() {});
-
-            model.addAttribute("cartItems", response != null ? response.getData() : List.of());
-            model.addAttribute("userId", userId);
-            return "cart/list";
-        } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-            model.addAttribute("cartItems", List.of());
-            model.addAttribute("userId", userId);
-            return "cart/list";
-        }
-    }
-
     @GetMapping("/view")
-    public String showCartViewPage(@RequestParam(required = false) Integer userId, Model model) {
-        model.addAttribute("searchedUserId", userId);
-
+    public String showCartViewPage(HttpSession session, Model model) {
+        Integer userId = getLoggedUserId(session);
         if (userId == null) {
-            model.addAttribute("cartView", List.of());
-            model.addAttribute("optionsByIsbn", Map.of());
-            return "cart/view";
+            return "redirect:/home";
         }
-
         return "redirect:/user/cart/view/" + userId;
     }
 
     @GetMapping("/view/{userId}")
-    public String getCartView(@PathVariable Integer userId, Model model) {
-        model.addAttribute("searchedUserId", userId);
+    public String getCartView(@PathVariable Integer userId, HttpSession session, Model model) {
+        Integer loggedId = getLoggedUserId(session);
+        if (loggedId == null || !loggedId.equals(userId)) {
+            model.addAttribute("apiError", "You can only view your own cart.");
+            return "cart/view";
+        }
+
+        if (!isUserAccessOnly(session)) {
+            model.addAttribute("apiError", "Shop owners cannot view carts.");
+            return "cart/view";
+        }
 
         try {
             ApiResponse<List<CartViewResponse>> response = restClient.get()
@@ -132,7 +125,10 @@ public class CartController {
     }
 
     @GetMapping("/add")
-    public String showAddToCartForm(Model model) {
+    public String showAddToCartForm(HttpSession session, Model model) {
+        if (!isUserAccessOnly(session)) {
+            model.addAttribute("apiError", "Shop owners cannot perform cart operations.");
+        }
         if (!model.containsAttribute("addToCartRequest")) {
             model.addAttribute("addToCartRequest", new AddToCartRequest());
         }
@@ -142,9 +138,20 @@ public class CartController {
     @PostMapping("/add")
     public String addToCart(@Valid @ModelAttribute("addToCartRequest") AddToCartRequest request,
                             BindingResult bindingResult,
-                            Model model) {
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) {
+        Integer loggedId = getLoggedUserId(session);
+        if (loggedId == null) return "redirect:/home";
+        request.setUserId(loggedId);
+
+        if (!isUserAccessOnly(session)) {
+            redirectAttributes.addFlashAttribute("apiError", "Shop owners cannot add to cart.");
+            return "redirect:/team/inventory-module";
+        }
+
         if (bindingResult.hasErrors()) {
-            return "cart/add";
+            redirectAttributes.addFlashAttribute("apiError", "ISBN format is incorrect. Use x-xxx-xxxxx-x");
+            return "redirect:/team/inventory-module";
         }
 
         try {
@@ -154,50 +161,25 @@ public class CartController {
                     .retrieve()
                     .toBodilessEntity();
 
-            return "redirect:/user/cart/view/" + request.getUserId();
-        } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-            return "cart/add";
-        }
-    }
-
-    @PostMapping("/add-inline")
-    public String addToCartInline(@RequestParam Integer userId,
-                                  @RequestParam String isbn,
-                                  RedirectAttributes redirectAttributes) {
-        if (userId == null || userId <= 0) {
-            redirectAttributes.addFlashAttribute("apiError", "User ID must be greater than 0.");
-            return "redirect:/inventory-cart-dashboard";
-        }
-
-        if (isbn == null || isbn.isBlank()) {
-            redirectAttributes.addFlashAttribute("apiError", "ISBN is required.");
-            return "redirect:/inventory-cart-dashboard";
-        }
-
-        try {
-            AddToCartRequest request = new AddToCartRequest();
-            request.setUserId(userId);
-            request.setIsbn(isbn);
-
-            restClient.post()
-                    .uri("/api/v1/user/cart/add")
-                    .body(request)
-                    .retrieve()
-                    .toBodilessEntity();
-
-            redirectAttributes.addFlashAttribute("successMessage", "Book added to cart successfully.");
+            redirectAttributes.addFlashAttribute("successMessage", "Item added to cart successfully!");
+            return "redirect:/user/cart/view/" + loggedId;
         } catch (HttpStatusCodeException ex) {
             redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            return "redirect:/team/inventory-module";
         }
-
-        return "redirect:/inventory-cart-dashboard";
     }
 
     @PostMapping("/remove")
     public String removeFromCart(@RequestParam Integer userId,
                                  @RequestParam String isbn,
+                                 HttpSession session,
                                  Model model) {
+        Integer loggedId = getLoggedUserId(session);
+        if (loggedId == null || !loggedId.equals(userId)) {
+            model.addAttribute("apiError", "Access denied.");
+            return "cart/view";
+        }
+
         try {
             restClient.delete()
                     .uri(uriBuilder -> uriBuilder
@@ -211,72 +193,40 @@ public class CartController {
             return "redirect:/user/cart/view/" + userId;
         } catch (HttpStatusCodeException ex) {
             model.addAttribute("apiError", extractErrorMessage(ex));
-            return getCartView(userId, model);
+            return getCartView(userId, session, model);
         }
-    }
-
-    @PostMapping("/remove/run")
-    public String runRemove(@RequestParam Integer userId,
-                            @RequestParam String isbn,
-                            RedirectAttributes redirectAttributes) {
-        if (userId == null || userId <= 0) {
-            redirectAttributes.addFlashAttribute("apiError", "User ID must be greater than 0.");
-            return "redirect:/inventory-cart-dashboard";
-        }
-
-        if (isbn == null || isbn.isBlank()) {
-            redirectAttributes.addFlashAttribute("apiError", "ISBN is required.");
-            return "redirect:/inventory-cart-dashboard";
-        }
-
-        try {
-            restClient.delete()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/api/v1/user/cart/remove")
-                            .queryParam("userId", userId)
-                            .queryParam("isbn", isbn)
-                            .build())
-                    .retrieve()
-                    .toBodilessEntity();
-
-            redirectAttributes.addFlashAttribute("successMessage", "Cart item removed successfully.");
-        } catch (HttpStatusCodeException ex) {
-            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
-        }
-
-        return "redirect:/inventory-cart-dashboard";
     }
 
     @PostMapping("/checkout")
     public String checkoutFromView(@RequestParam Integer userId,
                                    @RequestParam("isbn") List<String> isbns,
                                    @RequestParam("rank") List<Integer> ranks,
-                                   Model model) {
-        if (userId == null || userId <= 0) {
-            model.addAttribute("apiError", "User ID must be greater than 0.");
-            return getCartView(userId, model);
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) {
+        Integer loggedId = getLoggedUserId(session);
+        if (loggedId == null || !loggedId.equals(userId)) {
+            redirectAttributes.addFlashAttribute("apiError", "Access denied. Session mismatch.");
+            return "redirect:/team/inventory-module";
+        }
+
+        if (!isUserAccessOnly(session)) {
+            redirectAttributes.addFlashAttribute("apiError", "Shop owners cannot perform checkout.");
+            return "redirect:/team/inventory-module";
         }
 
         if (isbns == null || ranks == null || isbns.isEmpty() || ranks.isEmpty()) {
-            model.addAttribute("apiError", "Cart items and rank selections are required.");
-            return getCartView(userId, model);
-        }
-
-        if (isbns.size() != ranks.size()) {
-            model.addAttribute("apiError", "Each cart item must have one selected rank.");
-            return getCartView(userId, model);
+            redirectAttributes.addFlashAttribute("apiError", "No items selected for checkout.");
+            return "redirect:/user/cart/view/" + userId;
         }
 
         try {
             CheckoutRequest request = new CheckoutRequest();
             request.setUserId(userId);
-
             List<CheckoutItemRequest> items = new ArrayList<>();
-            for (int i = 0; i < isbns.size(); i++) {
-                if (isbns.get(i) == null || isbns.get(i).isBlank() || ranks.get(i) == null) {
-                    model.addAttribute("apiError", "Each cart item must have ISBN and rank.");
-                    return getCartView(userId, model);
-                }
+
+            // Safely pair items up to the minimum list size
+            int count = Math.min(isbns.size(), ranks.size());
+            for (int i = 0; i < count; i++) {
                 items.add(new CheckoutItemRequest(isbns.get(i), ranks.get(i)));
             }
             request.setItems(items);
@@ -287,51 +237,56 @@ public class CartController {
                     .retrieve()
                     .body(new ParameterizedTypeReference<ApiResponse<CheckoutResponse>>() {});
 
-            model.addAttribute("checkoutMessage",
+            redirectAttributes.addFlashAttribute("successMessage",
                     response != null ? response.getMessage() : "Checkout completed successfully.");
 
-            return getCartView(userId, model);
+            return "redirect:/user/cart/view/" + userId;
         } catch (HttpStatusCodeException ex) {
-            model.addAttribute("apiError", extractErrorMessage(ex));
-            return getCartView(userId, model);
+            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            return "redirect:/user/cart/view/" + userId;
         }
     }
 
-    @PostMapping("/checkout/run")
-    public String runCheckout(@RequestParam Integer userId,
-                              RedirectAttributes redirectAttributes) {
-        if (userId == null || userId <= 0) {
-            redirectAttributes.addFlashAttribute("apiError", "User ID must be greater than 0.");
-            return "redirect:/inventory-cart-dashboard";
+    @GetMapping("/checkout")
+    public String initiateCheckout(HttpSession session, RedirectAttributes redirectAttributes) {
+        Integer userId = getLoggedUserId(session);
+        if (userId == null) return "redirect:/home";
+
+        if (!isUserAccessOnly(session)) {
+            redirectAttributes.addFlashAttribute("apiError", "Shop owners cannot access cart operations.");
+            return "redirect:/team/inventory-module";
         }
 
-        redirectAttributes.addFlashAttribute("apiError",
-                "Use View Cart to select rank for each item before checkout.");
-        return "redirect:/user/cart/view/" + userId;
+        try {
+            ApiResponse<List<CartViewResponse>> response = restClient.get()
+                    .uri("/api/v1/user/cart/view/{userId}", userId)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<ApiResponse<List<CartViewResponse>>>() {});
+
+            List<CartViewResponse> cartView = response != null ? response.getData() : List.of();
+            if (cartView.isEmpty()) {
+                redirectAttributes.addFlashAttribute("apiError", "No items in cart to checkout.");
+                return "redirect:/team/inventory-module";
+            }
+
+            return "redirect:/user/cart/view/" + userId;
+        } catch (HttpStatusCodeException ex) {
+            redirectAttributes.addFlashAttribute("apiError", extractErrorMessage(ex));
+            return "redirect:/team/inventory-module";
+        }
     }
 
     private String extractErrorMessage(HttpStatusCodeException ex) {
         String body = ex.getResponseBodyAsString();
-        if (body == null || body.isBlank()) {
-            return "Something went wrong.";
-        }
-
+        if (body == null || body.isBlank()) return "Something went wrong.";
         try {
             int messageIndex = body.indexOf("\"message\"");
-            if (messageIndex == -1) {
-                return body;
-            }
-
+            if (messageIndex == -1) return body;
             int colonIndex = body.indexOf(':', messageIndex);
             int firstQuote = body.indexOf('"', colonIndex + 1);
             int secondQuote = body.indexOf('"', firstQuote + 1);
-
-            if (firstQuote != -1 && secondQuote != -1) {
-                return body.substring(firstQuote + 1, secondQuote);
-            }
-        } catch (Exception ignored) {
-        }
-
+            if (firstQuote != -1 && secondQuote != -1) return body.substring(firstQuote + 1, secondQuote);
+        } catch (Exception ignored) {}
         return body;
     }
-}
+}

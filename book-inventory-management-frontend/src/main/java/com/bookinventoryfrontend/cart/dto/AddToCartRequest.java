@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 
 public class AddToCartRequest {
 
-    @NotNull(message = "User ID is required")
+    // userId is injected from session in the controller
     private Integer userId;
 
     @NotBlank(message = "ISBN is required")

@@ -11,6 +11,8 @@ public class UpdateInventoryRequest {
     @Max(value = 6, message = "Rank must be at most 6")
     private Integer rank;
 
+    private Boolean purchased;
+
     public UpdateInventoryRequest() {
     }
 
@@ -20,5 +22,13 @@ public class UpdateInventoryRequest {
 
     public void setRank(Integer rank) {
         this.rank = rank;
+    }
+
+    public Boolean getPurchased() {
+        return purchased;
+    }
+
+    public void setPurchased(Boolean purchased) {
+        this.purchased = purchased;
     }
 }

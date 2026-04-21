@@ -1,83 +1,110 @@
-<div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
-<div th:if="${checkoutMessage != null}" class="success-box" th:text="${checkoutMessage}"></div>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Shopping Cart</title>
+  <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
+  <style>
+    .error-box{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:14px 16px;border-radius:10px;margin-bottom:16px;white-space:pre-wrap;word-break:break-word;}
+    .success-box{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;padding:14px 16px;border-radius:10px;margin-bottom:16px;}
+    .footer-actions {margin-top: 30px;padding-top: 20px;border-top: 1px solid var(--border);display: flex;justify-content: center;}
+    .cart-summary { margin-top: 24px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: space-between; }
+  </style>
+</head>
+<body>
 
-<div class="lookup-card">
-  <div class="form-title">Find Cart By User ID</div>
-  <div class="form-subtitle">Enter user ID to load cart items.</div>
-
-  <form th:action="@{/user/cart/view}" method="get">
-    <div class="lookup-grid">
-      <div class="form-group">
-        <label class="form-label" for="userIdLookup">User ID</label>
-        <input class="form-input"
-               id="userIdLookup"
-               name="userId"
-               type="number"
-               min="1"
-               th:value="${searchedUserId}"
-               placeholder="e.g. 1000009"
-               required>
-      </div>
-      <div class="form-group">
-        <button class="btn btn-primary" type="submit">View Cart</button>
-      </div>
-    </div>
-  </form>
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-title">Book Inventory API</div>
+    <div class="logo-sub">My Cart</div>
+  </div>
 </div>
 
-<form th:if="${userId != null and cartView != null and !#lists.isEmpty(cartView)}"
-      th:action="@{/user/cart/checkout}"
-      method="post">
+<div class="hero">
+  <div class="hero-text">
+    <h1>Shopping Cart</h1>
+    <p>Review your items, select condition quality, and proceed to checkout.</p>
+  </div>
+</div>
 
-  <input type="hidden" name="userId" th:value="${userId}">
+<div class="content">
 
-  <div class="table-wrap">
-    <table class="data-table">
-      <thead>
-      <tr>
-        <th>ISBN</th>
-        <th>Book Title</th>
-        <th>Select Condition</th>
-        <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="item, iter : ${cartView}">
-        <td th:text="${item.isbn}"></td>
-        <td th:text="${item.bookTitle}"></td>
+  <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
+  <div th:if="${successMessage != null}" class="success-box" th:text="${successMessage}"></div>
 
-        <td>
-          <input type="hidden" name="isbn" th:value="${item.isbn}"/>
+  <!-- Main Checkout Form (Empty, used for association) -->
+  <form id="checkoutForm" th:action="@{/user/cart/checkout}" method="post">
+    <input type="hidden" name="userId" th:value="${userId}">
+  </form>
 
-          <div th:if="${optionsByIsbn[item.isbn] != null and !#lists.isEmpty(optionsByIsbn[item.isbn])}">
-            <select class="form-select" name="rank" required>
-              <option value="">Choose condition</option>
-              <option th:each="opt : ${optionsByIsbn[item.isbn]}"
-                      th:value="${opt.rank}"
-                      th:text="${opt.condition + ' - ₹' + opt.price + ' (' + opt.availableCount + ' available)'}">
-              </option>
-            </select>
-          </div>
+  <div th:if="${userId != null and cartView != null and !#lists.isEmpty(cartView)}">
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>ISBN</th>
+          <th>Book Title</th>
+          <th>Select Condition</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${cartView}">
+          <td th:text="${item.isbn}"></td>
+          <td th:text="${item.bookTitle}"></td>
+          <td>
+            <div th:if="${optionsByIsbn[item.isbn] != null and !#lists.isEmpty(optionsByIsbn[item.isbn])}">
+              <input type="hidden" name="isbn" th:value="${item.isbn}" form="checkoutForm"/>
+              <select class="form-select" name="rank" required form="checkoutForm">
+                <option value="">Choose quality...</option>
+                <option th:each="opt : ${optionsByIsbn[item.isbn]}"
+                        th:value="${opt.rank}"
+                        th:text="${opt.condition + ' - $' + opt.price}"
+                        th:disabled="${opt.availableCount <= 0}">
+                </option>
+              </select>
+            </div>
+            <div th:if="${optionsByIsbn[item.isbn] == null or #lists.isEmpty(optionsByIsbn[item.isbn])}"
+                 style="color:#b91c1c; font-weight:600; font-size: 13px;">
+              ✖ Sold out
+            </div>
+          </td>
+          <td>
+            <div class="mini-actions">
+              <form class="inline-form" th:action="@{/user/cart/remove}" method="post"
+                    onsubmit="return confirm('Remove this book from your cart?');">
+                <input type="hidden" name="userId" th:value="${userId}">
+                <input type="hidden" name="isbn" th:value="${item.isbn}">
+                <button class="btn btn-danger" type="submit">Remove</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
 
-          <div th:if="${optionsByIsbn[item.isbn] == null or #lists.isEmpty(optionsByIsbn[item.isbn])}"
-               style="color:#b91c1c; font-weight:600;">
-            ✖ No copies available
-          </div>
-        </td>
-
-        <td>
-          <form class="inline-form remove-form" th:action="@{/user/cart/remove}" method="post">
-            <input type="hidden" name="userId" th:value="${userId}">
-            <input type="hidden" name="isbn" th:value="${item.isbn}">
-            <button class="btn btn-danger" type="submit">Remove</button>
-          </form>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+    <div class="cart-summary">
+      <div class="summary-info">
+        <p th:text="${#lists.size(cartView)} + ' items in your cart.'"></p>
+      </div>
+      <div class="summary-actions">
+        <button class="btn btn-success" type="submit" form="checkoutForm">Proceed to Checkout</button>
+      </div>
+    </div>
   </div>
 
-  <div class="actions-row" style="margin-top:18px">
-    <button class="btn btn-success" type="submit">Checkout</button>
+  <div th:if="${userId != null and (cartView == null or #lists.isEmpty(cartView))}" class="empty-state">
+    <div class="empty-icon">🛒</div>
+    <h3>Your cart is empty</h3>
+    <p>Please return to the dashboard to select books.</p>
   </div>
-</form>
+
+  <div class="footer-actions">
+    <a class="btn btn-secondary" th:href="@{/team/inventory-module}">Back to Dashboard</a>
+  </div>
+
+</div>
+</body>
+</html>

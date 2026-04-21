@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -45,7 +44,7 @@ class CartControllerTest {
 
     @MockBean
     private CartService service;
-    
+
     @MockBean
     private JwtUtil jwtUtil;
 
@@ -89,10 +88,10 @@ class CartControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.statusCode").value(200))
-                .andExpect(jsonPath("$.message").value("Item added to cart successfully"))
+                .andExpect(jsonPath("$.statusCode").value(201))
+                .andExpect(jsonPath("$.message").value("Book added to cart successfully"))
                 .andExpect(jsonPath("$.data.userId").value(1))
                 .andExpect(jsonPath("$.data.isbn").value("1-533-73363-8"));
     }
@@ -107,7 +106,7 @@ class CartControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.statusCode").value(200))
-                .andExpect(jsonPath("$.message").value("Cart fetched successfully"))
+                .andExpect(jsonPath("$.message").value("Cart items fetched successfully"))
                 .andExpect(jsonPath("$.data[0].userId").value(1))
                 .andExpect(jsonPath("$.data[0].isbn").value("1-533-73363-8"));
     }
@@ -154,7 +153,7 @@ class CartControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.statusCode").value(200))
-                .andExpect(jsonPath("$.message").value("Removed from cart"));
+                .andExpect(jsonPath("$.message").value("Cart item removed successfully"));
     }
 
     @Test
@@ -175,7 +174,7 @@ class CartControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.statusCode").value(200))
-                .andExpect(jsonPath("$.message").value("Checkout processed successfully"))
+                .andExpect(jsonPath("$.message").value("Checkout successful for all cart items."))
                 .andExpect(jsonPath("$.data.success").value(true))
                 .andExpect(jsonPath("$.data.message").value("Checkout successful for all cart items."));
     }
@@ -195,7 +194,7 @@ class CartControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.statusCode").value(200))
-                .andExpect(jsonPath("$.message").value("Checkout processed successfully"))
+                .andExpect(jsonPath("$.message").value("Select quality choice for cart items"))
                 .andExpect(jsonPath("$.data.success").value(false))
                 .andExpect(jsonPath("$.data.message").value("Select quality choice for cart items"));
     }
@@ -215,7 +214,7 @@ class CartControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.statusCode").value(200))
-                .andExpect(jsonPath("$.message").value("Checkout processed successfully"))
+                .andExpect(jsonPath("$.message").value("Cart is empty"))
                 .andExpect(jsonPath("$.data.success").value(false))
                 .andExpect(jsonPath("$.data.message").value("Cart is empty"));
     }

@@ -4,6 +4,7 @@ import com.bookinventory.common.exception.ResourceNotFoundException;
 import com.bookinventory.user.common.config.JwtAuthFilter;
 import com.bookinventory.user.dto.*;
 import com.bookinventory.user.service.PermRoleService;
+import com.bookinventory.user.service.PurchaseLogService;
 import com.bookinventory.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +50,9 @@ class AdminControllerTest {
 
     @MockBean
     private PermRoleService permRoleService;
+
+    @MockBean
+    private PurchaseLogService purchaseLogService;
 
     // ── Shared test data ──────────────────────────────────────────
     private UserResponseDTO user1Response;

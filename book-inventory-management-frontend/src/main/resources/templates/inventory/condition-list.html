@@ -3,17 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Available Inventory</title>
+  <title>Book Conditions</title>
   <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
   <style>
-    .error-box{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:14px 16px;border-radius:10px;margin-bottom:16px;}
-    .footer-actions {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: center;
-    }
+    .error-box{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:14px 16px;border-radius:10px;margin-bottom:16px;white-space:pre-wrap;word-break:break-word;}
+    .footer-actions {margin-top: 30px;padding-top: 20px;border-top: 1px solid var(--border);display: flex;justify-content: center;}
   </style>
 </head>
 <body>
@@ -32,46 +26,42 @@
 
 <div class="hero">
   <div class="hero-text">
-    <h1>Available Items</h1>
-    <p>Listing all available (non-purchased) copies for ISBN: <span th:text="${isbn}"></span></p>
+    <h1>Book Conditions</h1>
+    <p>Browse available book condition descriptions and their base prices in USD.</p>
   </div>
 </div>
 
 <div class="content">
-
   <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
 
-  <div th:if="${inventoryList != null and !#lists.isEmpty(inventoryList)}" class="table-wrap">
+  <div th:if="${conditions != null and !#lists.isEmpty(conditions)}" class="table-wrap">
     <table class="data-table">
       <thead>
       <tr>
-        <th>ID</th>
-        <th>ISBN</th>
-        <th>Rank</th>
-        <th>Status</th>
+        <th>Condition</th>
+        <th>Price ($)</th>
+        <th>Full Description</th>
       </tr>
       </thead>
       <tbody>
-      <tr th:each="item : ${inventoryList}">
-        <td th:text="${item.inventoryId}"></td>
-        <td th:text="${item.isbn}"></td>
-        <td th:text="${item.rank}"></td>
+      <tr th:each="c : ${conditions}">
+        <td th:text="${c.description}">Mint</td>
         <td>
-          <span class="pill pill-yes">AVAILABLE</span>
+          <span class="pill pill-yes" th:text="'$' + ${c.price}">$0.00</span>
         </td>
+        <td th:text="${c.fullDescription}">Like new. No signs of wear.</td>
       </tr>
       </tbody>
     </table>
   </div>
 
-  <div th:if="${(inventoryList == null or #lists.isEmpty(inventoryList)) and apiError == null}" class="empty-state">
-    No available copies found for this ISBN.
+  <div th:if="${conditions == null or #lists.isEmpty(conditions)}" class="empty-state">
+    No book conditions found.
   </div>
 
   <div class="footer-actions">
     <a class="btn btn-secondary" th:href="@{/team/inventory-module}">Back to Dashboard</a>
   </div>
-
 </div>
 </body>
 </html>
