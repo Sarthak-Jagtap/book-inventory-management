@@ -1,20 +1,77 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
-	<title>Find Book</title>
+	<meta charset="UTF-8" />
+	<title>Find Book by ISBN</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}" />
+	<style>
+		.form-group {
+			margin-bottom: 16px;
+		}
+
+		.form-label {
+			display: block;
+			font-size: 14px;
+			font-weight: 500;
+			color: #374151;
+			margin-bottom: 6px;
+		}
+
+		.form-control {
+			width: 100%;
+			padding: 8px 12px;
+			border: 1px solid #d1d5db;
+			border-radius: 6px;
+			font-size: 14px;
+		}
+
+		.form-control:focus {
+			outline: none;
+			border-color: #3b82f6;
+			box-shadow: 0 0 0 3px rgba(59, 130, 246, .1);
+		}
+	</style>
 </head>
 
 <body>
 
-	<h2>Search Book by ISBN</h2>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-	<form action="/books/details" method="get">
-		<label>Enter ISBN:</label>
-		<input type="text" name="isbn" required>
-		<button type="submit">Search</button>
-	</form>
+	<div class="page-wrapper">
 
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">Find Book by ISBN</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">
+					Enter an ISBN to view full book details
+				</div>
+			</div>
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
+
+				<a class="btn btn-secondary btn-sm" th:href="@{/books}">← Back to Books</a>
+			</div>
+		</div>
+
+
+
+		<div class="card" style="padding:24px;max-width:480px;">
+			<form action="/books/details" method="get">
+				<div class="form-group">
+					<label class="form-label" for="isbn">ISBN Number</label>
+					<input type="text" id="isbn" name="isbn" class="form-control" required
+						placeholder="e.g. 9780132350884" />
+				</div>
+				<div style="margin-top:20px;">
+					<button type="submit" class="btn btn-primary">Search</button>
+				</div>
+			</form>
+		</div>
+
+	</div>
+
+	<div class="footer">Book Inventory Management System</div>
 </body>
 
 </html>

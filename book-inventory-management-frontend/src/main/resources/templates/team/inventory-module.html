@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inventory & Cart APIs — Book Inventory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <style>
+    .endpoint-row { 
+      display: grid; 
+      grid-template-columns: 85px 340px 1fr 260px; 
+      align-items: center; 
+      gap: 24px;
+      padding: 14px 20px;
+    }
+    .method { width: auto; font-family: 'Courier New', monospace; }
+    .endpoint-url { font-family: 'Courier New', monospace; font-size: 13px; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .endpoint-desc { font-size: 13px; color: #374151; font-weight: 500; line-height: 1.4; }
+    .endpoint-form { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
+    .endpoint-form input { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; width: 140px; }
+    .endpoint-form button { background: #1a6dbd; color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: background 0.2s; }
+    .access-tag { justify-self: end; }
+    .alert-popup {
+      position: fixed; top: 20px; right: 20px; z-index: 1000;
+      padding: 16px 24px; border-radius: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<!-- Member hero -->
+<div class="member-hero">
+  <div class="avatar av-3" th:text="${#strings.substring(memberName,0,2).toUpperCase()}">YA</div>
+  <div class="info">
+    <div class="module-tag">Inventory & Cart Module</div>
+    <h2 th:text="${memberName}">Yashomati</h2>
+    <p>Inventory Control · Quality Conditions · Shopping Cart · Checkout</p>
+  </div>
+  <div class="meta">
+    <div class="m"><div class="n" th:text="${endpointCount}">15</div><div class="l">Endpoints</div></div>
+    <div class="m"><div class="n" th:text="${groupCount}">3</div><div class="l">Groups</div></div>
+    <div class="m"><div class="n">2</div><div class="l">Roles</div></div>
+  </div>
+</div>
+
+<div class="page-wrapper" style="max-width: 1200px;">
+  <div class="breadcrumb">
+    <a th:href="@{/home}">Home</a>
+    <span class="sep">›</span>
+    <span>Inventory Module</span>
+  </div>
+
+  <div class="content">
+
+    <div th:if="${successMessage != null}" class="alert alert-success mb-2" id="successAlert">
+      <span th:text="${successMessage}">Success!</span>
+    </div>
+    <div th:if="${apiError != null}" class="alert alert-error mb-2">
+      <span th:text="${apiError}">Error!</span>
+    </div>
+
+    <!-- ══ GROUP 1: Book Conditions ══ -->
+    <div class="section-title">Group 1 — Book Conditions <span class="tag">Owner Only</span></div>
+    <div class="endpoint-list">
+      <th:block th:if="${session.ROLE_NAME == 'StoreOwner' or session.ROLE_NAME == 'Admin'}">
+        <a class="endpoint-row" th:href="@{/store-owner/inventory/book-conditions}">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-url">/api/v1/store-owner/book-conditions</span>
+          <span class="endpoint-desc">Fetch condition descriptions and base prices ($)</span>
+        </a>
+      </th:block>
+      <th:block th:if="${session.ROLE_NAME != 'StoreOwner' and session.ROLE_NAME != 'Admin'}">
+        <div class="endpoint-row locked">
+          <span class="method method-get">--</span>
+          <span class="endpoint-url">/api/v1/store-owner/book-conditions</span>
+          <span class="access-tag access-owner">StoreOwner Only</span>
+        </div>
+      </th:block>
+    </div>
+
+    <!-- ══ GROUP 2: Inventory Management ══ -->
+    <div class="section-title">Group 2 — Inventory Management <span class="tag">Owner Only</span></div>
+    <div class="endpoint-list">
+      <th:block th:if="${session.ROLE_NAME == 'StoreOwner' or session.ROLE_NAME == 'Admin'}">
+        <a class="endpoint-row" th:href="@{/store-owner/inventory}">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory</span>
+          <span class="endpoint-desc">List all inventory items in the store</span>
+        </a>
+
+        <div class="endpoint-row">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory/{id}</span>
+          <span class="endpoint-desc">Fetch specific item details by ID</span>
+          <form class="endpoint-form" th:action="@{/store-owner/inventory/find-by-id}" method="get">
+            <input type="number" name="inventoryId" min="1000000" placeholder="e.g. 1000012" required/>
+            <button type="submit">Fetch</button>
+          </form>
+        </div>
+
+        <div class="endpoint-row">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory/book/{isbn}</span>
+          <span class="endpoint-desc">Fetch all items for a specific ISBN</span>
+          <form class="endpoint-form" th:action="@{/store-owner/inventory/find-by-isbn}" method="get">
+            <input type="text" name="isbn" pattern="[0-9]-[0-9]{3}-[0-9]{5}-[0-9]" placeholder="x-xxx-xxxxx-x" title="Format: x-xxx-xxxxx-x" required/>
+            <button type="submit">Filter</button>
+          </form>
+        </div>
+
+        <div class="endpoint-row">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory/available/{isbn}</span>
+          <span class="endpoint-desc">Fetch only available copies for an ISBN</span>
+          <form class="endpoint-form" th:action="@{/store-owner/inventory/find-available}" method="get">
+            <input type="text" name="isbn" pattern="[0-9]-[0-9]{3}-[0-9]{5}-[0-9]" placeholder="x-xxx-xxxxx-x" title="Format: x-xxx-xxxxx-x" required/>
+            <button type="submit">Filter</button>
+          </form>
+        </div>
+
+        <div class="endpoint-row">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory/summary/{isbn}</span>
+          <span class="endpoint-desc">Get count and price summary for an ISBN</span>
+          <form class="endpoint-form" th:action="@{/store-owner/inventory/find-summary}" method="get">
+            <input type="text" name="isbn" pattern="[0-9]-[0-9]{3}-[0-9]{5}-[0-9]" placeholder="x-xxx-xxxxx-x" title="Format: x-xxx-xxxxx-x" required/>
+            <button type="submit">Summary</button>
+          </form>
+        </div>
+
+        <div class="endpoint-row">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory/rank/{rank}</span>
+          <span class="endpoint-desc">List items by quality rank (1-6)</span>
+          <form class="endpoint-form" th:action="@{/store-owner/inventory/find-by-rank}" method="get">
+            <input type="number" name="rank" min="1" max="6" placeholder="Rank" required/>
+            <button type="submit">Filter</button>
+          </form>
+        </div>
+
+        <a class="endpoint-row" th:href="@{/store-owner/inventory/add}">
+          <span class="method method-post">POST</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory</span>
+          <span class="endpoint-desc">Add a new book item to stock</span>
+        </a>
+
+        <div class="endpoint-row">
+          <span class="method method-put">PUT</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory/{id}</span>
+          <span class="endpoint-desc">Update the quality rank of an item</span>
+          <form class="endpoint-form" th:action="@{/store-owner/inventory/edit}" method="get">
+            <input type="number" name="inventoryId" min="1000000" placeholder="ID" required/>
+            <button type="submit">Edit</button>
+          </form>
+        </div>
+
+        <div class="endpoint-row">
+          <span class="method method-patch">PATCH</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory/purchase/{id}</span>
+          <span class="endpoint-desc">Toggle the purchased status of an item</span>
+          <form class="endpoint-form" th:action="@{/store-owner/inventory/purchase/run}" method="post">
+            <input type="number" name="inventoryId" min="1000000" placeholder="ID" required/>
+            <button type="submit">Toggle</button>
+          </form>
+        </div>
+
+        <div class="endpoint-row">
+          <span class="method method-delete">DELETE</span>
+          <span class="endpoint-url">/api/v1/store-owner/inventory/{id}</span>
+          <span class="endpoint-desc">Permanently remove an inventory record</span>
+          <form class="endpoint-form" id="deleteForm" th:action="@{/store-owner/inventory/delete/run}" method="post">
+            <input type="number" id="deleteId" name="inventoryId" min="1000000" placeholder="ID" required/>
+            <button type="button" onclick="confirmDelete()" style="background:#dc2626">Delete</button>
+          </form>
+        </div>
+      </th:block>
+      <th:block th:if="${session.ROLE_NAME != 'StoreOwner' and session.ROLE_NAME != 'Admin'}">
+        <div class="endpoint-row locked">
+          <span class="method method-get">--</span>
+          <span class="endpoint-url">/api/v1/store-owner/**</span>
+          <span class="access-tag access-owner">StoreOwner Only</span>
+        </div>
+      </th:block>
+    </div>
+
+    <!-- ══ GROUP 3: User Cart ══ -->
+    <div class="section-title">Group 3 — Shopping Cart <span class="tag">User Only</span></div>
+    <div class="endpoint-list">
+      <th:block th:if="${session.ROLE_NAME == 'RegisteredUser' or session.ROLE_NAME == 'Admin'}">
+        <a class="endpoint-row" th:href="@{/user/cart/view}">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-url">/api/v1/user/cart/view/{userId}</span>
+          <span class="endpoint-desc">View your current shopping cart</span>
+        </a>
+
+        <div class="endpoint-row">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-url">/api/v1/user/cart/options/{isbn}</span>
+          <span class="endpoint-desc">Check book availability and rank prices</span>
+          <form class="endpoint-form" th:action="@{/user/cart/options}" method="get">
+            <input type="text" name="isbn" placeholder="ISBN" required/>
+            <button type="submit">Options</button>
+          </form>
+        </div>
+
+        <a class="endpoint-row" th:href="@{/user/cart/add}">
+          <span class="method method-post">POST</span>
+          <span class="endpoint-url">/api/v1/user/cart/add</span>
+          <span class="endpoint-desc">Add a new book to your cart</span>
+        </a>
+
+        <a class="endpoint-row" th:href="@{/user/cart/view}">
+          <span class="method method-delete">DELETE</span>
+          <span class="endpoint-url">/api/v1/user/cart/remove</span>
+          <span class="endpoint-desc">Remove an item from your cart</span>
+        </a>
+
+        <a class="endpoint-row" th:href="@{/user/cart/checkout}">
+          <span class="method method-post">POST</span>
+          <span class="endpoint-url">/api/v1/user/cart/checkout</span>
+          <span class="endpoint-desc">Complete purchase and empty cart</span>
+        </a>
+      </th:block>
+      <th:block th:if="${session.ROLE_NAME != 'RegisteredUser' and session.ROLE_NAME != 'Admin'}">
+        <div class="endpoint-row locked">
+          <span class="method method-get">--</span>
+          <span class="endpoint-url">/api/v1/user/cart/** (5 endpoints)</span>
+          <span class="access-tag access-auth">Registered User Only</span>
+        </div>
+      </th:block>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">Book Inventory Management — Yashomati's Module</div>
+
+<script>
+  async function confirmDelete() {
+    const idInput = document.getElementById('deleteId');
+    const id = idInput.value;
+    if (!id) {
+      alert('Please enter an Inventory ID.');
+      return;
+    }
+
+    try {
+      // Step 1: Check if exists by calling the detail endpoint
+      // We use the absolute path or relative to context
+      const response = await fetch('/store-owner/inventory/' + id, { method: 'GET' });
+      
+      if (response.ok && !response.url.includes('?apiError=')) {
+        // Step 2: If found, ask for confirmation
+        if (confirm('Item found! Are you sure you want to PERMANENTLY delete record #' + id + '?')) {
+          document.getElementById('deleteForm').submit();
+        }
+      } else {
+        // Step 3: If not found (or redirected to error)
+        alert('Item doesn\'t exist. No action taken.');
+      }
+    } catch (error) {
+      console.error('Check failed:', error);
+      alert('Unable to verify item. Please try again.');
+    }
+  }
+
+  // Auto-hide success message after 5 seconds
+  const alertBox = document.getElementById('successAlert');
+  if (alertBox) {
+    setTimeout(() => {
+      alertBox.style.transition = 'opacity 0.5s ease';
+      alertBox.style.opacity = '0';
+      setTimeout(() => alertBox.remove(), 500);
+    }, 5000);
+  }
+</script>
+
+</body>
+</html>

@@ -108,7 +108,13 @@ public class CartServiceImpl implements CartService {
         ShoppingCartId cartId = new ShoppingCartId(request.getUserId(), request.getIsbn());
 
         if (cartRepository.existsById(cartId)) {
-            throw new BadRequestException("Book already exists in cart for this user");
+            throw new BadRequestException("Book already in cart");
+        }
+
+        // Check if book is in stock
+        List<Inventory> available = inventoryRepository.getAvailableInventoryByIsbn(request.getIsbn());
+        if (available == null || available.isEmpty()) {
+            throw new BadRequestException("Sold out");
         }
 
         ShoppingCart cart = new ShoppingCart();
@@ -178,67 +184,56 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
-    public CheckoutResponse checkoutAll(CheckoutRequest request) {
-        if (request == null || request.getUserId() == null) {
-            throw new BadRequestException("User ID is required");
-        }
-
-        Integer userId = request.getUserId();
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
-
-        List<ShoppingCart> cartItems = cartRepository.findByUserId(userId);
-
-        if (cartItems == null || cartItems.isEmpty()) {
-            return new CheckoutResponse(false, "Cart is empty");
-        }
-
-        Map<String, Integer> selectedRankByIsbn = new HashMap<>();
-        if (request.getItems() != null) {
-            for (CheckoutItemRequest item : request.getItems()) {
-                if (item != null && item.getIsbn() != null && item.getRank() != null) {
-                    selectedRankByIsbn.put(item.getIsbn(), item.getRank());
-                }
-            }
-        }
-
-        for (ShoppingCart cartItem : cartItems) {
-            Integer selectedRank = selectedRankByIsbn.get(cartItem.getIsbn());
-            if (selectedRank == null) {
-                return new CheckoutResponse(
-                        false,
-                        "Selection missing for isbn: " + cartItem.getIsbn()
-                );
-            }
-        }
-
-        List<Inventory> inventoriesToPurchase = new ArrayList<>();
-
-        for (ShoppingCart cartItem : cartItems) {
-            Integer selectedRank = selectedRankByIsbn.get(cartItem.getIsbn());
-
-            Inventory inventory = inventoryRepository
-                    .getFirstAvailableInventoryByIsbnAndRank(cartItem.getIsbn(), selectedRank)
-                    .orElseThrow(() -> new BadRequestException(
-                            "No available copy for ISBN: " + cartItem.getIsbn() + " with rank: " + selectedRank
-                    ));
-
-            inventoriesToPurchase.add(inventory);
-        }
-
-        for (Inventory inventory : inventoriesToPurchase) {
-            inventory.setPurchased(true);
-            inventoryRepository.save(inventory);
-
-            PurchaseLogId purchaseLogId = new PurchaseLogId(userId, inventory.getInventoryId());
-            PurchaseLog purchaseLog = new PurchaseLog(purchaseLogId, user);
-            purchaseLogRepository.save(purchaseLog);
-        }
-
-        cartRepository.deleteAll(cartItems);
-
-        return new CheckoutResponse(true, "Checkout successful");
+@Transactional
+public CheckoutResponse checkoutAll(CheckoutRequest request) {
+    if (request == null || request.getUserId() == null) {
+        throw new BadRequestException("User ID is required for checkout");
     }
+
+    Integer userId = request.getUserId();
+
+    User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+    List<ShoppingCart> cartItems = cartRepository.findByUserId(userId);
+
+    if (cartItems == null || cartItems.isEmpty()) {
+        return new CheckoutResponse(false, "Cart is empty");
+    }
+
+    if (request.getItems() == null || request.getItems().isEmpty()) {
+        return new CheckoutResponse(false, "Select quality choice for cart items");
+    }
+
+    int successCount = 0;
+
+    for (CheckoutItemRequest item : request.getItems()) {
+        String isbn = item.getIsbn();
+        Integer rank = item.getRank();
+
+        if (isbn == null || rank == null) {
+            continue;
+        }
+
+        Inventory inventory = inventoryRepository
+                .getFirstAvailableInventoryByIsbnAndRank(isbn, rank)
+                .orElseThrow(() -> new BadRequestException("Item sold out or unavailable"));
+
+        inventory.setPurchased(true);
+        inventoryRepository.save(inventory);
+
+        PurchaseLogId logId = new PurchaseLogId(userId, inventory.getInventoryId());
+        PurchaseLog log = new PurchaseLog(logId, user);
+        purchaseLogRepository.save(log);
+
+        ShoppingCartId cartId = new ShoppingCartId(userId, isbn);
+        if (cartRepository.existsById(cartId)) {
+            cartRepository.deleteById(cartId);
+        }
+
+        successCount++;
+    }
+
+    return new CheckoutResponse(true, "Successfully checked out " + successCount + " items.");
+}
 }

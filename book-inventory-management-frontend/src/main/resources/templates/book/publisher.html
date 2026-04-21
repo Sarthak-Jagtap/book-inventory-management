@@ -1,68 +1,98 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
 <head>
+	<meta charset="UTF-8">
 	<title>Books by Publisher</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
-
-	<h2>Books by Publisher</h2>
-
-	<!-- Form -->
-	<form action="/books/publisher" method="get">
-		<label>Publisher ID:</label>
-		<input type="number" name="publisherId" required>
-
-		<label>Page:</label>
-		<input type="number" name="page" value="0">
-
-		<label>Size:</label>
-		<input type="number" name="size" value="5">
-
-		<button type="submit">Load</button>
-	</form>
-
-	<hr>
-
-	<!-- Results -->
-	<div th:if="${books != null}">
-
-		<table border="1">
-			<tr>
-				<th>ISBN</th>
-				<th>Title</th>
-				<th>Edition</th>
-			</tr>
-
-			<tr th:each="book : ${books}">
-				<td th:text="${book.isbn}"></td>
-				<td th:text="${book.title}"></td>
-				<td th:text="${book.edition}"></td>
-			</tr>
-		</table>
-
-		<br>
-
-		<!-- Pagination -->
-		<div>
-			<span th:text="'Page ' + ${currentPage} + ' of ' + ${totalPages}"></span>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div class="page-wrapper">
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#111827;">Books by Publisher</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">List books published by a specific house</div>
+			</div>
+			<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
 		</div>
 
-		<div>
-			<a th:if="${currentPage > 0}"
-				th:href="@{/books/publisher(publisherId=${publisherId}, page=${currentPage-1}, size=5)}">
-				Previous
-			</a>
+		<!-- Filter Form -->
+		<div class="card" style="padding: 20px; margin-bottom: 24px;">
+			<form th:action="@{/books/publisher}" method="get" style="display: flex; gap: 16px; align-items: flex-end;">
+				<div style="flex: 1;">
+					<label
+						style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">Publisher
+						ID</label>
+					<select name="publisherId" class="form-control"
+						style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
 
-			<a th:if="${currentPage < totalPages - 1}"
-				th:href="@{/books/publisher(publisherId=${publisherId}, page=${currentPage+1}, size=5)}">
-				Next
-			</a>
+						<option value="">-- Select Publisher --</option>
+
+						<option th:each="entry : ${publisherMap}" th:value="${entry.key}" th:text="${entry.value}"
+							th:selected="${entry.key == publisherId}">
+						</option>
+
+					</select>
+				</div>
+				<div style="width: 100px;">
+					<label
+						style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px;">Size</label>
+					<input type="number" name="size" th:value="${size != null ? size : 5}" class="form-control"
+						style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;">
+				</div>
+				<input type="hidden" name="page" value="0">
+				<button type="submit" class="btn btn-primary" style="height: 38px;">Load Books</button>
+			</form>
 		</div>
 
+		<!-- Results -->
+		<div class="card" th:if="${books != null}">
+			<table class="table" style="width:100%; border-collapse:collapse;">
+				<thead style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+					<tr>
+						<th
+							style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							ISBN</th>
+						<th
+							style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Title</th>
+						<th
+							style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Publisher</th>
+						<th
+							style="padding: 12px 16px; text-align: right; font-size: 12px; text-transform: uppercase; color: #6b7280; font-weight: 600;">
+							Actions</th>
+					</tr>
+				</thead>
+				<tbody style="font-size: 14px; color: #374151;">
+					<tr th:each="book : ${books}" style="border-bottom: 1px solid #f3f4f6;">
+						<td style="padding: 12px 16px; font-weight: 600;" th:text="${book.isbn}"></td>
+						<td style="padding: 12px 16px;" th:text="${book.title}"></td>
+						<td style="padding: 12px 16px;" th:text="${publisherMap[book.publisherId]}"></td>
+						<td style="padding: 12px 16px; text-align: right;">
+							<a th:href="@{/books/details(isbn=${book.isbn})}" class="btn btn-secondary btn-sm">View</a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<!-- Pagination -->
+			<div
+				style="padding: 16px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+				<div style="font-size: 13px; color: #6b7280;">Total Items: <span th:text="${totalItems}"></span></div>
+				<div style="display: flex; gap: 8px;">
+					<a th:if="${currentPage > 0}"
+						th:href="@{/books/publisher(publisherId=${publisherId}, page=${currentPage - 1}, size=${size})}"
+						class="btn btn-secondary btn-sm">Prev</a>
+					<a th:if="${currentPage < totalPages - 1}"
+						th:href="@{/books/publisher(publisherId=${publisherId}, page=${currentPage + 1}, size=${size})}"
+						class="btn btn-secondary btn-sm">Next</a>
+				</div>
+			</div>
+		</div>
 	</div>
-
 </body>
 
 </html>

@@ -1,84 +1,105 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-	<style>
-	    body {
-	        margin: 0;
-	        font-family: Arial, sans-serif;
-	        background: #f3f4f6;
-	    }
-
-	    .container {
-	        display: flex;
-	        justify-content: center;
-	        align-items: center;
-	        height: 100vh;
-	    }
-
-	    .form-box {
-	        width: 360px;
-	        background: #fff;
-	        padding: 25px;
-	        border-radius: 8px;
-	        border: 1px solid #ddd;
-	    }
-
-	    h2 {
-	        text-align: center;
-	        margin-bottom: 20px;
-	        font-weight: 600;
-	    }
-
-	    input {
-	        width: 100%;
-	        padding: 10px;
-	        margin-bottom: 12px;
-	        border: 1px solid #ccc;
-	        border-radius: 6px;
-	        font-size: 14px;
-	    }
-
-	    input:focus {
-	        outline: none;
-	        border-color: #4f46e5;
-	    }
-
-	    button {
-	        width: 100%;
-	        padding: 10px;
-	        background: #4f46e5;
-	        color: white;
-	        border: none;
-	        border-radius: 6px;
-	        cursor: pointer;
-	    }
-
-	    button:hover {
-	        background: #4338ca;
-	    }
-
-	    .back {
-	        text-align: center;
-	        margin-top: 10px;
-	    }
-
-	    .back a {
-	        text-decoration: none;
-	        font-size: 13px;
-	        color: #4f46e5;
-	    }
-	</style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Reviewer — Book Inventory</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.13);
+      animation: slideIn 0.3s ease, fadeOut 0.4s ease 2.8s forwards;
+      pointer-events: none;
+      min-width: 260px;
+    }
+    .toast-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .toast-error   { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .toast-icon    { font-size: 17px; flex-shrink: 0; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-8px); } }
+  </style>
+</head>
 <body>
 
-<h2>Create Reviewer</h2>
+<!-- Shared navbar — same fragment used across the whole app -->
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<form action="/ui/reviewer/form" method="post" th:object="${reviewer}">
-	<input type="number" th:field="*{reviewerID}" placeholder="ReviewerID" required>
-    <input type="text" th:field="*{name}" placeholder="Name" required>
-    <input type="text" th:field="*{employedBy}" placeholder="EmployedBy" required>
-    <button type="submit">Submit</button>
-</form>
+<!-- ── Success Toast ─────────────────────────────────── -->
+<div class="toast toast-success" th:if="${successMsg}" id="appToast">
+  <span class="toast-icon">&#10003;</span>
+  <span th:text="${successMsg}">Reviewer created successfully!</span>
+</div>
 
-<a href="/ui/review-dashboard">Back</a>
+<!-- ── Error Toast ───────────────────────────────────── -->
+<div class="toast toast-error" th:if="${errorMsg}" id="appToast">
+  <span class="toast-icon">&#10005;</span>
+  <span th:text="${errorMsg}">Something went wrong.</span>
+</div>
 
+<!-- ── Page Header ───────────────────────────────────── -->
+<div class="page-header">
+  <a href="/ui/review-dashboard" class="page-header-back">&#8592; Back</a>
+  <div>
+    <h1>Create Reviewer</h1>
+    <div class="meta">POST /api/v1/reviewer</div>
+  </div>
+</div>
+
+<!-- ── Form ──────────────────────────────────────────── -->
+<div class="form-page">
+  <div class="form-box animate-in">
+    <h2>New Reviewer</h2>
+    <p class="sub">Add a new reviewer to the system.</p>
+
+    <form action="/ui/reviewer/form" method="post" th:object="${reviewer}">
+		<input type="hidden"
+		       th:name="${_csrf.parameterName}"
+		       th:value="${_csrf.token}" />
+
+		
+      <div class="form-group">
+        <label class="form-label" for="reviewerID">Reviewer ID</label>
+        <input class="form-control" type="number" id="reviewerID"
+               th:field="*{reviewerID}" placeholder="e.g. 101" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="name">Full Name</label>
+        <input class="form-control" type="text" id="name"
+               th:field="*{name}" placeholder="e.g. Jane Smith" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="employedBy">Employed By</label>
+        <input class="form-control" type="text" id="employedBy"
+               th:field="*{employedBy}" placeholder="e.g. Penguin Books" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top: 8px;">
+        &#xff0b; Create Reviewer
+      </button>
+    </form>
+
+    <div class="form-footer">
+      Already added? <a href="/ui/reviewers">View all reviewers</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const t = document.getElementById('appToast');
+  if (t) setTimeout(() => t.remove(), 3000);
+</script>
 </body>
 </html>

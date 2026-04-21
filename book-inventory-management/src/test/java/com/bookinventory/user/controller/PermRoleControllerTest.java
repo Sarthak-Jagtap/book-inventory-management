@@ -44,6 +44,7 @@ class PermRoleControllerTest {
     @MockBean
     private UserRepository userRepository;
 
+
     // Sample DTOs reused across tests
     private PermRoleResponseDTO guestDTO;
     private PermRoleResponseDTO registeredUserDTO;

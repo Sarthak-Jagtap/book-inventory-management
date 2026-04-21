@@ -2,22 +2,44 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventory Summary</title>
   <link rel="stylesheet" th:href="@{/css/api-dashboard.css}">
   <style>
     .error-box{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:14px 16px;border-radius:10px;margin-bottom:16px;}
+    .footer-actions {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+    }
   </style>
 </head>
 <body>
+
 <div class="topbar">
-  <div class="logo"><div class="logo-title">Book Inventory API</div></div>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    </div>
+    <div>
+      <div class="logo-title">Book Inventory API</div>
+      <div class="logo-sub">Inventory Module</div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-text">
+    <h1>Inventory Summary</h1>
+    <p>Aggregation of stock by quality rank for ISBN: <span th:text="${isbn}"></span></p>
+  </div>
 </div>
 
 <div class="content">
-  <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
 
-  <div class="form-title">Inventory Summary</div>
-  <div class="form-subtitle">ISBN: <span th:text="${isbn}"></span></div>
+  <div th:if="${apiError != null}" class="error-box" th:text="${apiError}"></div>
 
   <div th:if="${summaryList != null and !#lists.isEmpty(summaryList)}" class="table-wrap">
     <table class="data-table">
@@ -26,27 +48,45 @@
         <th>Rank</th>
         <th>Condition</th>
         <th>Price</th>
-        <th>Available Count</th>
+        <th>Available</th>
+        <th>Sold</th>
+        <th>Total</th>
       </tr>
       </thead>
       <tbody>
       <tr th:each="item : ${summaryList}">
         <td th:text="${item.rank}"></td>
         <td th:text="${item.condition}"></td>
-        <td th:text="${item.price}"></td>
-        <td th:text="${item.availableCount}"></td>
+        <td th:text="'₹' + ${item.price}"></td>
+        <td>
+          <span class="pill pill-yes" th:text="${item.availableCount}"></span>
+        </td>
+        <td>
+          <span class="pill pill-no" th:text="${item.totalCount - item.availableCount}"></span>
+        </td>
+        <td th:text="${item.totalCount}"></td>
       </tr>
       </tbody>
     </table>
   </div>
 
-  <div th:if="${summaryList == null or #lists.isEmpty(summaryList)}" class="empty-state">
-    No summary found.
+  <div th:if="${summaryList != null and !#lists.isEmpty(summaryList)}" 
+       style="margin-top: 20px; padding: 15px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-align: center;">
+    <h3 style="margin: 0; color: var(--text-main);">
+      Overall Sales: 
+      <span style="color: var(--accent);" th:text="${#aggregates.sum(summaryList.![totalCount - availableCount])}">0</span>
+      copies sold
+    </h3>
   </div>
 
-  <div class="form-actions" style="margin-top:16px;">
-    <a class="btn btn-secondary" th:href="@{/inventory-cart-dashboard}">Back to Dashboard</a>
+  <div th:if="${(summaryList == null or #lists.isEmpty(summaryList)) and apiError == null}" class="empty-state">
+    No inventory summary available for this ISBN.
   </div>
+
+  <div class="footer-actions">
+    <a class="btn btn-secondary" th:href="@{/team/inventory-module}">Back to Dashboard</a>
+  </div>
+
 </div>
 </body>
 </html>

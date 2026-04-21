@@ -14,10 +14,10 @@ public class CategoryController {
 
     public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
-    }
+    }    
 
     // GET ALL
-    @GetMapping("/categories")
+    @GetMapping("/categories/list")
     public String getAllCategories(Model model) {
 
         model.addAttribute("categories", categoryService.getAllCategories());

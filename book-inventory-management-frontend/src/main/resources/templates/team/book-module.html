@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Book Module APIs — Book Inventory</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" th:href="@{/css/api-dashboard.css}" />
+	<link rel="stylesheet" th:href="@{/css/style.css}" />
+
+	<style>
+		.member-hero {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 24px 32px;
+			gap: 20px;
+		}
+
+		.member-hero .meta {
+			display: flex;
+			gap: 20px;
+		}
+
+		.api-container {
+			max-width: 1100px;
+			margin: 40px auto;
+			padding: 0 20px;
+		}
+
+		.api-section {
+			margin-bottom: 28px;
+			padding: 18px 20px;
+			border-radius: 12px;
+		}
+
+		.section-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 12px;
+		}
+
+		.endpoint-row {
+			display: grid;
+			grid-template-columns: 70px 240px 1fr 100px;
+			align-items: center;
+			gap: 12px;
+			padding: 10px 14px;
+			margin-bottom: 6px;
+			border-radius: 8px;
+			text-decoration: none;
+			color: inherit;
+		}
+
+		.endpoint-url {
+			font-family: monospace;
+			white-space: nowrap;
+		}
+
+		.access-tag {
+			text-align: center;
+		}
+
+		.endpoint-row.locked {
+			opacity: 0.6;
+			cursor: not-allowed;
+		}
+
+		@media (max-width: 768px) {
+			.endpoint-row {
+				grid-template-columns: 60px 1fr;
+			}
+
+			.endpoint-desc {
+				grid-column: span 2;
+			}
+
+			.access-tag {
+				grid-column: span 2;
+			}
+		}
+	</style>
+</head>
+
+<body>
+
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+	<!-- Member hero -->
+	<div class="member-hero">
+		<div class="avatar av-1">SJ</div>
+		<div class="info">
+			<div class="module-tag">Book Module</div>
+			<h2 th:text="${memberName != null ? memberName : 'Sarthak Jagtap'}">Your Name</h2>
+			<p>Books · Categories · Publishers · States</p>
+		</div>
+		<div class="meta">
+			<div class="m">
+				<div class="n">23</div>
+				<div class="l">Endpoints</div>
+			</div>
+			<div class="m">
+				<div class="n">4</div>
+				<div class="l">Entities</div>
+			</div>
+			<div class="m">
+				<div class="n">Full</div>
+				<div class="l">CRUD</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="api-container">
+
+		<!-- 1. BOOK ENTITY -->
+		<div class="api-section">
+			<div class="section-header">
+				<div class="section-title">Book Management</div>
+				<div class="section-count">9 Endpoints</div>
+			</div>
+
+			<a class="endpoint-row" th:href="@{/books}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/books</span>
+				<span class="endpoint-desc">Paginated list of all books</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<div class="endpoint-row" style="cursor: default;">
+				<span class="method method-get">GET</span>
+				<div class="endpoint-url" style="display: flex; align-items: center; gap: 5px;">
+					<span>/books/details?isbn=</span>
+					<form th:action="@{/books/details}" method="get"
+						style="display: flex; align-items: center; gap: 3px;">
+						<input type="text" name="isbn" placeholder="Enter ISBN" required
+							style="width: 90px; padding: 3px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 11px; font-family: inherit;">
+						<button type="submit" class="btn btn-primary"
+							style="padding: 0 8px; font-size: 10px; height: 24px; min-width: auto;">Go</button>
+					</form>
+				</div>
+				<span class="endpoint-desc">Interactive details view: Enter an ISBN and click Go</span>
+				<span class="access-tag access-guest">Guest</span>
+			</div>
+
+			<a class="endpoint-row" th:href="@{/books/isbn}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/books/isbn</span>
+				<span class="endpoint-desc">Search form to find a book by ISBN</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<a class="endpoint-row" th:href="@{/books/search}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/books/search</span>
+				<span class="endpoint-desc">Global search (Title, Category, Publisher)</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<a class="endpoint-row" th:href="@{/books/category}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/books/category</span>
+				<span class="endpoint-desc">Filter books by Category ID</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<a class="endpoint-row" th:href="@{/books/publisher}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/books/publisher</span>
+				<span class="endpoint-desc">Filter books by Publisher ID</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<!-- Store Owner Book Actions -->
+			<th:block th:if="${session.ROLE_NAME == 'StoreOwner'}">
+				<a class="endpoint-row" th:href="@{/books/add}">
+					<span class="method method-post">POST</span>
+					<span class="endpoint-url">/books/add</span>
+					<span class="endpoint-desc">Add a new book to the inventory</span>
+					<span class="access-tag access-admin">Owner</span>
+				</a>
+				<div class="endpoint-row" style="cursor: default;">
+					<span class="method method-put">PUT</span>
+					<div class="endpoint-url" style="display: flex; align-items: center; gap: 5px;">
+						<span>/books/update?isbn=</span>
+						<form th:action="@{/books/update}" method="get"
+							style="display: flex; align-items: center; gap: 3px;">
+							<input type="text" name="isbn" placeholder="Enter ISBN" required
+								style="width: 90px; padding: 3px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 11px; font-family: inherit;">
+							<button type="submit" class="btn btn-primary"
+								style="padding: 0 8px; font-size: 10px; height: 24px; min-width: auto;">Edit</button>
+						</form>
+					</div>
+					<span class="endpoint-desc">Update form: Enter ISBN to load the edit page</span>
+					<span class="access-tag access-admin">Owner</span>
+				</div>
+				<a class="endpoint-row" th:href="@{/books/delete}">
+					<span class="method method-delete">DELETE</span>
+					<span class="endpoint-url">/books/delete</span>
+					<span class="endpoint-desc">Permanently remove book record</span>
+					<span class="access-tag access-admin">Owner</span>
+				</a>
+			</th:block>
+
+			<th:block th:if="${session.ROLE_NAME != 'StoreOwner'}">
+				<div class="endpoint-row locked">
+					<span class="method method-post">POST</span>
+					<span class="endpoint-url">/books/add</span>
+					<span class="endpoint-desc">Inventory creation (Restricted)</span>
+					<span class="access-tag access-admin">Locked</span>
+				</div>
+			</th:block>
+		</div>
+
+		<!-- ========================================================================= -->
+		<!-- 2. CATEGORY ENTITY -->
+		<!-- ========================================================================= -->
+		<div class="api-section">
+			<div class="section-header">
+				<div class="section-title">Categories & Classification</div>
+				<div class="section-count">6 Endpoints</div>
+			</div>
+
+			<a class="endpoint-row" th:href="@{/categories/list}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/categories</span>
+				<span class="endpoint-desc">List of all available book categories</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<a class="endpoint-row" th:href="@{/categories/id}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/categories/id</span>
+				<span class="endpoint-desc">Search category by unique ID</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<a class="endpoint-row" th:href="@{/categories/summary}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/categories/summary</span>
+				<span class="endpoint-desc">Analytics: Book count per category</span>
+				<span class="access-tag access-user">User</span>
+			</a>
+
+			<th:block th:if="${session.ROLE_NAME == 'StoreOwner'}">
+				<a class="endpoint-row" th:href="@{/categories/add}">
+					<span class="method method-post">POST</span>
+					<span class="endpoint-url">/categories/add</span>
+					<span class="endpoint-desc">Create new book classification</span>
+					<span class="access-tag access-admin">Owner</span>
+				</a>
+				<a class="endpoint-row" th:href="@{/categories/update}">
+					<span class="method method-put">PUT</span>
+					<span class="endpoint-url">/categories/update</span>
+					<span class="endpoint-desc">Update category descriptions</span>
+					<span class="access-tag access-admin">Owner</span>
+				</a>
+				<a class="endpoint-row" th:href="@{/categories/delete}">
+					<span class="method method-delete">DELETE</span>
+					<span class="endpoint-url">/categories/delete</span>
+					<span class="endpoint-desc">Remove empty/obsolete category</span>
+					<span class="access-tag access-admin">Owner</span>
+				</a>
+			</th:block>
+		</div>
+
+		<!-- ========================================================================= -->
+		<!-- 3. PUBLISHER ENTITY -->
+		<!-- ========================================================================= -->
+		<div class="api-section">
+			<div class="section-header">
+				<div class="section-title">Publisher Registry</div>
+				<div class="section-count">5 Endpoints</div>
+			</div>
+
+			<a class="endpoint-row" th:href="@{/publishers}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/publishers</span>
+				<span class="endpoint-desc">Browse all registered publishers</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<a class="endpoint-row" th:href="@{/publishers/id}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/publishers/id</span>
+				<span class="endpoint-desc">Search publisher details by ID</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<a class="endpoint-row" th:href="@{/publishers/state}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/publishers/state</span>
+				<span class="endpoint-desc">Filter publishers by State Code</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<th:block th:if="${session.ROLE_NAME == 'StoreOwner'}">
+				<a class="endpoint-row" th:href="@{/publishers/add}">
+					<span class="method method-post">POST</span>
+					<span class="endpoint-url">/publishers/add</span>
+					<span class="endpoint-desc">Register a new publishing house</span>
+					<span class="access-tag access-admin">Owner</span>
+				</a>
+				<a class="endpoint-row" th:href="@{/publishers/update}">
+					<span class="method method-put">PUT</span>
+					<span class="endpoint-url">/publishers/update</span>
+					<span class="endpoint-desc">Update publisher contact info</span>
+					<span class="access-tag access-admin">Owner</span>
+				</a>
+			</th:block>
+		</div>
+
+		<!-- ========================================================================= -->
+		<!-- 4. STATE ENTITY -->
+		<!-- ========================================================================= -->
+		<div class="api-section" style="margin-bottom: 60px;">
+			<div class="section-header">
+				<div class="section-title">Geography & States</div>
+				<div class="section-count">3 Endpoints</div>
+			</div>
+
+			<a class="endpoint-row" th:href="@{/states}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/states</span>
+				<span class="endpoint-desc">List of all valid state codes and names</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<a class="endpoint-row" th:href="@{/states/code}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/states/code</span>
+				<span class="endpoint-desc">State lookup search form</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+
+			<a class="endpoint-row" th:href="@{/states/details(stateCode='NY')}">
+				<span class="method method-get">GET</span>
+				<span class="endpoint-url">/states/details</span>
+				<span class="endpoint-desc">Retrieve specific state details</span>
+				<span class="access-tag access-guest">Guest</span>
+			</a>
+		</div>
+
+	</div>
+
+</body>
+
+</html>

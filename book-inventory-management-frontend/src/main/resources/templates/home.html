@@ -111,80 +111,51 @@
     </div>
   </div>
 
+
   <div class="team-grid-home">
 
-    <!-- ── Member 1 ── -->
-    <a class="team-card-home" th:href="@{/team/user-module}">
-      <!-- Show photo if available, otherwise show colored avatar -->
-      <th:block th:if="${members[0] != null and members[0].photoUrl != null}">
-        <div class="member-photo-wrap">
-          <img th:src="${members[0].photoUrl}" alt="Member photo"/>
-        </div>
-      </th:block>
-      <th:block th:if="${members[0] == null or members[0].photoUrl == null}">
-        <div class="member-avatar-fallback av-1"
-             th:text="${members[0] != null ? #strings.substring(members[0].name,0,2).toUpperCase() : 'KV'}">KV</div>
-      </th:block>
-      <div class="m-name" th:text="${members[0] != null ? members[0].name : 'Your Name'}">Krishna Varma</div>
-      <div class="m-module">User Module</div>
-      <div class="m-count"><strong>24</strong> endpoints</div>
+  <div class="team-grid">
+    <!-- Member 1 — Krishna -->
+    <a class="team-card" th:href="@{'/team/' + ${members[0].slug}}">
+      <div class="avatar av-1"
+           th:text="${members[0].initials}">KR</div>
+      <div class="name" th:text="${members[0].name}">Krishna</div>
+      <div class="module" th:text="${members[0].module}">User Module</div>
+      <div class="api-count"><strong>24</strong> endpoints</div>
     </a>
-
-    <!-- ── Member 2 ── -->
-    <a class="team-card-home" th:href="@{/team/book-module}">
-      <th:block th:if="${members[1] != null and members[1].photoUrl != null}">
-        <div class="member-photo-wrap"><img th:src="${members[1].photoUrl}" alt="Member photo"/></div>
-      </th:block>
-      <th:block th:if="${members[1] == null or members[1].photoUrl == null}">
-        <div class="member-avatar-fallback av-2"
-             th:text="${members[1] != null ? #strings.substring(members[1].name,0,2).toUpperCase() : 'M2'}">M2</div>
-      </th:block>
-      <div class="m-name" th:text="${members[1] != null ? members[1].name : 'Team Member 2'}">Team Member 2</div>
-      <div class="m-module">Book Module</div>
-      <div class="m-count"><strong>20+</strong> endpoints</div>
+    <!-- Member 2 -->
+    <a class="team-card" th:href="@{'/team/' + ${members[1].slug}}">
+      <div class="avatar av-2"
+           th:text="${members[1].initials}">M2</div>
+      <div class="name" th:text="${members[1].name}">Member 2</div>
+      <div class="module" th:text="${members[1].module}">Book Module</div>
+      <div class="api-count"><strong>20+</strong> endpoints</div>
     </a>
-
-    <!-- ── Member 3 ── -->
-    <a class="team-card-home" th:href="@{/team/inventory-module}">
-      <th:block th:if="${members[2] != null and members[2].photoUrl != null}">
-        <div class="member-photo-wrap"><img th:src="${members[2].photoUrl}" alt="Member photo"/></div>
-      </th:block>
-      <th:block th:if="${members[2] == null or members[2].photoUrl == null}">
-        <div class="member-avatar-fallback av-3"
-             th:text="${members[2] != null ? #strings.substring(members[2].name,0,2).toUpperCase() : 'M3'}">M3</div>
-      </th:block>
-      <div class="m-name" th:text="${members[2] != null ? members[2].name : 'Team Member 3'}">Team Member 3</div>
-      <div class="m-module">Inventory Module</div>
-      <div class="m-count"><strong>20+</strong> endpoints</div>
+    <!-- Member 3 — Yashomati -->
+    <a class="team-card" th:href="@{'/team/' + ${members[2].slug}}">
+      <div class="avatar av-3"
+           th:text="${members[2].initials}">YA</div>
+      <div class="name" th:text="${members[2].name}">Yashomati</div>
+      <div class="module" th:text="${members[2].module}">Inventory Module</div>
+      <div class="api-count"><strong>16</strong> endpoints</div>
     </a>
-
-    <!-- ── Member 4 ── -->
-    <a class="team-card-home" th:href="@{/team/review-module}">
-      <th:block th:if="${members[3] != null and members[3].photoUrl != null}">
-        <div class="member-photo-wrap"><img th:src="${members[3].photoUrl}" alt="Member photo"/></div>
-      </th:block>
-      <th:block th:if="${members[3] == null or members[3].photoUrl == null}">
-        <div class="member-avatar-fallback av-4"
-             th:text="${members[3] != null ? #strings.substring(members[3].name,0,2).toUpperCase() : 'M4'}">M4</div>
-      </th:block>
-      <div class="m-name" th:text="${members[3] != null ? members[3].name : 'Team Member 4'}">Team Member 4</div>
-      <div class="m-module">Review Module</div>
-      <div class="m-count"><strong>15+</strong> endpoints</div>
+    <!-- Member 4 -->
+    <a class="team-card" th:href="@{'/team/' + ${members[3].slug}}">
+      <div class="avatar av-4"
+           th:text="${members[3].initials}">M4</div>
+      <div class="name" th:text="${members[3].name}">Member 4</div>
+      <div class="module" th:text="${members[3].module}">Review Module</div>
+      <div class="api-count"><strong>15+</strong> endpoints</div>
     </a>
-
-    <!-- ── Member 5 ── -->
-    <a class="team-card-home" th:href="@{/team/cart-module}">
-      <th:block th:if="${members[4] != null and members[4].photoUrl != null}">
-        <div class="member-photo-wrap"><img th:src="${members[4].photoUrl}" alt="Member photo"/></div>
-      </th:block>
-      <th:block th:if="${members[4] == null or members[4].photoUrl == null}">
-        <div class="member-avatar-fallback av-5"
-             th:text="${members[4] != null ? #strings.substring(members[4].name,0,2).toUpperCase() : 'M5'}">M5</div>
-      </th:block>
-      <div class="m-name" th:text="${members[4] != null ? members[4].name : 'Team Member 5'}">Team Member 5</div>
-      <div class="m-module">Cart Module</div>
-      <div class="m-count"><strong>15+</strong> endpoints</div>
+    <!-- Member 5 -->
+    <a class="team-card" th:href="@{/team/author-module}">
+      <div class="avatar av-5"
+           th:text="${members[4] != null ? #strings.substring(members[4].name,0,2).toUpperCase() : 'M5'}">M5</div>
+      <div class="name" th:text="${members[4] != null ? members[4].name : 'Team Member 5'}">Team Member 5</div>
+      <div class="module">Author Module</div>
+      <div class="api-count"><strong>15+</strong> endpoints</div>
     </a>
+  </div>    
 
   </div>
 </div>

@@ -1,9 +1,56 @@
-<h2>Delete Publisher</h2>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 
-<form action="/publishers/delete" method="post">
+<head>
+	<meta charset="UTF-8">
+	<title>Delete Publisher</title>
+	<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
 
-    <label>Publisher ID:</label>
-    <input type="number" name="publisherId" required>
+<body>
+	<div th:replace="~{fragments/navbar :: navbar}"></div>
+	<div class="page-wrapper">
+		<div class="flex-between mb-2">
+			<div>
+				<div style="font-size:17px;font-weight:600;color:#dc2626;">Delete Publisher</div>
+				<div style="font-size:13px;color:#6b7280;margin-top:3px;">Confirm permanent removal of publishing house
+				</div>
+			</div>
 
-    <button type="submit">Delete</button>
-</form>
+			<div>
+				<a class="btn btn-secondary btn-sm" th:href="@{/team/book-module}">← Dashboard</a>
+
+				<a class="btn btn-secondary btn-sm" th:href="@{/publishers}">← Back to List</a>
+			</div>
+		</div>
+
+		<div class="card" style="padding: 24px; max-width: 500px; border-top: 4px solid #ef4444;">
+			<p style="color: #4b5563; font-size: 14px; margin-bottom: 20px;">
+				Warning: Deleting a publisher will remove their record from the system. Please confirm the Publisher ID
+				below.
+			</p>
+
+			<form th:action="@{/publishers/delete}" method="post">
+				<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+				<div style="margin-bottom: 24px;">
+					<label
+						style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 6px;">Publisher
+						ID</label>
+					<input type="number" name="publisherId" th:value="${param.publisherId}" required
+						style="width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px;"
+						placeholder="Enter ID to confirm">
+				</div>
+
+				<div style="display: flex; gap: 12px;">
+					<button type="submit" class="btn btn-danger" onclick="return confirm('Are you absolutely sure?');">
+						Delete Permanently
+					</button>
+					<a th:href="@{/publishers}" class="btn btn-secondary">Cancel</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</body>
+
+</html>
