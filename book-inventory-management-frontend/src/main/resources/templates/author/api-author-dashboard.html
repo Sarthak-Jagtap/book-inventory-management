@@ -4,6 +4,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 <title>Book Inventory API Dashboard</title>
 <link rel="stylesheet" th:href="@{/css/style.css}"/>
 <style>
@@ -525,18 +527,32 @@ function openEditBookAuthorForm() {
 }
 
 // ── DELETE operations ──────────────────────────────────────────────────
-
+// Routes through the frontend controller (same CORS-safe pattern as forms)
+// Uses a hidden POST form submission to /store-owner/authors/{id}/delete
 
 function doDelete() {
   const id = document.getElementById('w-del-id').value;
   if (!id) { alert('Please enter an Author ID'); return; }
   if (!confirm('Delete author ' + id + '? This cannot be undone.')) return;
-  fetch(BACKEND_URL + '/api/v1/store-owner/authors/' + id, { method: 'DELETE' })
-    .then(() => {
-        alert('Author deleted successfully');
-        window.location.href = '/authors';
-    })
-    .catch(() => alert('Delete request sent'));
+
+  // Submit via hidden form to the frontend controller (avoids CORS & handles CSRF)
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/store-owner/authors/' + id + '/delete';
+
+  // Include CSRF token (Spring Security requires it for POST forms)
+  const csrfMeta = document.querySelector('meta[name="_csrf"]');
+  const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+  if (csrfMeta) {
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_csrf';  // Spring Security default param name for HTML forms
+    csrfInput.value = csrfMeta.content;
+    form.appendChild(csrfInput);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
 }
 
 function doDeleteBA() {
@@ -544,9 +560,24 @@ function doDeleteBA() {
   const aid  = document.getElementById('w-del-aid').value;
   if (!isbn || !aid) { alert('Please fill in both ISBN and Author ID'); return; }
   if (!confirm('Remove book-author mapping? This cannot be undone.')) return;
-  fetch(BACKEND_URL + '/api/v1/store-owner/book-authors/' + isbn + '/' + aid, { method: 'DELETE' })
-    .then(() => alert('Mapping removed successfully'))
-    .catch(() => alert('Delete request sent'));
+
+  // Submit via hidden form to the frontend controller (avoids CORS & handles CSRF)
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/store-owner/book-authors/' + encodeURIComponent(isbn) + '/' + aid + '/delete';
+
+  // Include CSRF token (Spring Security requires it for POST forms)
+  const csrfMeta2 = document.querySelector('meta[name="_csrf"]');
+  if (csrfMeta2) {
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = '_csrf';  // Spring Security default param name for HTML forms
+    csrfInput.value = csrfMeta2.content;
+    form.appendChild(csrfInput);
+  }
+
+  document.body.appendChild(form);
+  form.submit();
 }
 </script>
 

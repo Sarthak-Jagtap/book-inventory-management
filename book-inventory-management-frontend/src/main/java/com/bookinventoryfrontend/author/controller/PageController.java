@@ -59,7 +59,7 @@ public class PageController {
 	        model.addAttribute("endpointCount", endpoints.size());
 	        model.addAttribute("methodCount", endpoints.stream().map(Endpoint::getMethod).distinct().count());
 
-	        return "/author/api-author-dashboard";
+	        return "author/api-author-dashboard";
 	    }
 
 	    @GetMapping("/api-author-result")

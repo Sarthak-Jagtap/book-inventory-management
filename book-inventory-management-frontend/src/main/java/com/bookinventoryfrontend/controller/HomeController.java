@@ -80,11 +80,8 @@ public class HomeController {
     }
 
     @GetMapping("/team/author-module")
-    public String authorModule(Model model) {
-        model.addAttribute("activePage", "author-module");
-        model.addAttribute("memberName", "Sudhanshu");
-        model.addAttribute("endpointCount", 15);
-        model.addAttribute("groupCount", 3);
-        return "author/api-author-dashboard";
+    public String authorModule() {
+        // Redirect to the Author PageController which builds the full model
+        return "redirect:/api-author-dashboard";
     }
 }
